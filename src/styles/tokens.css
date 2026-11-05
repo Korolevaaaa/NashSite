@@ -1,0 +1,25 @@
+/* Design tokens — light "blueprint" palette of the current site.
+   Values are initial, not a final approved brandbook. */
+@theme {
+  --color-bg: #f4f4f4;
+  --color-ink: #0d1117;
+  --color-ink-muted: rgba(13, 17, 23, 0.65);
+  --color-ink-faint: rgba(13, 17, 23, 0.28);
+  --color-line: rgba(13, 17, 23, 0.12);
+  --color-accent: #00c9d4;
+  --color-accent-deep: #009aa0;
+  --color-glow: #00ffff; /* decorative glow only — not for body text */
+
+  --font-display: "Space Grotesk", sans-serif;
+  --font-body: "Inter", system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", "Consolas", monospace;
+}
+
+:root {
+  --content-max: 1440px;
+  --page-gutter: clamp(20px, 4vw, 64px);
+
+  /* runtime vars driven by JS */
+  --gx: -500px;
+  --gy: -500px;
+}
