@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ZETRONIX — Проектируем цифровое будущее</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Space+Grotesk:wght@400;500;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css?v=3">
+</head>
+<body>
+
+  <div class="boot" id="boot">
+    <div class="boot__inner">
+      <div class="boot__logo">ZETRONIX<span>.RU</span></div>
+      <div class="boot__bar"><i id="bootBar"></i></div>
+      <div class="boot__log" id="bootLog">SYSTEM BOOT…</div>
+    </div>
+  </div>
+
+  <nav class="nav" id="nav">
+    <a class="nav__logo" href="#top">ZETRONIX<span>.RU</span></a>
+    <div class="nav__links">
+      <a href="#services">Услуги</a>
+      <a href="#portfolio">Портфолио</a>
+      <a href="#contacts">Контакты</a>
+    </div>
+    <a class="nav__cta" href="#contacts">Заказать сайт</a>
+  </nav>
+
+  <!-- ============ HERO ============ -->
+  <header class="hero" id="top">
+    <div class="stage" id="stage">
+
+      <div class="stage__grid"></div>
+      <div class="stage__glow" id="cursorGlow"></div>
+
+      <div class="hud hud--tl">
+        <span class="hud__tag">UNIT&nbsp;ZTRX-07</span>
+        <span class="hud__line">STATUS: <b>ONLINE</b></span>
+      </div>
+      <div class="hud hud--br" id="coords">X:0000&nbsp;&nbsp;Y:0000</div>
+
+      <!-- floating glass card: headline -->
+      <aside class="glass glass--left float-a">
+        <p class="glass__tag">// DIGITAL AGENCY</p>
+        <h1>Проектируем<br>цифровое <em>будущее</em></h1>
+        <p class="glass__sub">Сайты, интерфейсы и AI-продукты, которые выглядят как технологии завтрашнего дня — и продают сегодня.</p>
+      </aside>
+
+      <!-- floating glass card: CTA -->
+      <aside class="glass glass--right float-b">
+        <p class="glass__tag">// START PROJECT</p>
+        <p class="glass__text">Обсудим задачу за 15 минут. Прототип первого экрана — бесплатно.</p>
+        <a class="btn" href="#contacts">
+          <span>Заказать сайт</span>
+          <i class="btn__arrow">→</i>
+        </a>
+        <p class="glass__note">от 120 000 ₽ · срок от 2 недель</p>
+      </aside>
+
+      <!-- robot -->
+      <div class="robot" id="robot">
+        <div class="robot__float" id="robotFloat">
+          <div class="layer layer--head" id="layerHead">
+            <img src="assets/eve-head.png" alt="Робот-ассистент Zetronix" draggable="false">
+            <div class="eye eye--l" id="eyeL"><i></i></div>
+            <div class="eye eye--r" id="eyeR"><i></i></div>
+            <div class="callout callout--head"><b>OPTIC-MODULE</b><span>система зрения v7</span></div>
+          </div>
+          <div class="layer layer--torso">
+            <img src="assets/eve-torso.png" alt="" draggable="false">
+            <div class="callout callout--torso"><b>PWR-CORE</b><span>энергоблок</span></div>
+          </div>
+          <div class="layer layer--tail">
+            <img src="assets/eve-tail.png" alt="" draggable="false">
+            <div class="callout callout--tail"><b>DRV-THRUST</b><span>двигательная установка</span></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="scroll-hint">SCROLL<span></span>DISASSEMBLE</div>
+      <div class="sparks" id="sparks"></div>
+    </div>
+  </header>
+
+  <!-- ============ TICKER ============ -->
+  <div class="ticker" aria-hidden="true">
+    <div class="ticker__track">
+      <span>WEB-DEVELOPMENT&nbsp;·&nbsp;UI/UX DESIGN&nbsp;·&nbsp;AI INTEGRATION&nbsp;·&nbsp;BRANDING&nbsp;·&nbsp;MOTION&nbsp;·&nbsp;3D&nbsp;·&nbsp;</span>
+      <span>WEB-DEVELOPMENT&nbsp;·&nbsp;UI/UX DESIGN&nbsp;·&nbsp;AI INTEGRATION&nbsp;·&nbsp;BRANDING&nbsp;·&nbsp;MOTION&nbsp;·&nbsp;3D&nbsp;·&nbsp;</span>
+    </div>
+  </div>
+
+  <!-- ============ SERVICES ============ -->
+  <section class="section reveal" id="services">
+    <div class="section__head">
+      <span class="section__num">01</span>
+      <h2>Услуги</h2>
+      <p>Полный цикл: от идеи до запуска</p>
+    </div>
+    <div class="stats">
+      <div class="stat"><b data-count="120">0</b><span>проектов запущено</span></div>
+      <div class="stat"><b data-count="7">0</b><span>лет на рынке</span></div>
+      <div class="stat"><b data-count="18">0</b><span>наград за дизайн</span></div>
+      <div class="stat"><b data-count="96">0</b><span>% клиентов возвращаются</span></div>
+    </div>
+    <div class="cards">
+      <article class="card">
+        <span class="card__id">S-01</span>
+        <h3>Веб-разработка</h3>
+        <p>Лендинги, корпоративные сайты и веб-приложения на React / Next.js. Быстрые, доступные, с идеальными метриками Lighthouse.</p>
+      </article>
+      <article class="card">
+        <span class="card__id">S-02</span>
+        <h3>Дизайн интерфейсов</h3>
+        <p>Фирменный стиль, дизайн-системы и прототипы в Figma. Минимализм, который не выглядит шаблоном.</p>
+      </article>
+      <article class="card">
+        <span class="card__id">S-03</span>
+        <h3>AI-интеграции</h3>
+        <p>Чат-боты, персонализация и автоматизация на базе нейросетей. Ваш сайт начинает работать как ZTRX-07.</p>
+      </article>
+    </div>
+  </section>
+
+  <!-- ============ PORTFOLIO ============ -->
+  <section class="section section--alt reveal" id="portfolio">
+    <div class="section__head">
+      <span class="section__num">02</span>
+      <h2>Портфолио</h2>
+      <p>Избранные запуски</p>
+    </div>
+    <div class="works">
+      <a class="work" href="#contacts"><b>NEOBANK</b><span>Финтех-платформа</span><i>2026</i></a>
+      <a class="work" href="#contacts"><b>ORBITAL</b><span>Marketplace спутниковых данных</span><i>2025</i></a>
+      <a class="work" href="#contacts"><b>BIO/TECH</b><span>Сайт лаборатории</span><i>2025</i></a>
+      <a class="work" href="#contacts"><b>AERON</b><span>Конфигуратор дронов</span><i>2024</i></a>
+    </div>
+  </section>
+
+  <!-- ============ CONTACTS ============ -->
+  <section class="section section--cta reveal" id="contacts">
+    <p class="section__num">03 // CONTACT</p>
+    <h2>Готовы к запуску?</h2>
+    <p class="section__sub">Напишите нам — ответим в течение часа.</p>
+    <a class="btn btn--big" href="mailto:hello@zetronix.ru"><span>hello@zetronix.ru</span><i class="btn__arrow">→</i></a>
+  </section>
+
+  <footer class="footer">
+    <span>© 2026 ZETRONIX.RU</span>
+    <span>Designed in the future. Built today.</span>
+  </footer>
+
+  <script src="script.js?v=3"></script>
+  <script src="edit-mode.js?v=3"></script>
+</body>
+</html>
