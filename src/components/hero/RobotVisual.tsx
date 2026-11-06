@@ -1,14 +1,76 @@
-export default function RobotVisual() {
+import { Component, lazy, Suspense, useEffect, useState, type ReactNode } from "react";
+import { useReducedMotion } from "../../hooks/useReducedMotion";
+import type { PointerRef, ProgressRef } from "./heroTypes";
+
+// three.js stays out of the main bundle — loaded only when WebGL exists
+const RobotCanvas = lazy(() => import("./RobotCanvas"));
+
+interface Props {
+  progressRef: ProgressRef;
+  pointerRef: PointerRef;
+}
+
+/** Catches WebGL/GLB failures and keeps the static PNG robot visible. */
+class CanvasBoundary extends Component<
+  { children: ReactNode; onError: () => void },
+  { failed: boolean }
+> {
+  state = { failed: false };
+  static getDerivedStateFromError() {
+    return { failed: true };
+  }
+  componentDidCatch() {
+    this.props.onError();
+  }
+  render() {
+    return this.state.failed ? null : this.props.children;
+  }
+}
+
+function detectWebGL(): boolean {
+  try {
+    const c = document.createElement("canvas");
+    return Boolean(
+      c.getContext("webgl2") || c.getContext("webgl") || c.getContext("experimental-webgl"),
+    );
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * Robot slot inside the hero stage: transparent WebGL canvas on top of a
+ * static transparent PNG (Cycles render) that stays visible while the GLB
+ * loads — and permanently if WebGL or the model is unavailable.
+ */
+export default function RobotVisual({ progressRef, pointerRef }: Props) {
+  const reducedMotion = useReducedMotion();
+  const [webgl, setWebgl] = useState(false);
+  const [failed, setFailed] = useState(false);
+  const [live, setLive] = useState(false);
+
+  useEffect(() => setWebgl(detectWebGL()), []);
+
   return (
-    <div className="relative z-[3] mx-auto w-[min(58vw,300px)] md:w-[min(30vw,340px)] lg:w-[min(24vw,360px)]">
-      <div className="robot-float">
-        <img
-          src="/assets/robot/eve-full.png"
-          alt="Робот-ассистент Zetronix — парящий андроид с бирюзовой оптикой"
-          draggable={false}
-          className="h-auto w-full select-none"
-        />
-      </div>
+    <div className={`robot-visual${live ? " is-live" : ""}`}>
+      <img
+        className="robot-fallback"
+        src="/assets/robot/robot-fallback.png"
+        alt="Робот-ассистент ZETRONIX — белый парящий андроид с бирюзовой оптикой"
+        draggable={false}
+      />
+      {webgl && !failed && (
+        <CanvasBoundary onError={() => setFailed(true)}>
+          <Suspense fallback={null}>
+            <RobotCanvas
+              progressRef={progressRef}
+              pointerRef={pointerRef}
+              reducedMotion={reducedMotion}
+              onReady={() => setLive(true)}
+            />
+          </Suspense>
+        </CanvasBoundary>
+      )}
     </div>
   );
 }

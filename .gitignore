@@ -3,3 +3,5 @@ dist
 edits.jsonl
 shots/
 *.local
+blender/
+tsconfig.tsbuildinfo
