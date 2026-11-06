@@ -14,8 +14,9 @@ interface Props {
  * CSS pixels, the beam stays glued to the real DOM panel on every
  * resolution, layout and resize — no world-space angle guessing.
  *
- * Rendered under the nav (z below .holo-nav) and clipped at the panel
- * border so text/buttons are never covered. pointer-events: none.
+ * Performance: rects are cached on scroll/resize instead of forcing
+ * layout reads every frame, and the loop idles once the stage leaves
+ * the viewport.
  */
 export default function ProjectorBeam({ beamRef, navRef }: Props) {
   const svgRef = useRef<SVGSVGElement>(null);
@@ -34,6 +35,30 @@ export default function ProjectorBeam({ beamRef, navRef }: Props) {
     const hit = hitRef.current;
     if (!svg || !halo || !body || !core || !emit || !hit) return;
 
+    // rects change only on scroll (stage unpinning) and resize — reading
+    // getBoundingClientRect every frame would force synchronous layout
+    let sr = svg.getBoundingClientRect();
+    let pr: DOMRect | null = null;
+    const panel = () => navRef.current?.querySelector<HTMLElement>(".holo-panel");
+    const refreshRects = () => {
+      sr = svg.getBoundingClientRect();
+      pr = panel()?.getBoundingClientRect() ?? null;
+    };
+    refreshRects();
+
+    // no work once the stage leaves the viewport
+    let onScreen = true;
+    const io = new IntersectionObserver(
+      (entries) => {
+        onScreen = entries[0]?.isIntersecting ?? true;
+      },
+      { threshold: 0 },
+    );
+    if (svg.parentElement) io.observe(svg.parentElement);
+
+    window.addEventListener("scroll", refreshRects, { passive: true });
+    window.addEventListener("resize", refreshRects);
+
     let raf = 0;
     let hidden = true;
     const quad = (
@@ -47,10 +72,9 @@ export default function ProjectorBeam({ beamRef, navRef }: Props) {
 
     const frame = () => {
       raf = requestAnimationFrame(frame);
+      if (!onScreen) return;
       const beam = beamRef.current;
-      const panel = navRef.current?.querySelector<HTMLElement>(".holo-panel");
       const power = beam.valid ? beam.intensity : 0;
-      const pr = panel?.getBoundingClientRect();
       if (!pr || pr.width < 8 || power <= 0.02) {
         if (!hidden) {
           svg.style.opacity = "0";
@@ -59,7 +83,6 @@ export default function ProjectorBeam({ beamRef, navRef }: Props) {
         return;
       }
 
-      const sr = svg.getBoundingClientRect();
       const sx = beam.x - sr.left;
       const sy = beam.y - sr.top;
       // nearest border point of the panel — right edge on desktop,
@@ -105,6 +128,9 @@ export default function ProjectorBeam({ beamRef, navRef }: Props) {
     raf = requestAnimationFrame(frame);
     return () => {
       cancelAnimationFrame(raf);
+      io.disconnect();
+      window.removeEventListener("scroll", refreshRects);
+      window.removeEventListener("resize", refreshRects);
       svg.style.opacity = "0";
     };
   }, [beamRef, navRef]);

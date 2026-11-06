@@ -372,16 +372,6 @@ section[id] {
   scroll-margin-top: 84px;
 }
 
-/* ============ TICKER ============ */
-.ticker-track {
-  display: flex;
-  width: max-content;
-  animation: ticker 26s linear infinite;
-}
-@keyframes ticker {
-  to { transform: translateX(-50%); }
-}
-
 /* ============ SERVICE CARD hover ============ */
 .card {
   transition: transform 0.3s, box-shadow 0.3s, border-color 0.3s;
@@ -435,7 +425,6 @@ section[id] {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .ticker-track,
   .scroll-hint-line::after {
     animation: none;
   }
