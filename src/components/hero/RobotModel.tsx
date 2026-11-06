@@ -3,6 +3,7 @@ import { useFrame, useThree } from "@react-three/fiber";
 import { useGLTF } from "@react-three/drei";
 import * as THREE from "three";
 import type { BeamRef, PointerRef, ProgressRef } from "./heroTypes";
+import { RETURN_PORTION, toClipProgress } from "./heroProgress";
 
 const GLB_URL = "/assets/robot/zetronix_robot_web.glb";
 const CLIP_NAME = "Scene"; // verified in zetronix_robot_web.glb (4.0 s, 20 channels)
@@ -61,6 +62,7 @@ export default function RobotModel({ progressRef, pointerRef, beamRef, reducedMo
   const anchorLocal = useRef(new THREE.Vector3());
   const anchorOk = useRef(false);
   const smoothP = useRef(0);
+  const idlePhase = useRef(0);
   const smoothMouse = useRef({ x: 0, y: 0 });
   const layout = useRef({ w: 1, h: 1, scale: 1, g0: 0, final: 0 });
   const { size, camera, gl } = useThree();
@@ -174,7 +176,10 @@ export default function RobotModel({ progressRef, pointerRef, beamRef, reducedMo
     smoothP.current = reducedMotion
       ? target
       : THREE.MathUtils.damp(smoothP.current, target, 4.5, delta);
-    const p = smoothP.current;
+    const rawP = smoothP.current;
+    // first RETURN_PORTION of the runway is the return flight — the
+    // baked clip only starts scrubbing after the robot is home
+    const p = toClipProgress(rawP);
 
     // pose the baked clip (forward / backward / freeze — all deterministic)
     action.time = p * action.getClip().duration;
@@ -182,17 +187,38 @@ export default function RobotModel({ progressRef, pointerRef, beamRef, reducedMo
 
     // screen-space rig placement: slides from hero position to final slot,
     // compensating the baked +X travel of CTRL_Root
-    const { scale, g0, final, h } = layout.current;
+    const { w, scale, g0, final, h } = layout.current;
+
+    // free-flight phase advances ONLY on the hero state — frozen while
+    // scrolling so the return flight starts from the current drift
+    // point instead of sliding along a moving trajectory
+    if (!reducedMotion && target <= 0.0001 && rawP <= 0.0001) {
+      idlePhase.current += Math.min(delta, 0.05);
+    }
+    const returnWeight = reducedMotion
+      ? 0
+      : 1 - THREE.MathUtils.smoothstep(rawP, 0, RETURN_PORTION);
+    // drift amplitude by breakpoint — smaller where the model is big
+    // relative to the viewport so it can't reach the copy or edges
+    const xFactor =
+      size.width >= 1200 ? 0.07 : size.width >= 768 ? 0.03 : 0.015;
+    const yFactor = size.width >= 768 ? 0.035 : 0.02;
+    const phase = idlePhase.current;
+    const idleX =
+      Math.sin((phase * Math.PI * 2) / 18) * w * xFactor * returnWeight;
+    const idleY =
+      Math.sin((phase * Math.PI * 2) / 22) * h * yFactor * returnWeight;
+
     rig.scale.setScalar(scale);
-    rig.position.x = THREE.MathUtils.lerp(g0, final - BAKED_SHIFT_X * scale, p);
-    // the clip already centers the model vertically at frame 0 — only a
-    // downward nudge on phones so the copy block stays readable
+    rig.position.x =
+      THREE.MathUtils.lerp(g0, final - BAKED_SHIFT_X * scale, p) + idleX;
     // model pivot is at its base (rest AABB y 0.011..0.973) — center it,
     // plus a downward nudge on phones so the copy block stays readable
     const mobileNudge = size.width < 480 ? -h * 0.28 : size.width < 768 ? -h * 0.1 : 0;
     rig.position.y =
       -0.49 * scale +
-      mobileNudge * (1 - THREE.MathUtils.smoothstep(p, 0, 0.35));
+      mobileNudge * (1 - THREE.MathUtils.smoothstep(p, 0, 0.35)) +
+      idleY;
 
     // procedural layer — fades out while the cinematic runs, then comes
     // back at reduced amplitude for the projection state so the robot

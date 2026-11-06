@@ -5,6 +5,7 @@ import KineticGridCanvas from "./KineticGridCanvas";
 import HoloNav from "./HoloNav";
 import ProjectorBeam from "./ProjectorBeam";
 import type { BeamAnchorState, PointerState } from "./heroTypes";
+import { toClipProgress } from "./heroProgress";
 
 /** progress at which the holographic nav turns on (projector fires ~0.68–0.92) */
 const NAV_ON = 0.7;
@@ -51,9 +52,12 @@ export default function HeroScene() {
       }
       progressRef.current = p;
       stage.style.setProperty("--hero-p", p.toFixed(4));
-      stage.classList.toggle("is-nav", p >= NAV_ON);
+      // nav timing keys off the CLIP progress — the first RETURN_PORTION
+      // of scroll is the robot's return flight, not the clip
+      const clipP = toClipProgress(p);
+      stage.classList.toggle("is-nav", clipP >= NAV_ON);
       stage.classList.toggle("is-copy-out", p > COPY_OUT);
-      if (nav) (nav as HTMLElement & { inert: boolean }).inert = p < NAV_ON;
+      if (nav) (nav as HTMLElement & { inert: boolean }).inert = clipP < NAV_ON;
       if (copy) copy.inert = p > COPY_OUT;
     };
     const request = () => {
@@ -97,17 +101,25 @@ export default function HeroScene() {
       lastSetY = -1;
     };
 
-    const autoScrollTo = (target: number, dur = 2600) => {
+    const autoScrollTo = (target: number, dur = 4600) => {
       cancelAuto();
       const from = window.scrollY;
       if (Math.abs(target - from) < 2 || reduced) {
         window.scrollTo(0, target);
         return;
       }
+      // duration scales with the remaining runway, so the robot's
+      // angular speed is the same whether the transition starts at
+      // p=0 or halfway through — no speed-up on a partial trip
+      const effDur =
+        (dur * Math.abs(target - from)) /
+        Math.max(1, stageEnd() - stageStart());
       autoDir = target > from ? 1 : -1;
       let t0 = performance.now();
-      const ease = (k: number) =>
-        k < 0.5 ? 16 * k * k * k * k * k : 1 - Math.pow(-2 * k + 2, 5) / 2;
+      // smoothstep: motion starts immediately (no dead lead-in like
+      // quintic ease) and the middle — where the robot turns — takes
+      // the bulk of the duration, so the spin reads slower
+      const ease = (k: number) => k * k * (3 - 2 * k);
       const easeInv = (e: number) => {
         let lo = 0, hi = 1;
         for (let i = 0; i < 16; i++) {
@@ -129,14 +141,14 @@ export default function HeroScene() {
             prog > 0 &&
             prog < 1
           ) {
-            t0 = now - easeInv(prog) * dur;
+            t0 = now - easeInv(prog) * effDur;
           } else {
             // keyboard, scrollbar drag or anchor navigation — input wins
             cancelAuto();
             return;
           }
         }
-        const k = Math.min(1, (now - t0) / dur);
+        const k = Math.min(1, (now - t0) / effDur);
         lastSetY = from + (target - from) * ease(k);
         window.scrollTo({ top: lastSetY, behavior: "instant" });
         if (k < 1) {
@@ -164,7 +176,7 @@ export default function HeroScene() {
         if (stageCoversViewport() && e.cancelable) e.preventDefault();
         // clear opposite gesture → retarget the transition smoothly
         if (dir !== autoDir) {
-          autoScrollTo(dir > 0 ? stageEnd() : stageStart(), 2000);
+          autoScrollTo(dir > 0 ? stageEnd() : stageStart(), 3800);
           return;
         }
         // same direction in the last stretch → release early so the
@@ -207,7 +219,7 @@ export default function HeroScene() {
         if (stageCoversViewport() && e.cancelable) e.preventDefault();
         if (dir !== 0 && dir !== autoDir && !touchUsed && Math.abs(dy) > 12) {
           touchUsed = true;
-          autoScrollTo(dir > 0 ? stageEnd() : stageStart(), 2200);
+          autoScrollTo(dir > 0 ? stageEnd() : stageStart(), 4000);
         } else if (
           dir === autoDir &&
           Math.abs((autoDir > 0 ? stageEnd() : stageStart()) - window.scrollY) < 70
@@ -230,7 +242,7 @@ export default function HeroScene() {
       if ((dir > 0 && p < P_HI) || (dir < 0 && p > P_LO)) {
         touchUsed = true;
         if (e.cancelable) e.preventDefault();
-        autoScrollTo(dir > 0 ? stageEnd() : stageStart(), 2400);
+        autoScrollTo(dir > 0 ? stageEnd() : stageStart(), 4400);
       }
     };
 
@@ -251,7 +263,7 @@ export default function HeroScene() {
           return;
         const p = progressRef.current;
         if (p > 0.08 && p < 0.92) {
-          autoScrollTo(lastScrollDir > 0 ? stageEnd() : stageStart(), 1900);
+          autoScrollTo(lastScrollDir > 0 ? stageEnd() : stageStart(), 3600);
         }
       }, 240);
     };
@@ -309,13 +321,7 @@ export default function HeroScene() {
   return (
     <section id="top" ref={sectionRef} className="hero-section" aria-label="ZETRONIX — веб-студия">
       <div ref={stageRef} className="hero-stage" style={{ "--hero-p": 0 } as React.CSSProperties}>
-        <KineticGridCanvas pointerRef={pointerRef} />
-        {/* giant wordmark lives behind the robot canvas (z2 < z3) —
-            the model crosses it during the intro for a real depth cue.
-            aria-hidden: the semantic h1 lives in HeroCopy */}
-        <div className="hero-wordmark" aria-hidden="true">
-          WEB-STUDIO
-        </div>
+        <KineticGridCanvas pointerRef={pointerRef} progressRef={progressRef} />
         <HeroCopy />
         <RobotVisual progressRef={progressRef} pointerRef={pointerRef} beamRef={beamRef} />
         <ProjectorBeam beamRef={beamRef} navRef={navRef} />
