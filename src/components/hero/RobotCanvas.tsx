@@ -2,11 +2,12 @@ import { Suspense, useRef, useState, useEffect } from "react";
 import { Canvas } from "@react-three/fiber";
 import { Environment, Lightformer } from "@react-three/drei";
 import RobotModel from "./RobotModel";
-import type { PointerRef, ProgressRef } from "./heroTypes";
+import type { BeamRef, PointerRef, ProgressRef } from "./heroTypes";
 
 interface Props {
   progressRef: ProgressRef;
   pointerRef: PointerRef;
+  beamRef: BeamRef;
   reducedMotion: boolean;
   onReady?: () => void;
 }
@@ -18,7 +19,7 @@ interface Props {
  * cannot export; it lights the shell and feeds glossy reflections
  * without becoming a visible background.
  */
-export default function RobotCanvas({ progressRef, pointerRef, reducedMotion, onReady }: Props) {
+export default function RobotCanvas({ progressRef, pointerRef, beamRef, reducedMotion, onReady }: Props) {
   const hostRef = useRef<HTMLDivElement>(null);
   const [active, setActive] = useState(true);
 
@@ -47,6 +48,7 @@ export default function RobotCanvas({ progressRef, pointerRef, reducedMotion, on
           <RobotModel
             progressRef={progressRef}
             pointerRef={pointerRef}
+            beamRef={beamRef}
             reducedMotion={reducedMotion}
             onReady={onReady}
           />

@@ -9,3 +9,14 @@ export interface PointerState {
 
 export type ProgressRef = { readonly current: number };
 export type PointerRef = { readonly current: PointerState };
+
+/** Chest-emitter anchor projected to viewport CSS px by the 3D scene. */
+export interface BeamAnchorState {
+  x: number;
+  y: number;
+  /** 0..1 — driven by the clip's CTRL_Projector scale channel */
+  intensity: number;
+  /** false until the GLB scene supplies a real anchor (fallback mode) */
+  valid: boolean;
+}
+export type BeamRef = { readonly current: BeamAnchorState };

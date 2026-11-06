@@ -3,7 +3,8 @@ import HeroCopy from "./HeroCopy";
 import RobotVisual from "./RobotVisual";
 import KineticGridCanvas from "./KineticGridCanvas";
 import HoloNav from "./HoloNav";
-import type { PointerState } from "./heroTypes";
+import ProjectorBeam from "./ProjectorBeam";
+import type { BeamAnchorState, PointerState } from "./heroTypes";
 
 /** progress at which the holographic nav turns on (projector fires ~0.68–0.92) */
 const NAV_ON = 0.7;
@@ -24,6 +25,7 @@ export default function HeroScene() {
   const navRef = useRef<HTMLElement>(null);
   const progressRef = useRef(0);
   const pointerRef = useRef<PointerState>({ x: 0, y: 0, active: false });
+  const beamRef = useRef<BeamAnchorState>({ x: 0, y: 0, intensity: 0, valid: false });
 
   useEffect(() => {
     const section = sectionRef.current;
@@ -118,7 +120,9 @@ export default function HeroScene() {
       }
       const p = progressRef.current;
       const r = section.getBoundingClientRect();
-      const inStage = r.top <= 0 && r.bottom >= 0;
+      // only capture gestures while the sticky stage actually fills the
+      // viewport — below the hero the page must scroll normally
+      const inStage = r.top <= 0 && r.bottom >= window.innerHeight;
       if (!inStage) return;
       if (dir > 0 && p < 1) autoScrollTo(stageEnd());
       else if (dir < 0 && p > 0) autoScrollTo(stageStart());
@@ -143,7 +147,7 @@ export default function HeroScene() {
       }
       const p = progressRef.current;
       const r = section.getBoundingClientRect();
-      if (!(r.top <= 0 && r.bottom >= 0)) return;
+      if (!(r.top <= 0 && r.bottom >= window.innerHeight)) return;
       if (dy > 0 && p < 1) autoScrollTo(stageEnd(), 2600);
       else if (dy < 0 && p > 0) autoScrollTo(stageStart(), 2600);
     };
@@ -202,7 +206,8 @@ export default function HeroScene() {
       <div ref={stageRef} className="hero-stage" style={{ "--hero-p": 0 } as React.CSSProperties}>
         <KineticGridCanvas pointerRef={pointerRef} />
         <HeroCopy />
-        <RobotVisual progressRef={progressRef} pointerRef={pointerRef} />
+        <RobotVisual progressRef={progressRef} pointerRef={pointerRef} beamRef={beamRef} />
+        <ProjectorBeam beamRef={beamRef} navRef={navRef} />
         <HoloNav ref={navRef} />
         <div className="scroll-hint" aria-hidden="true">
           SCROLL<span className="scroll-hint-line" />

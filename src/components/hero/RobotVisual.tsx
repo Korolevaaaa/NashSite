@@ -1,6 +1,6 @@
 import { Component, lazy, Suspense, useEffect, useState, type ReactNode } from "react";
 import { useReducedMotion } from "../../hooks/useReducedMotion";
-import type { PointerRef, ProgressRef } from "./heroTypes";
+import type { BeamRef, PointerRef, ProgressRef } from "./heroTypes";
 
 // three.js stays out of the main bundle — loaded only when WebGL exists
 const RobotCanvas = lazy(() => import("./RobotCanvas"));
@@ -8,6 +8,7 @@ const RobotCanvas = lazy(() => import("./RobotCanvas"));
 interface Props {
   progressRef: ProgressRef;
   pointerRef: PointerRef;
+  beamRef: BeamRef;
 }
 
 /** Catches WebGL/GLB failures and keeps the static PNG robot visible. */
@@ -43,7 +44,7 @@ function detectWebGL(): boolean {
  * static transparent PNG (Cycles render) that stays visible while the GLB
  * loads — and permanently if WebGL or the model is unavailable.
  */
-export default function RobotVisual({ progressRef, pointerRef }: Props) {
+export default function RobotVisual({ progressRef, pointerRef, beamRef }: Props) {
   const reducedMotion = useReducedMotion();
   const [webgl, setWebgl] = useState(false);
   const [failed, setFailed] = useState(false);
@@ -65,6 +66,7 @@ export default function RobotVisual({ progressRef, pointerRef }: Props) {
             <RobotCanvas
               progressRef={progressRef}
               pointerRef={pointerRef}
+              beamRef={beamRef}
               reducedMotion={reducedMotion}
               onReady={() => setLive(true)}
             />

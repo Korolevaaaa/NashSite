@@ -1,9 +1,8 @@
-import { useEffect, useMemo, useRef } from "react";
+import { useEffect, useRef } from "react";
 import { useFrame, useThree } from "@react-three/fiber";
 import { useGLTF } from "@react-three/drei";
 import * as THREE from "three";
-import { createBeamMaterial } from "./beamMaterial";
-import type { PointerRef, ProgressRef } from "./heroTypes";
+import type { BeamRef, PointerRef, ProgressRef } from "./heroTypes";
 
 const GLB_URL = "/assets/robot/zetronix_robot_web.glb";
 const CLIP_NAME = "Scene"; // verified in zetronix_robot_web.glb (4.0 s, 20 channels)
@@ -20,10 +19,12 @@ const GAZE_PITCH = THREE.MathUtils.degToRad(5.7);
 // scratch objects for procedural offsets — never stored
 const tmpQ = new THREE.Quaternion();
 const tmpE = new THREE.Euler();
+const tmpV = new THREE.Vector3();
 
 interface Props {
   progressRef: ProgressRef;
   pointerRef: PointerRef;
+  beamRef: BeamRef;
   reducedMotion: boolean;
   onReady?: () => void;
 }
@@ -49,18 +50,20 @@ interface Nodes {
  * deterministic and cannot accumulate. Channels absent from the clip are
  * never touched.
  */
-export default function RobotModel({ progressRef, pointerRef, reducedMotion, onReady }: Props) {
+export default function RobotModel({ progressRef, pointerRef, beamRef, reducedMotion, onReady }: Props) {
   const { scene, animations } = useGLTF(GLB_URL);
   const rigRef = useRef<THREE.Group>(null);
   const mixerRef = useRef<THREE.AnimationMixer | null>(null);
   const actionRef = useRef<THREE.AnimationAction | null>(null);
   const nodesRef = useRef<Nodes>({});
   const baseRef = useRef<Record<string, { q: THREE.Quaternion; p: THREE.Vector3; s: THREE.Vector3 }>>({});
-  const beamMat = useMemo(createBeamMaterial, []);
+  const emblemRef = useRef<THREE.Object3D | null>(null);
+  const anchorLocal = useRef(new THREE.Vector3());
+  const anchorOk = useRef(false);
   const smoothP = useRef(0);
   const smoothMouse = useRef({ x: 0, y: 0 });
   const layout = useRef({ w: 1, h: 1, scale: 1, g0: 0, final: 0 });
-  const { size, camera } = useThree();
+  const { size, camera, gl } = useThree();
 
   useEffect(() => {
     const get = (n: string) => scene.getObjectByName(n);
@@ -78,7 +81,9 @@ export default function RobotModel({ progressRef, pointerRef, reducedMotion, onR
     scene.traverse((obj) => {
       const mesh = obj as THREE.Mesh;
       if (mesh.isMesh && (mesh.name === "Projector_Beam_L" || mesh.name === "Projector_Beam_R")) {
-        mesh.material = beamMat;
+        // baked fan meshes stay hidden — the beam is drawn by the
+        // screen-space ProjectorBeam SVG layer glued to .holo-panel
+        mesh.visible = false;
       }
       if (mesh.isMesh && mesh.name === "Projector_Holo_Grid") {
         mesh.visible = false; // leftover safeguard — removed in current export
@@ -88,83 +93,6 @@ export default function RobotModel({ progressRef, pointerRef, reducedMotion, onR
     const mixer = new THREE.AnimationMixer(scene);
     mixerRef.current = mixer;
     const clip = THREE.AnimationClip.findByName(animations, CLIP_NAME) ?? null;
-
-    // Chest projector: reparent CTRL_Projector from the eye-gaze chain
-    // to the body so the beam rides the torso, not the head. The beam
-    // meshes carry their own clip-animated offsets (tuned for the eye
-    // origin), so we pose the END state, measure where the fan tip
-    // actually lands, and shift the node until it sits on the emblem.
-    if (clip) {
-      const body = nodesRef.current.idleBody;
-      const emblem = scene.getObjectByName("Chest_Emblem");
-      const proj = nodesRef.current.projector;
-      const beamL = scene.getObjectByName("Projector_Beam_L");
-      if (body && emblem && proj && beamL) {
-        const endAction = mixer.clipAction(clip);
-        endAction.setLoop(THREE.LoopOnce, 1);
-        endAction.clampWhenFinished = true;
-        endAction.play();
-        endAction.time = clip.duration;
-        mixer.update(0);
-        scene.updateMatrixWorld(true);
-
-        // Chest_Emblem's pivot sits at the body origin — the visible
-        // chest triangle lives in its vertex data, so aim at the
-        // world-space bbox center of that subtree instead of the node
-        const wp = new THREE.Box3()
-          .setFromObject(emblem)
-          .getCenter(new THREE.Vector3());
-        const wq = proj.getWorldQuaternion(new THREE.Quaternion());
-        body.add(proj);
-        proj.position.copy(body.worldToLocal(wp.clone()));
-        const bq = body.getWorldQuaternion(new THREE.Quaternion()).invert();
-        proj.quaternion.copy(bq.multiply(wq));
-        // aim the projector beam straight across onto the center of the
-        // navigation panel
-        proj.quaternion.multiply(
-          new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(1, 0, 0), -0.06)
-        );
-
-        // exact emission-point fix: the mesh pivot is NOT at the fan
-        // tip, so find the real emitter — centroid of the low-z verts —
-        // and shift the node until that tip sits on the chest triangle
-        scene.updateMatrixWorld(true);
-        const geo = (beamL as THREE.Mesh).geometry as THREE.BufferGeometry;
-        const posAttr = geo.attributes.position;
-        const tip = new THREE.Vector3();
-        let tipN = 0;
-        for (let i = 0; i < posAttr.count; i++) {
-          if (posAttr.getZ(i) < 0.08) {
-            tip.x += posAttr.getX(i);
-            tip.y += posAttr.getY(i);
-            tip.z += posAttr.getZ(i);
-            tipN++;
-          }
-        }
-        tip.divideScalar(Math.max(1, tipN));
-        // average L and R beam tips so the combined cone starts dead-center on the triangle
-        const beamR = scene.getObjectByName("Projector_Beam_R");
-        const tipW = beamL.localToWorld(tip.clone());
-        if (beamR) {
-          tipW.add(beamR.localToWorld(tip.clone())).multiplyScalar(0.5);
-        }
-        const targetTip = wp.clone();
-        targetTip.x += 0.018;
-        targetTip.y += 0.004;
-        const delta = targetTip.sub(tipW);
-        const m = body.matrixWorld.clone().invert();
-        const e = m.elements;
-        proj.position.add(
-          new THREE.Vector3(
-            e[0] * delta.x + e[4] * delta.y + e[8] * delta.z,
-            e[1] * delta.x + e[5] * delta.y + e[9] * delta.z,
-            e[2] * delta.x + e[6] * delta.y + e[10] * delta.z,
-          ),
-        );
-        endAction.stop();
-        mixer.uncacheClip(clip);
-      }
-    }
 
     if (clip) {
       const action = mixer.clipAction(clip);
@@ -189,15 +117,33 @@ export default function RobotModel({ progressRef, pointerRef, reducedMotion, onR
         }
       }
     }
+
+    // Chest-emitter anchor: Chest_Emblem's node pivot sits at the body
+    // origin, so take the bbox center of its subtree (the visible chest
+    // triangle) and convert it ONCE into emblem-local space. Per frame
+    // localToWorld(anchorLocal) then tracks the triangle through the
+    // whole animation — no fixed-angle guesswork.
+    const emblem = scene.getObjectByName("Chest_Emblem");
+    if (emblem) {
+      scene.updateMatrixWorld(true);
+      const center = new THREE.Box3()
+        .setFromObject(emblem)
+        .getCenter(new THREE.Vector3());
+      anchorLocal.current.copy(emblem.worldToLocal(center));
+      emblemRef.current = emblem;
+      anchorOk.current = true;
+    }
     onReady?.();
 
     return () => {
+      beamRef.current.intensity = 0;
+      beamRef.current.valid = false;
       mixer.stopAllAction();
       mixer.uncacheRoot(scene);
       mixerRef.current = null;
       actionRef.current = null;
     };
-  }, [scene, animations, beamMat, onReady]);
+  }, [scene, animations, beamRef, onReady]);
 
   // recompute responsive layout whenever the viewport size changes
   useEffect(() => {
@@ -331,11 +277,26 @@ export default function RobotModel({ progressRef, pointerRef, reducedMotion, onR
       }
     }
 
-    beamMat.uniforms.uTime.value = state.clock.elapsedTime;
+    // beam anchor for the screen-space ProjectorBeam layer: project
+    // the chest-triangle point through the camera into viewport CSS px
+    const beam = beamRef.current;
     const proj = nodesRef.current.projector;
-    beamMat.uniforms.uIntensity.value = proj
+    beam.intensity = proj
       ? THREE.MathUtils.smoothstep(proj.scale.x, 0, 0.4)
-      : 1;
+      : 0;
+    const emblem = emblemRef.current;
+    if (emblem && anchorOk.current) {
+      scene.updateMatrixWorld(true);
+      tmpV.copy(anchorLocal.current);
+      emblem.localToWorld(tmpV);
+      tmpV.project(camera);
+      const r = gl.domElement.getBoundingClientRect();
+      beam.x = r.left + (tmpV.x * 0.5 + 0.5) * r.width;
+      beam.y = r.top + (1 - (tmpV.y * 0.5 + 0.5)) * r.height;
+      beam.valid = true;
+    } else {
+      beam.valid = false;
+    }
   });
 
   return (
