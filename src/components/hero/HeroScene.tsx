@@ -32,6 +32,7 @@ export default function HeroScene() {
     const stage = stageRef.current;
     const nav = navRef.current;
     if (!section || !stage) return;
+    const copy = stage.querySelector<HTMLElement>(".hero-copy");
 
     // dev/screenshot hook: ?scrub=0.55 freezes progress at 0.55
     const scrubParam = new URLSearchParams(window.location.search).get("scrub");
@@ -53,6 +54,7 @@ export default function HeroScene() {
       stage.classList.toggle("is-nav", p >= NAV_ON);
       stage.classList.toggle("is-copy-out", p > COPY_OUT);
       if (nav) (nav as HTMLElement & { inert: boolean }).inert = p < NAV_ON;
+      if (copy) copy.inert = p > COPY_OUT;
     };
     const request = () => {
       if (!raf) raf = requestAnimationFrame(update);
@@ -308,6 +310,12 @@ export default function HeroScene() {
     <section id="top" ref={sectionRef} className="hero-section" aria-label="ZETRONIX — веб-студия">
       <div ref={stageRef} className="hero-stage" style={{ "--hero-p": 0 } as React.CSSProperties}>
         <KineticGridCanvas pointerRef={pointerRef} />
+        {/* giant wordmark lives behind the robot canvas (z2 < z3) —
+            the model crosses it during the intro for a real depth cue.
+            aria-hidden: the semantic h1 lives in HeroCopy */}
+        <div className="hero-wordmark" aria-hidden="true">
+          WEB-STUDIO
+        </div>
         <HeroCopy />
         <RobotVisual progressRef={progressRef} pointerRef={pointerRef} beamRef={beamRef} />
         <ProjectorBeam beamRef={beamRef} navRef={navRef} />

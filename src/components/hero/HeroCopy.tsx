@@ -1,23 +1,20 @@
 export default function HeroCopy() {
   return (
     <div className="hero-copy">
-      <p className="hero-tag">{"// WEB-STUDIO ZETRONIX"}</p>
-      <h1 className="hero-title">
-        Проектируем{" "}
-        <em className="bg-gradient-to-r from-accent-deep to-glow bg-clip-text not-italic text-transparent">
-          цифровое будущее
-        </em>
-      </h1>
-      <p className="hero-sub">
-        Сайты, интерфейсы, боты и AI-автоматизация — от идеи до запуска.
-      </p>
+      <div className="hero-intro">
+        <p className="hero-kicker">Веб-студия ZETRONIX</p>
+        <h1 className="hero-title">Сайты и цифровые решения для бизнеса</h1>
+        <p className="hero-sub">От идеи и дизайна до разработки и запуска.</p>
+      </div>
+
       <div className="hero-actions">
-        <a className="btn" href="#contacts">
-          <span>Обсудить проект</span>
-          <i className="btn-arrow">→</i>
+        <a className="hero-primary" href="#contacts">
+          Обсудить проект
+          <span aria-hidden="true">↗</span>
         </a>
         <a className="hero-secondary" href="#portfolio">
           Смотреть работы
+          <span aria-hidden="true">↗</span>
         </a>
       </div>
     </div>

@@ -10,16 +10,13 @@ export default function Contacts() {
       ref={ref}
       className={`reveal px-[var(--page-gutter)] py-[clamp(80px,12vh,140px)] text-center ${inView ? "is-in" : ""}`}
     >
-      <p className="mb-4 font-mono text-xs tracking-[0.2em] text-accent-deep">
-        {"03 // CONTACT"}
-      </p>
-      <h2 className="font-display text-[clamp(34px,5vw,56px)] font-bold tracking-[-0.02em]">
-        Готовы к запуску?
+      <h2 className="font-body text-[clamp(28px,3.4vw,42px)] font-medium tracking-[-0.035em] text-[var(--z-ink)]">
+        Обсудим ваш проект?
       </h2>
-      <p className="mb-1.5 mt-3.5 text-ink-muted">
-        Напишите нам — ответим в течение часа.
+      <p className="mb-1.5 mt-3.5 text-[15px] text-[var(--z-muted)]">
+        Расскажите о задаче — обсудим формат и следующие шаги.
       </p>
-      <a className="btn btn--big mt-6" href={`mailto:${CONTACT_EMAIL}`}>
+      <a className="btn btn--big mt-7" href={`mailto:${CONTACT_EMAIL}`}>
         <span>{CONTACT_EMAIL}</span>
         <i className="btn-arrow">→</i>
       </a>
