@@ -16,21 +16,14 @@ interface Props {
   progressRef?: ProgressRef;
 }
 
-interface Spark {
-  active: boolean;
-  axis: 0 | 1; // 0 = horizontal grid line, 1 = vertical
-  line: number; // row or column index
-  u: number; // position along the line, in cells
-  dir: 1 | -1;
-  speed: number; // cells per second
-  age: number;
-  life: number;
-  delay: number; // respawn countdown while inactive
-}
-
-const SPARK_TRAIL = 2.4; // trail length in cells
-const SPARK_SAMPLES = 14;
-const SPARK_FADE_END = 0.125; // raw progress where sparks are fully gone
+const PULSE_FADE_END = 0.125; // raw progress where the pulses are gone
+// energy field ported from the cybernetic-grid shader:
+//   e = sin(u·F + t·W1) · sin(v·F + t·W2),  lit where e > 0.8
+// evaluated per grid node, so the glowing patches travel along our
+// lines the same way the shader's pulses slide along its lines
+const P_F = 2.1;  // spatial frequency, rad per cell (shader: 20 / ~10 cells)
+const P_W1 = 1.2; // along-x travel speed, rad/s (shader: 5·0.2)
+const P_W2 = 0.7; // along-y travel speed, rad/s (shader: 3·0.2)
 
 /**
  * Light kinetic grid for the Hero stage: thin ink lines on the blueprint
@@ -60,46 +53,9 @@ export default function KineticGridCanvas({ pointerRef, progressRef }: Props) {
     // smoothed per-node displacement (index = row * cols + col)
     let disp = new Float32Array(0);
     let base: HTMLCanvasElement | null = null;
-    let sparks: Spark[] = [];
-    let lastT = 0;
-
-    const rand = (a: number, b: number) => a + Math.random() * (b - a);
-
-    const respawn = (s: Spark) => {
-      s.axis = Math.random() < 0.5 ? 0 : 1;
-      const maxLine = s.axis === 0 ? rows : cols;
-      const maxU = s.axis === 0 ? cols - 1 : rows - 1;
-      s.line = Math.floor(rand(1, maxLine - 1));
-      s.dir = Math.random() < 0.5 ? 1 : -1;
-      s.u = rand(1, Math.max(2, maxU - 1));
-      s.speed = rand(0.5, 1.1);
-      s.age = 0;
-      s.life = rand(4, 8);
-      s.active = true;
-    };
-
-    // point on the VISIBLE (cursor-deformed) line at position u cells —
-    // interpolates inside the same node segment the grid draws, so the
-    // spark can't drift off a bowed line
-    const sparkPoint = (s: Spark, u: number, out: [number, number]) => {
-      const maxU = s.axis === 0 ? cols - 1 : rows - 1;
-      const cu = Math.max(0, Math.min(maxU - 0.001, u));
-      const i0 = Math.floor(cu);
-      const t = cu - i0;
-      let a: number;
-      let b: number;
-      if (s.axis === 0) {
-        a = (s.line * cols + i0) * 2;
-        b = a + 2;
-        out[0] = i0 * CELL + disp[a] * (1 - t) + disp[b] * t + t * CELL;
-        out[1] = s.line * CELL + disp[a + 1] * (1 - t) + disp[b + 1] * t;
-      } else {
-        a = (i0 * cols + s.line) * 2;
-        b = a + cols * 2;
-        out[0] = s.line * CELL + disp[a] * (1 - t) + disp[b] * t;
-        out[1] = i0 * CELL + disp[a + 1] * (1 - t) + disp[b + 1] * t + t * CELL;
-      }
-    };
+    // per-axis wave terms for the pulse field (recomputed per frame)
+    let sx: number[] = []; // sin(col·F + t·W1)
+    let sy: number[] = []; // sin(row·F + t·W2)
 
     const drawBase = () => {
       if (!base) base = document.createElement("canvas");
@@ -134,8 +90,9 @@ export default function KineticGridCanvas({ pointerRef, progressRef }: Props) {
       cols = Math.floor(w / CELL) + 2;
       rows = Math.floor(h / CELL) + 2;
       disp = new Float32Array(cols * rows * 2);
+      sx = new Array(cols).fill(0);
+      sy = new Array(rows).fill(0);
       drawBase();
-      for (const s of sparks) s.active = false; // grid shape changed — respawn on new lines
       if (!running) {
         // static single paint (reduced motion / paused)
         ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
@@ -147,8 +104,6 @@ export default function KineticGridCanvas({ pointerRef, progressRef }: Props) {
     const frame = () => {
       raf = running ? requestAnimationFrame(frame) : 0;
       const now = performance.now();
-      const dt = lastT ? Math.min(0.05, (now - lastT) / 1000) : 0.016;
-      lastT = now;
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
       ctx.clearRect(0, 0, w, h);
       if (base) ctx.drawImage(base, 0, 0, w, h);
@@ -216,76 +171,70 @@ export default function KineticGridCanvas({ pointerRef, progressRef }: Props) {
         }
       }
 
-      // sparks drifting along the grid lines — first screen only;
-      // fades with the same raw progress window as the hero copy
-      const pf = 1 - Math.min(1, (progressRef?.current ?? 0) / SPARK_FADE_END);
+      // energy pulses gliding along the grid lines — same field as the
+      // cybernetic-grid shader: e = sin(x·F + t·W1)·sin(y·F + t·W2) with
+      // smoothstep(0.8, 1), evaluated per node so the glowing patches
+      // travel along OUR lines. Segments drawn between displaced node
+      // positions — pulses stay glued to the visible (cursor-bowed)
+      // line. First screen only, fades with the copy.
+      const pf = 1 - Math.min(1, (progressRef?.current ?? 0) / PULSE_FADE_END);
       if (pf > 0.001 && cols > 2 && rows > 2) {
-        const want = w >= 768 ? 3 : 1;
-        while (sparks.length < want) {
-          sparks.push({
-            active: false, axis: 0, line: 0, u: 0, dir: 1,
-            speed: 1, age: 0, life: 1, delay: rand(0.2, 2.4),
-          });
-        }
-        if (sparks.length > want) sparks.length = want;
-
-        const dim = w >= 768 ? 1 : 0.6;
-        const pt: [number, number] = [0, 0];
-        const prev: [number, number] = [0, 0];
+        const dim = (w >= 768 ? 1 : 0.6) * pf;
+        const t = now * 0.001;
+        for (let c = 0; c < cols; c++) sx[c] = Math.sin(c * P_F + t * P_W1);
+        for (let r = 0; r < rows; r++) sy[r] = Math.sin(r * P_F + t * P_W2);
         ctx.lineCap = "round";
 
-        for (const s of sparks) {
-          if (!s.active) {
-            s.delay -= dt;
-            if (s.delay <= 0) respawn(s);
-            continue;
-          }
-          s.age += dt;
-          s.u += s.dir * s.speed * dt;
-          const maxU = s.axis === 0 ? cols - 1 : rows - 1;
-          if (s.u < 0.2 || s.u > maxU - 0.2 || s.age > s.life) {
-            s.active = false;
-            s.delay = rand(0.6, 2.8);
-            continue;
-          }
-          const env = Math.min(s.age * 2, (s.life - s.age) * 2, 1) * pf * dim;
-          if (env <= 0.01) continue;
-
-          // fading trail: short connected segments behind the head,
-          // sampled ON the deformed line
-          let have = false;
-          for (let k = 0; k <= SPARK_SAMPLES; k++) {
-            const uu = s.u - s.dir * (k / SPARK_SAMPLES) * SPARK_TRAIL;
-            if (uu < 0 || uu > maxU) break;
-            if (!have) {
-              sparkPoint(s, uu, prev);
-              have = true;
-              continue;
-            }
-            sparkPoint(s, uu, pt);
-            const a = env * 0.42 * Math.pow(1 - k / SPARK_SAMPLES, 1.6);
-            if (a > 0.008) {
-              ctx.strokeStyle = `rgba(${ACCENT}, ${a.toFixed(3)})`;
-              ctx.lineWidth = 1.8 * (1 - (k / SPARK_SAMPLES) * 0.6);
-              ctx.beginPath();
-              ctx.moveTo(prev[0], prev[1]);
-              ctx.lineTo(pt[0], pt[1]);
-              ctx.stroke();
-            }
-            prev[0] = pt[0];
-            prev[1] = pt[1];
-          }
-
-          // head: bright dot + soft halo
-          sparkPoint(s, s.u, pt);
-          ctx.fillStyle = `rgba(${ACCENT}, ${(env * 0.14).toFixed(3)})`;
+        const soft = (v: number) => {
+          const k = Math.min(1, Math.max(0, (v - 0.72) / 0.28));
+          return k * k * (3 - 2 * k); // smoothstep(0.72, 1, v)
+        };
+        const pulse = (
+          x1: number, y1: number, x2: number, y2: number,
+          v1: number, v2: number,
+        ) => {
+          const a = (soft(v1) + soft(v2)) * 0.5 * dim;
+          if (a < 0.015) return;
+          // halo pass + hot core — reads as light, not a tinted line
+          ctx.strokeStyle = `rgba(${ACCENT}, ${(a * 0.35).toFixed(3)})`;
+          ctx.lineWidth = 5;
           ctx.beginPath();
-          ctx.arc(pt[0], pt[1], 6, 0, Math.PI * 2);
-          ctx.fill();
-          ctx.fillStyle = `rgba(${ACCENT}, ${(env * 0.85).toFixed(3)})`;
+          ctx.moveTo(x1, y1);
+          ctx.lineTo(x2, y2);
+          ctx.stroke();
+          ctx.strokeStyle = `rgba(${ACCENT}, ${Math.min(0.9, a * 0.95).toFixed(3)})`;
+          ctx.lineWidth = 1.8;
           ctx.beginPath();
-          ctx.arc(pt[0], pt[1], 1.8, 0, Math.PI * 2);
-          ctx.fill();
+          ctx.moveTo(x1, y1);
+          ctx.lineTo(x2, y2);
+          ctx.stroke();
+        };
+
+        for (let r = 0; r < rows; r++) {
+          const ey = sy[r];
+          if (ey < 0.4) continue; // line outside the lit band — skip
+          for (let c = 0; c + 1 < cols; c++) {
+            const i = (r * cols + c) * 2;
+            const j = i + 2;
+            pulse(
+              c * CELL + disp[i], r * CELL + disp[i + 1],
+              (c + 1) * CELL + disp[j], r * CELL + disp[j + 1],
+              sx[c] * ey, sx[c + 1] * ey,
+            );
+          }
+        }
+        for (let c = 0; c < cols; c++) {
+          const ex = sx[c];
+          if (ex < 0.4) continue;
+          for (let r = 0; r + 1 < rows; r++) {
+            const i = (r * cols + c) * 2;
+            const j = i + cols * 2;
+            pulse(
+              c * CELL + disp[i], r * CELL + disp[i + 1],
+              c * CELL + disp[j], (r + 1) * CELL + disp[j + 1],
+              sy[r] * ex, sy[r + 1] * ex,
+            );
+          }
         }
       }
     };
@@ -297,7 +246,6 @@ export default function KineticGridCanvas({ pointerRef, progressRef }: Props) {
     };
     const stop = () => {
       running = false;
-      lastT = 0;
       if (raf) cancelAnimationFrame(raf);
       raf = 0;
     };
