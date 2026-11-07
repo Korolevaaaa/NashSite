@@ -50,76 +50,111 @@ body {
   --z-action: #006b70;
 }
 
-/* ---- giant WEB-STUDIO wordmark behind the robot (depth layer) ---- */
+/* ---- stage WEB-STUDIO wordmark behind the robot (depth layer D+C) ---- */
 .hero-wordmark {
   position: absolute;
   z-index: 2; /* above grid (z0), below robot canvas (z3) */
-  top: 42%;
-  left: 50%;
-  width: 100%;
+  top: 44%;
+  left: 70%;
+  width: auto;
   text-align: center;
   white-space: nowrap;
   pointer-events: none;
   user-select: none;
-  /* projection losing focus: drifts up, fades ~p0.37; only the
-     echo layers blur — the base stays a stable reference */
-  opacity: calc(1 - min(1, var(--hero-p, 0) * 2.7));
+  opacity: calc(1 - min(1, var(--hero-p, 0) * 2.8));
   transform: translate(-50%, -50%);
-  translate: 0 calc(var(--hero-p, 0) * -56px);
+  translate: 0 calc(var(--hero-p, 0) * -46px);
 }
-.hero-wordmark span {
+.hero-wordmark__rail {
+  position: relative;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 32px;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: rgba(13, 17, 23, 0.46);
+}
+.hero-wordmark__rail::before,
+.hero-wordmark__rail::after {
+  content: "";
+  position: absolute;
+  width: 1px;
+  height: 6px;
+  background: currentColor;
+  opacity: 0.45;
+}
+.hero-wordmark__rail--top {
+  padding-bottom: 11px;
+  margin-bottom: 14px;
+  border-bottom: 1px solid rgba(13, 17, 23, 0.15);
+  translate: 0 calc(var(--hero-p, 0) * -14px);
+}
+.hero-wordmark__rail--top::before {
+  left: 0;
+  bottom: -1px;
+}
+.hero-wordmark__rail--top::after {
+  right: 0;
+  bottom: -1px;
+}
+.hero-wordmark__rail--bottom {
+  padding-top: 11px;
+  margin-top: 14px;
+  border-top: 1px solid rgba(0, 154, 160, 0.3);
+  translate: 0 calc(var(--hero-p, 0) * 14px);
+}
+.hero-wordmark__rail--bottom::before {
+  left: 0;
+  top: -1px;
+}
+.hero-wordmark__rail--bottom::after {
+  right: 0;
+  top: -1px;
+  background: rgba(0, 154, 160, 0.85);
+}
+.hero-wordmark__accent {
+  color: rgba(0, 154, 160, 0.78);
+}
+.hero-wordmark__word {
   position: relative;
   display: inline-block;
+  padding: 0 6px;
   font-family: var(--font-display);
-  font-size: clamp(56px, 9.6vw, 150px);
-  font-weight: 700;
+  font-size: clamp(46px, 5.8vw, 90px);
+  font-weight: 800;
   line-height: 0.9;
-  letter-spacing: calc(-0.015em + var(--hero-p, 0) * 0.1em);
-  /* emerges from behind the robot: long soft reveal past the copy column */
-  -webkit-mask-image: linear-gradient(
-    90deg,
-    transparent 0%,
-    rgba(0, 0, 0, 0.12) 22%,
-    rgba(0, 0, 0, 0.42) 52%,
-    #000 76%
-  );
-  mask-image: linear-gradient(
-    90deg,
-    transparent 0%,
-    rgba(0, 0, 0, 0.12) 22%,
-    rgba(0, 0, 0, 0.42) 52%,
-    #000 76%
-  );
-  /* watermark: frosted ink, denser toward the baseline */
+  letter-spacing: calc(-0.03em + var(--hero-p, 0) * 0.1em);
+  /* solid graphite core (no -webkit-text-stroke triangles on Unbounded) */
   color: transparent;
   background: linear-gradient(
     180deg,
-    rgba(13, 17, 23, 0.08),
-    rgba(13, 17, 23, 0.22)
+    rgba(13, 17, 23, 0.14) 0%,
+    rgba(13, 17, 23, 0.28) 100%
   );
   -webkit-background-clip: text;
   background-clip: text;
 }
-/* two thin echo layers: at rest they read as a subtle rim; on scroll they
-   split apart — the projector's beam registration drifting out of sync */
-.hero-wordmark span::before,
-.hero-wordmark span::after {
+/* clean cyan optical prism + secondary graphite echo that peel apart on scroll */
+.hero-wordmark__word::before,
+.hero-wordmark__word::after {
   content: "WEB-STUDIO";
   position: absolute;
   inset: 0;
-  color: transparent;
+  z-index: -1;
 }
-.hero-wordmark span::before {
-  -webkit-text-stroke: 1px rgba(0, 154, 160, 0.6);
-  translate: calc(-1px - var(--hero-p, 0) * 18px)
-    calc(var(--hero-p, 0) * -7px);
-  filter: blur(calc(var(--hero-p, 0) * 2px));
+.hero-wordmark__word::before {
+  color: rgba(0, 168, 176, 0.28);
+  translate: calc(-4px - var(--hero-p, 0) * 22px)
+    calc(-2px + var(--hero-p, 0) * -8px);
 }
-.hero-wordmark span::after {
-  -webkit-text-stroke: 1px rgba(21, 27, 32, 0.32);
-  translate: calc(1px + var(--hero-p, 0) * 18px)
-    calc(var(--hero-p, 0) * 7px);
-  filter: blur(calc(var(--hero-p, 0) * 2px));
+.hero-wordmark__word::after {
+  color: rgba(13, 17, 23, 0.08);
+  translate: calc(3px + var(--hero-p, 0) * 16px)
+    calc(2px + var(--hero-p, 0) * 6px);
 }
 
 /* ---- hero copy ---- */
@@ -306,25 +341,25 @@ body {
     width: min(66vw, 300px);
   }
   .hero-wordmark {
-    top: 72%; /* under the copy, behind the enlarged mobile robot */
+    top: 71%;
+    left: 50%;
+    width: min(92vw, 380px);
   }
-  .hero-wordmark span {
-    font-size: clamp(34px, 12vw, 84px);
-    /* soft residual trace at the left edge, not a hard cut */
-    -webkit-mask-image: linear-gradient(
-      90deg,
-      transparent 0%,
-      rgba(0, 0, 0, 0.1) 22%,
-      rgba(0, 0, 0, 0.36) 46%,
-      #000 70%
-    );
-    mask-image: linear-gradient(
-      90deg,
-      transparent 0%,
-      rgba(0, 0, 0, 0.1) 22%,
-      rgba(0, 0, 0, 0.36) 46%,
-      #000 70%
-    );
+  .hero-wordmark__rail {
+    font-size: 8.5px;
+    letter-spacing: 0.13em;
+    gap: 12px;
+  }
+  .hero-wordmark__rail--top {
+    padding-bottom: 8px;
+    margin-bottom: 10px;
+  }
+  .hero-wordmark__rail--bottom {
+    padding-top: 8px;
+    margin-top: 10px;
+  }
+  .hero-wordmark__word {
+    font-size: clamp(32px, 10.6vw, 54px);
   }
 }
 
@@ -924,18 +959,21 @@ section[id] {
   }
   /* wordmark: no scroll-driven drift/dispersal — static layer */
   .hero-wordmark {
-    opacity: 0.85;
+    opacity: 0.9;
     translate: none;
-    filter: none;
   }
-  .hero-wordmark span {
-    letter-spacing: -0.015em;
+  .hero-wordmark__rail--top,
+  .hero-wordmark__rail--bottom {
+    translate: none;
   }
-  .hero-wordmark span::before {
-    translate: -1px 0;
+  .hero-wordmark__word {
+    letter-spacing: -0.03em;
   }
-  .hero-wordmark span::after {
-    translate: 1px 0;
+  .hero-wordmark__word::before {
+    translate: -4px -2px;
+  }
+  .hero-wordmark__word::after {
+    translate: 3px 2px;
   }
   .reveal {
     opacity: 1;
