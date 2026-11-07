@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { COMPETENCIES } from "../../data/content";
 import { useInView } from "../../hooks/useInView";
+import ShaderBackground from "../ui/shader-background";
 import SectionHead from "./SectionHead";
 
 const DIPLOMA_SLOTS = 6;
@@ -13,9 +14,10 @@ export default function Competencies() {
     <section
       id="competencies"
       ref={ref}
-      className={`reveal zt-sec--dense px-[var(--page-gutter)] ${inView ? "is-in" : ""}`}
+      className={`reveal zt-sec--dense relative overflow-hidden px-[var(--page-gutter)] ${inView ? "is-in" : ""}`}
     >
-      <div className="mx-auto max-w-[var(--content-max)]">
+      <ShaderBackground className="pointer-events-none absolute inset-0 h-full w-full opacity-60" />
+      <div className="relative mx-auto max-w-[var(--content-max)]">
         <SectionHead
           title="Компетенции"
           sub="Стек и практики, которые мы применяем в каждом проекте."
