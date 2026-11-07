@@ -324,6 +324,14 @@ export default function HeroScene() {
     <section id="top" ref={sectionRef} className="hero-section" aria-label="ZETRONIX — веб-студия">
       <div ref={stageRef} className="hero-stage" style={{ "--hero-p": 0 } as React.CSSProperties}>
         <KineticGridCanvas pointerRef={pointerRef} />
+        {/* giant wordmark behind the robot canvas (z2 < z3) — the model
+            crosses it during the intro for a real depth cue. Letters are
+            hollow + scanline-rastered like the holo panel, and disperse
+            while fading as --hero-p grows. aria-hidden: the semantic h1
+            lives in HeroCopy */}
+        <div className="hero-wordmark" aria-hidden="true">
+          <span>WEB-STUDIO</span>
+        </div>
         <HeroCopy />
         <RobotVisual progressRef={progressRef} pointerRef={pointerRef} beamRef={beamRef} />
         <ProjectorBeam beamRef={beamRef} navRef={navRef} />
