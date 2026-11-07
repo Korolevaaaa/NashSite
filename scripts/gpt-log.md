@@ -236,3 +236,38 @@ rgba(255, 0, 90, 0.13)
 После этих трёх правок wordmark остаётся оправданным слоем, а не эффектом ради эффекта.
 
 _usage: {"completion_tokens":10187,"prompt_tokens":8841,"total_tokens":19028,"completion_tokens_details":{"reasoning_tokens":8286,"accepted_prediction_tokens":0,"audio_tokens":0,"rejected_prediction_tokens":0,"image_tokens":0},"prompt_tokens_details":{"cached_tokens":8704,"audio_tokens":0,"cache_write_tokens":0,"video_tokens":0},"cost":0.146704,"is_byok":false}_
+
+
+---
+## 2026-11-07T14:32:27.019Z — gpt-6-astra — scripts/gpt-prompt-wm2.md
+
+## Вердикт: PASS
+
+Правки из `e0b3fdb` закрывают заявленные проблемы. По свежим скриншотам новых блокирующих или существенных дефектов не видно.
+
+### MAJOR
+
+Все три MAJOR закрыты:
+
+1. **Слишком быстрое исчезновение wordmark**  
+   `*6` заменено на `*3.5`. На `wm-hero03` надпись практически полностью исчезает примерно к `p=0.3`, без заметного остаточного слоя.
+
+2. **Жёсткая граница маски**  
+   Переход теперь плавный: левый край wordmark мягко уходит под текст, а правая часть остаётся читаемой за роботом. На `wm-hero0` резкого вертикального обрыва не видно.
+
+3. **Позиционирование на мобильном**  
+   `top: 72%` сработал корректно: wordmark находится за корпусом робота и не конкурирует с заголовком, CTA или блоком направлений.
+
+Контрольные `wm-scrub075` и `wm-scrub09` также подтверждают, что луч, голограмма и остальная сцена не затронуты.
+
+### MINOR
+
+Остаточных MINOR по представленным скринам не вижу. Дополнительные изменения к CSS не требуются.
+
+```css
+/* Оставить текущую реализацию без изменений */
+```
+
+Итог: **можно закрывать раунд и принимать commit `e0b3fdb`**.
+
+_usage: {"completion_tokens":857,"prompt_tokens":7444,"total_tokens":8301,"completion_tokens_details":{"reasoning_tokens":516,"accepted_prediction_tokens":0,"audio_tokens":0,"rejected_prediction_tokens":0,"image_tokens":0},"cost":0.042788,"prompt_tokens_details":{"audio_tokens":0,"cached_tokens":0,"cache_write_tokens":0,"video_tokens":0},"is_byok":false}_
