@@ -1,4 +1,4 @@
-import { ABOUT } from "../../data/content";
+import { ABOUT, STATS } from "../../data/content";
 import { useInView } from "../../hooks/useInView";
 
 export default function About() {
@@ -19,6 +19,19 @@ export default function About() {
           </span>
           .
         </p>
+
+        <dl className="mt-14 flex flex-wrap gap-x-14 gap-y-6">
+          {STATS.map((s) => (
+            <div key={s.label}>
+              <dt className="sr-only">{s.label}</dt>
+              <dd className="font-display text-[clamp(30px,3vw,42px)] font-medium leading-none text-[var(--z-ink)]">
+                {s.value}
+                {s.suffix}
+              </dd>
+              <dd className="mt-2 text-[13px] text-[var(--z-muted)]">{s.label}</dd>
+            </div>
+          ))}
+        </dl>
 
         <div className="mt-16 grid grid-cols-1 gap-10 border-t border-line pt-8 md:grid-cols-3">
           {ABOUT.points.map((p) => (

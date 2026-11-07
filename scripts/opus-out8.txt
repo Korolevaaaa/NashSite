@@ -1,0 +1,757 @@
+### 4b — `StorefrontAdmin`
+
+```jsx
+// StorefrontAdmin.jsx
+import { useMemo, useState } from "react";
+// downloadJSON уже есть в проекте
+
+const DRAFT_KEY = "storefront.draft.v1";
+const PUBLISHED_KEY = "storefront.published.v1";
+const NEW = "__new__";
+
+const readLS = (key, fallback) => {
+  try {
+    const raw = localStorage.getItem(key);
+    return raw ? JSON.parse(raw) : fallback;
+  } catch {
+    return fallback;
+  }
+};
+
+const writeLS = (key, value) => {
+  localStorage.setItem(key, JSON.stringify(value));
+};
+
+const uid = () =>
+  crypto.randomUUID?.() || `card_${Date.now()}_${Math.random().toString(36).slice(2)}`;
+
+const emptyForm = {
+  name: "",
+  cat: "",
+  sub: "",
+  kind: "template",
+  price: "",
+  cover: "",
+  status: "draft",
+  newCat: "",
+  newSub: "",
+};
+
+export function StorefrontAdmin() {
+  const [draft, setDraft] = useState(() => readLS(DRAFT_KEY, []));
+  const [published, setPublished] = useState(() => readLS(PUBLISHED_KEY, []));
+  const [extraTax, setExtraTax] = useState([]);
+  const [form, setForm] = useState(emptyForm);
+  const [editId, setEditId] = useState(null);
+  const [newCat, setNewCat] = useState("");
+  const [newSub, setNewSub] = useState("");
+
+  const all = useMemo(() => [...draft, ...published], [draft, published]);
+
+  const cats = useMemo(() => {
+    const map = new Map();
+
+    const put = (cat, sub) => {
+      const c = cat?.trim();
+      if (!c) return;
+      if (!map.has(c)) map.set(c, new Set());
+      const s = sub?.trim();
+      if (s) map.get(c).add(s);
+    };
+
+    all.forEach((card) => put(card.cat, card.sub));
+
+    extraTax.forEach((tax) => {
+      put(tax.name);
+      (tax.subs || []).forEach((sub) => put(tax.name, sub));
+    });
+
+    return [...map.entries()]
+      .map(([name, subs]) => ({
+        name,
+        subs: [...subs].sort((a, b) => a.localeCompare(b, "ru")),
+      }))
+      .sort((a, b) => a.name.localeCompare(b.name, "ru"));
+  }, [all, extraTax]);
+
+  const selectedCat = cats.find((cat) => cat.name === form.cat);
+
+  const set = (patch) => setForm((f) => ({ ...f, ...patch }));
+
+  const persist = (nextDraft, nextPublished) => {
+    setDraft(nextDraft);
+    setPublished(nextPublished);
+    writeLS(DRAFT_KEY, nextDraft);
+    writeLS(PUBLISHED_KEY, nextPublished);
+  };
+
+  const upsertCard = () => {
+    const cat = form.cat === NEW ? form.newCat : form.cat;
+    const sub = form.sub === NEW ? form.newSub : form.sub;
+
+    if (!form.name.trim()) {
+      alert("Нужно название карточки.");
+      return;
+    }
+
+    if (!cat?.trim()) {
+      alert("Нужно выбрать или создать категорию.");
+      return;
+    }
+
+    const card = {
+      id: editId || uid(),
+      name: form.name.trim(),
+      cat: cat.trim(),
+      sub: sub?.trim() || "",
+      kind: form.kind.trim() || "template",
+      price: Number(form.price || 0),
+      cover: form.cover.trim(),
+      status: form.status,
+      updatedAt: new Date().toISOString(),
+    };
+
+    let nextDraft = draft.filter((item) => item.id !== card.id);
+    let nextPublished = published.filter((item) => item.id !== card.id);
+
+    if (card.status === "published") {
+      nextPublished = [card, ...nextPublished];
+    } else {
+      nextDraft = [card, ...nextDraft];
+    }
+
+    persist(nextDraft, nextPublished);
+    setForm(emptyForm);
+    setEditId(null);
+  };
+
+  const removeCard = (id) => {
+    if (!window.confirm("Удалить карточку?")) return;
+    persist(
+      draft.filter((item) => item.id !== id),
+      published.filter((item) => item.id !== id)
+    );
+  };
+
+  const editCard = (card) => {
+    setEditId(card.id);
+    setForm({
+      name: card.name || "",
+      cat: card.cat || "",
+      sub: card.sub || "",
+      kind: card.kind || "template",
+      price: String(card.price ?? ""),
+      cover: card.cover || "",
+      status: card.status || "draft",
+      newCat: "",
+      newSub: "",
+    });
+  };
+
+  const addCategory = (name) => {
+    const value = name.trim();
+    if (!value) return;
+
+    setExtraTax((prev) =>
+      prev.some((cat) => cat.name === value)
+        ? prev
+        : [...prev, { name: value, subs: [] }]
+    );
+
+    set({ cat: value, sub: "", newSub: "" });
+  };
+
+  const addSubcategory = (catName, subName) => {
+    const catValue = catName.trim();
+    const subValue = subName.trim();
+    if (!catValue || !subValue) return;
+
+    setExtraTax((prev) => {
+      const index = prev.findIndex((cat) => cat.name === catValue);
+
+      if (index >= 0) {
+        return prev.map((cat, i) => {
+          if (i !== index) return cat;
+          const subs = cat.subs.includes(subValue)
+            ? cat.subs
+            : [...cat.subs, subValue];
+          return { ...cat, subs };
+        });
+      }
+
+      return [...prev, { name: catValue, subs: [subValue] }];
+    });
+
+    set({ cat: catValue, sub: subValue, newSub: "" });
+  };
+
+  const currentCatForSub = form.cat === NEW ? form.newCat : form.cat;
+
+  return (
+    <section className="sf-admin pb-line">
+      <div className="sf-admin-head">
+        <h2>Админка витрины</h2>
+        <button
+          className="sf-btn"
+          type="button"
+          onClick={() =>
+            downloadJSON(`storefront-${new Date().toISOString().slice(0, 10)}.json`, {
+              draft,
+              published,
+            })
+          }
+        >
+          Экспорт JSON
+        </button>
+      </div>
+
+      <form
+        className="sf-form pb-ring"
+        onSubmit={(event) => {
+          event.preventDefault();
+          upsertCard();
+        }}
+      >
+        <div className="sf-grid">
+          <label className="sf-field">
+            <span>Название</span>
+            <input
+              className="sf-input"
+              value={form.name}
+              onChange={(e) => set({ name: e.target.value })}
+              placeholder="Например: Шаблон лендинга"
+            />
+          </label>
+
+          <label className="sf-field">
+            <span>Категория</span>
+            <select
+              className="sf-select"
+              value={form.cat}
+              onChange={(e) => set({ cat: e.target.value, sub: "", newSub: "" })}
+            >
+              <option value="">Выбрать</option>
+              {cats.map((cat) => (
+                <option key={cat.name} value={cat.name}>
+                  {cat.name}
+                </option>
+              ))}
+              <option value={NEW}>Новая…</option>
+            </select>
+          </label>
+
+          {form.cat === NEW && (
+            <label className="sf-field">
+              <span>Имя новой категории</span>
+              <input
+                className="sf-input"
+                value={form.newCat}
+                onChange={(e) => set({ newCat: e.target.value })}
+                placeholder="Например: Готовые сайты"
+              />
+            </label>
+          )}
+
+          <label className="sf-field">
+            <span>Подкатегория</span>
+            <select
+              className="sf-select"
+              value={form.sub}
+              onChange={(e) => set({ sub: e.target.value })}
+              disabled={!form.cat}
+            >
+              <option value="">Без подкатегории</option>
+              {selectedCat?.subs.map((sub) => (
+                <option key={sub} value={sub}>
+                  {sub}
+                </option>
+              ))}
+              <option value={NEW}>Новая…</option>
+            </select>
+          </label>
+
+          {form.sub === NEW && (
+            <label className="sf-field">
+              <span>Имя новой подкатегории</span>
+              <input
+                className="sf-input"
+                value={form.newSub}
+                onChange={(e) => set({ newSub: e.target.value })}
+                placeholder="Например: Лендинги"
+              />
+            </label>
+          )}
+
+          <label className="sf-field">
+            <span>Kind</span>
+            <input
+              className="sf-input"
+              list="sf-kind"
+              value={form.kind}
+              onChange={(e) => set({ kind: e.target.value })}
+              placeholder="template / service / packet"
+            />
+            <datalist id="sf-kind">
+              <option value="template" />
+              <option value="service" />
+              <option value="packet" />
+            </datalist>
+          </label>
+
+          <label className="sf-field">
+            <span>Цена, ₽</span>
+            <input
+              className="sf-input"
+              type="number"
+              min="0"
+              value={form.price}
+              onChange={(e) => set({ price: e.target.value })}
+              placeholder="0"
+            />
+          </label>
+
+          <label className="sf-field">
+            <span>Обложка, URL</span>
+            <input
+              className="sf-input"
+              value={form.cover}
+              onChange={(e) => set({ cover: e.target.value })}
+              placeholder="/covers/card.jpg"
+            />
+          </label>
+
+          <label className="sf-field">
+            <span>Статус</span>
+            <select
+              className="sf-select"
+              value={form.status}
+              onChange={(e) => set({ status: e.target.value })}
+            >
+              <option value="draft">Черновик</option>
+              <option value="published">Опубликовано</option>
+            </select>
+          </label>
+        </div>
+
+        {form.status === "draft" && (
+          <p className="sf-note">Черновик — посетители не видят.</p>
+        )}
+
+        <div className="sf-actions">
+          <button className="sf-btn" type="submit">
+            {editId ? "Сохранить карточку" : "Добавить карточку"}
+          </button>
+
+          {editId && (
+            <button
+              className="sf-btn sf-btn-ghost"
+              type="button"
+              onClick={() => {
+                setForm(emptyForm);
+                setEditId(null);
+              }}
+            >
+              Отменить правку
+            </button>
+          )}
+        </div>
+      </form>
+
+      <div className="sf-tax pb-ring">
+        <div className="sf-tax-grid">
+          <label className="sf-field">
+            <span>Новая категория</span>
+            <input
+              className="sf-input"
+              value={newCat}
+              onChange={(e) => setNewCat(e.target.value)}
+              placeholder="Например: Услуги"
+            />
+          </label>
+
+          <button
+            className="sf-btn"
+            type="button"
+            onClick={() => {
+              addCategory(newCat);
+              setNewCat("");
+            }}
+          >
+            Добавить категорию
+          </button>
+
+          <label className="sf-field">
+            <span>Новая подкатегория для текущей категории</span>
+            <input
+              className="sf-input"
+              value={newSub}
+              onChange={(e) => setNewSub(e.target.value)}
+              placeholder="Например: Аудит"
+            />
+          </label>
+
+          <button
+            className="sf-btn"
+            type="button"
+            disabled={!currentCatForSub?.trim()}
+            onClick={() => {
+              addSubcategory(currentCatForSub, newSub);
+              setNewSub("");
+            }}
+          >
+            Добавить подкатегорию
+          </button>
+        </div>
+      </div>
+
+      <ul className="sf-list">
+        {all.length === 0 && <li className="sf-empty">Карточек пока нет.</li>}
+
+        {all.map((card) => (
+          <li key={card.id} className="sf-item">
+            {card.cover ? (
+              <img
+                className="sf-thumb"
+                src={card.cover}
+                alt=""
+                loading="lazy"
+              />
+            ) : (
+              <span className="sf-thumb sf-thumb-empty" aria-hidden="true" />
+            )}
+
+            <div className="sf-meta">
+              <strong>{card.name}</strong>
+              <span>
+                {card.cat}
+                {card.sub ? ` / ${card.sub}` : ""} · {card.kind} ·{" "}
+                {card.price ? `${card.price} ₽` : "—"}
+              </span>
+            </div>
+
+            {card.status === "draft" ? (
+              <span className="sf-badge sf-badge-draft">
+                Черновик — посетители не видят
+              </span>
+            ) : (
+              <span className="sf-badge sf-badge-live">Опубликовано</span>
+            )}
+
+            <div className="sf-actions">
+              <button
+                className="sf-btn sf-btn-small"
+                type="button"
+                onClick={() => editCard(card)}
+              >
+                Правка
+              </button>
+
+              <button
+                className="sf-btn sf-btn-small sf-btn-danger"
+                type="button"
+                onClick={() => removeCard(card.id)}
+              >
+                Удалить
+              </button>
+            </div>
+          </li>
+        ))}
+      </ul>
+    </section>
+  );
+}
+```
+
+```css
+/* StorefrontAdmin.css */
+.sf-admin {
+  display: grid;
+  gap: 16px;
+  padding: 24px;
+  border-radius: 20px;
+  border: 1px solid var(--line, rgba(255, 255, 255, 0.08));
+  background: var(--panel, rgba(255, 255, 255, 0.03));
+}
+
+.sf-admin-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.sf-form,
+.sf-tax {
+  display: grid;
+  gap: 12px;
+  padding: 14px;
+  border-radius: 16px;
+}
+
+.sf-grid,
+.sf-tax-grid {
+  display: grid;
+  gap: 10px;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+}
+
+.sf-field {
+  display: grid;
+  gap: 6px;
+  font-size: 12px;
+  color: var(--muted, #9aa4b2);
+}
+
+.sf-input,
+.sf-select {
+  height: 38px;
+  padding: 0 10px;
+  border-radius: 12px;
+  border: 1px solid var(--line, rgba(255, 255, 255, 0.12));
+  background: rgba(0, 0, 0, 0.18);
+  color: inherit;
+  outline: none;
+}
+
+.sf-input:focus-visible,
+.sf-select:focus-visible,
+.sf-btn:focus-visible {
+  outline: 2px solid var(--accent, #7dd3fc);
+  outline-offset: 2px;
+}
+
+.sf-btn {
+  border: 1px solid var(--line, rgba(255, 255, 255, 0.14));
+  background: rgba(255, 255, 255, 0.06);
+  color: inherit;
+  border-radius: 12px;
+  padding: 9px 12px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.sf-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.sf-btn-small {
+  padding: 6px 8px;
+  font-size: 12px;
+  border-radius: 10px;
+}
+
+.sf-btn-danger {
+  border-color: rgba(255, 120, 120, 0.35);
+  color: #ffb4b4;
+}
+
+.sf-btn-ghost {
+  background: transparent;
+}
+
+.sf-note {
+  margin: 0;
+  font-size: 12px;
+  color: #ffd28a;
+}
+
+.sf-list {
+  display: grid;
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.sf-item {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  padding: 10px;
+  border-radius: 14px;
+  border: 1px solid var(--line, rgba(255, 255, 255, 0.08));
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.sf-thumb {
+  width: 56px;
+  aspect-ratio: 4 / 5;
+  object-fit: cover;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.sf-thumb-empty {
+  display: block;
+}
+
+.sf-meta {
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+}
+
+.sf-meta strong {
+  font-size: 14px;
+}
+
+.sf-meta span {
+  font-size: 12px;
+  color: var(--muted, #9aa4b2);
+}
+
+.sf-badge {
+  padding: 6px 8px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.sf-badge-draft {
+  background: rgba(255, 196, 87, 0.12);
+  color: #ffcf7d;
+  border: 1px solid rgba(255, 196, 87, 0.25);
+}
+
+.sf-badge-live {
+  background: rgba(84, 214, 141, 0.12);
+  color: #8af0b6;
+  border: 1px solid rgba(84, 214, 141, 0.25);
+}
+
+.sf-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.sf-empty {
+  padding: 12px;
+  border-radius: 12px;
+  border: 1px dashed var(--line, rgba(255, 255, 255, 0.12));
+  color: var(--muted, #9aa4b2);
+}
+```
+
+### 5 — О нас
+
+```jsx
+// Заменить общую фразу на более конкретную:
+<p className="about-lead">
+  Собираем витрину под заявку: категории, цены, примеры и быстрый контакт —
+  без лишнего скролла.
+</p>
+```
+
+### 6 — Контакты
+
+```jsx
+// Contacts.jsx
+// Выбрал Telegram + mailto fallback: заявка уходит сразу, без бэкенда.
+import { useState } from "react";
+
+const TELEGRAM_URL = "https://t.me/your_username";
+const MAILTO = "you@example.com";
+
+export function Contacts() {
+  const [brief, setBrief] = useState({
+    name: "",
+    budget: "",
+    task: "",
+  });
+
+  const text = encodeURIComponent(
+    [
+      "Заявка с витрины",
+      `Имя: ${brief.name}`,
+      `Бюджет: ${brief.budget}`,
+      `Задача: ${brief.task}`,
+    ].join("\n")
+  );
+
+  return (
+    <section id="contacts" className="contacts pb-line">
+      <h2>Контакты</h2>
+
+      <p className="contacts-note">
+        Дальше: отвечаю в Telegram, задаю 3 вопроса и называю срок/оценку.
+      </p>
+
+      <div className="contacts-form pb-ring">
+        <input
+          className="contacts-input"
+          placeholder="Имя"
+          value={brief.name}
+          onChange={(e) => setBrief({ ...brief, name: e.target.value })}
+        />
+
+        <input
+          className="contacts-input"
+          placeholder="Бюджет"
+          value={brief.budget}
+          onChange={(e) => setBrief({ ...brief, budget: e.target.value })}
+        />
+
+        <textarea
+          className="contacts-input"
+          placeholder="Краткая задача"
+          rows={4}
+          value={brief.task}
+          onChange={(e) => setBrief({ ...brief, task: e.target.value })}
+        />
+
+        <div className="contacts-actions">
+          <a
+            className="btn btn-primary"
+            href={`${TELEGRAM_URL}?text=${text}`}
+            target="_blank"
+            rel="noreferrer"
+          >
+            Написать в Telegram
+          </a>
+
+          <a
+            className="btn btn-ghost"
+            href={`mailto:${MAILTO}?subject=${encodeURIComponent(
+              "Заявка с витрины"
+            )}&body=${text}`}
+          >
+            Открыть письмоnode:internal/deps/undici/undici:11350
+            fetchParams.controller.controller.error(new TypeError("terminated", {
+                                                    ^
+
+TypeError: terminated
+    at Fetch.onAborted (node:internal/deps/undici/undici:11350:53)
+    at Fetch.emit (node:events:519:28)
+    at Fetch.terminate (node:internal/deps/undici/undici:10508:14)
+    at Object.onError (node:internal/deps/undici/undici:11473:38)
+    at Request.onError (node:internal/deps/undici/undici:2232:31)
+    at Object.errorRequest (node:internal/deps/undici/undici:1726:17)
+    at TLSSocket.<anonymous> (node:internal/deps/undici/undici:6461:16)
+    at TLSSocket.emit (node:events:531:35)
+    at node:net:346:12
+    at TCP.done (node:internal/tls/wrap:671:7) {
+  [cause]: SocketError: other side closed
+      at TLSSocket.<anonymous> (node:internal/deps/undici/undici:6436:28)
+      at TLSSocket.emit (node:events:531:35)
+      at endReadableNT (node:internal/streams/readable:1698:12)
+      at process.processTicksAndRejections (node:internal/process/task_queues:89:21) {
+    code: 'UND_ERR_SOCKET',
+    socket: {
+      localAddress: '192.168.0.14',
+      localPort: 56463,
+      remoteAddress: '64.188.65.157',
+      remotePort: 443,
+      remoteFamily: 'IPv4',
+      timeout: undefined,
+      bytesWritten: 2349,
+      bytesRead: 1383919
+    },
+    [Symbol(undici.error.UND_ERR)]: true,
+    [Symbol(undici.error.UND_ERR_SOCKET)]: true
+  }
+}
+
+Node.js v22.22.3

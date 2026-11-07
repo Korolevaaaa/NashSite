@@ -1,0 +1,653 @@
+### 2c. Луч: визуальные слои
+
+```jsx
+// ProjectorBeam.jsx
+import { forwardRef, useImperativeHandle, useMemo, useRef } from 'react';
+
+export const ProjectorBeam = forwardRef(function ProjectorBeam(
+  { x0, y0, x1, y1, packets = 5 },
+  ref
+) {
+  const lineRef = useRef(null);
+  const ringRef = useRef(null);
+  const packetRefs = useRef([]);
+
+  const geom = useMemo(() => {
+    const dx = x1 - x0;
+    const dy = y1 - y0;
+    const len = Math.hypot(dx, dy) || 1;
+    const ux = dx / len;
+    const uy = dy / len;
+    const nx = -uy;
+    const ny = ux;
+
+    // геометрию и ширины не меняем — оставляем как в текущем коде
+    const w0 = 3;
+    const w1 = Math.max(26, Math.min(78, len * 0.17));
+
+    return {
+      x0,
+      y0,
+      x1,
+      y1,
+      len,
+      w0,
+      w1,
+      quad: [
+        [x0 + (nx * w0) / 2, y0 + (ny * w0) / 2],
+        [x1 + (nx * w1) / 2, y1 + (ny * w1) / 2],
+        [x1 - (nx * w1) / 2, y1 - (ny * w1) / 2],
+        [x0 - (nx * w0) / 2, y0 - (ny * w0) / 2],
+      ]
+        .map((p) => p.join(','))
+        .join(' '),
+    };
+  }, [x0, y0, x1, y1]);
+
+  useImperativeHandle(ref, () => ({
+    frame(t, progress = 1) {
+      const p = Math.max(0, Math.min(1, progress));
+      const flicker = 0.93 + 0.07 * Math.sin(t * 21.3);
+
+      if (lineRef.current) {
+        lineRef.current.style.opacity = ((0.24 + 0.46 * p) * flicker).toFixed(3);
+        lineRef.current.style.strokeDashoffset = `${(-t * 54).toFixed(1)}px`;
+      }
+
+      if (ringRef.current) {
+        const pulse = 1 + 0.06 * Math.sin(t * 2.4);
+        ringRef.current.style.opacity = (0.16 + 0.84 * p).toFixed(3);
+        ringRef.current.setAttribute(
+          'transform',
+          `translate(${geom.x1} ${geom.y1}) scale(${pulse.toFixed(3)})`
+        );
+      }
+
+      packetRefs.current.forEach((node, i) => {
+        if (!node) return;
+
+        const speed = 0.14 + (i % 3) * 0.022;
+        const offset = i / packetRefs.current.length;
+
+        let k = (t * speed + offset) % 1;
+        if (p < 0.995) k = Math.min(k, p);
+
+        const x = geom.x0 + (geom.x1 - geom.x0) * k;
+        const y = geom.y0 + (geom.y1 - geom.y0) * k;
+
+        const twinkle = 0.45 + 0.55 * Math.sin(t * 18 + i * 2.39);
+        const fade = k < 0.08 ? k / 0.08 : k > 0.9 ? (1 - k) / 0.1 : 1;
+
+        node.setAttribute('transform', `translate(${x.toFixed(2)} ${y.toFixed(2)})`);
+        node.style.opacity = Math.max(
+          0,
+          (0.18 + 0.72 * twinkle) * fade * p * flicker
+        ).toFixed(3);
+      });
+    },
+  }));
+
+  return (
+    <g className="pb">
+      <polygon className="pb-base" points={geom.quad} />
+      <line
+        ref={lineRef}
+        className="pb-line"
+        x1={x0}
+        y1={y0}
+        x2={x1}
+        y2={y1}
+      />
+
+      <g ref={ringRef} className="pb-ring" transform={`translate(${x1} ${y1})`}>
+        <circle className="pb-ring-outer" r={Math.max(10, geom.w1 * 0.34)} />
+        <circle className="pb-ring-core" r={Math.max(4, geom.w1 * 0.14)} />
+      </g>
+
+      <g className="pb-packets">
+        {Array.from({ length: packets }).map((_, i) => (
+          <g
+            key={i}
+            className="pb-packet"
+            ref={(el) => (packetRefs.current[i] = el)}
+          >
+            <circle className="pb-packet-halo" r="4.4" />
+            <circle className="pb-packet-core" r="1.8" />
+          </g>
+        ))}
+      </g>
+    </g>
+  );
+});
+```
+
+```css
+/* ProjectorBeam.css */
+.pb {
+  pointer-events: none;
+  mix-blend-mode: screen;
+}
+
+.pb-base {
+  fill: rgb(134 247 255 / 0.12);
+  stroke: rgb(134 247 255 / 0.18);
+  stroke-width: 0.5;
+}
+
+.pb-line {
+  stroke: #86f7ff;
+  stroke-width: 1.3;
+  stroke-linecap: round;
+  stroke-dasharray: 2 9;
+  opacity: 0.4;
+  filter: drop-shadow(0 0 7px rgb(134 247 255 / 0.4));
+}
+
+.pb-ring {
+  transform-box: fill-box;
+  transform-origin: center;
+  will-change: transform, opacity;
+}
+
+.pb-ring-outer {
+  fill: none;
+  stroke: rgb(134 247 255 / 0.55);
+  stroke-width: 1;
+}
+
+.pb-ring-core {
+  fill: rgb(134 247 255 / 0.18);
+  stroke: rgb(134 247 255 / 0.82);
+  stroke-width: 0.75;
+}
+
+.pb-packet {
+  color: #ecfeff;
+  will-change: transform, opacity;
+}
+
+.pb-packet-core {
+  fill: currentColor;
+}
+
+.pb-packet-halo {
+  fill: currentColor;
+  opacity: 0.22;
+  filter: blur(1px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pb-line {
+    stroke-dasharray: none;
+  }
+}
+```
+
+Вызов в родителе:
+
+```jsx
+beamRef.current?.frame(time, beamProgress);
+```
+
+---
+
+### 3. Портфолио компакт
+
+```jsx
+// PortfolioGrid.jsx
+export function PortfolioGrid({ items }) {
+  return (
+    <ul className="pf-grid">
+      {items.map((item) => (
+        <PortfolioCard key={item.id} item={item} />
+      ))}
+    </ul>
+  );
+}
+
+function PortfolioCard({ item }) {
+  return (
+    <li>
+      <a className="pf-card" href={item.href} aria-label={`${item.title}, ${item.cat}`}>
+        <span className="pf-card__cover">
+          {/*
+            Имя на обложке:
+            - если оно уже есть в исходной 9:16 картинке и попадает в безопасную зону 50% 18% — оставляем как часть арта;
+            - отдельно текстовым слоем не дублируем;
+            - если имя обрезается/шумит — оставляем только тонировку и показываем название в мета-блоке ниже.
+          */}
+          <img
+            src={item.cover}
+            alt=""
+            loading="lazy"
+          />
+          <span className="pf-card__tint" aria-hidden="true" />
+        </span>
+
+        <span className="pf-card__meta">
+          <span className="pf-card__cat">
+            {item.cat}
+            {item.sub ? ` · ${item.sub}` : ''}
+          </span>
+          <span className="pf-card__title">{item.title}</span>
+        </span>
+      </a>
+    </li>
+  );
+}
+```
+
+```css
+/* PortfolioGrid.css */
+.pf-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: clamp(16px, 2vw, 24px);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+/* 768: 2 колонки */
+@media (min-width: 768px) {
+  .pf-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+/* 1024: 3 колонки */
+@media (min-width: 1024px) {
+  .pf-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+/* 1440: 4 колонки */
+@media (min-width: 1440px) {
+  .pf-grid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+.pf-card {
+  display: block;
+  border: 1px solid var(--line, rgb(255 255 255 / 0.08));
+  border-radius: 16px;
+  overflow: hidden;
+  background: var(--card, rgb(255 255 255 / 0.03));
+  text-decoration: none;
+  color: inherit;
+  transition: border-color 0.25s ease, transform 0.25s ease, box-shadow 0.25s ease;
+}
+
+.pf-card:hover {
+  border-color: rgb(134 247 255 / 0.35);
+  transform: translateY(-2px);
+  box-shadow: 0 12px 30px rgb(0 0 0 / 0.25);
+}
+
+.pf-card__cover {
+  position: relative;
+  display: block;
+  aspect-ratio: 4 / 5;
+  overflow: hidden;
+  background: #0a0f14;
+}
+
+.pf-card__cover img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: 50% 18%;
+  transform: scale(1.01);
+  transition: transform 0.5s ease, opacity 0.25s ease;
+  opacity: 0.94;
+}
+
+.pf-card:hover .pf-card__cover img {
+  transform: scale(1.04);
+  opacity: 1;
+}
+
+.pf-card__tint {
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(180deg, rgb(5 8 12 / 0.12), rgb(5 8 12 / 0.56) 78%),
+    linear-gradient(0deg, rgb(94 227 255 / 0.08), transparent 42%);
+  pointer-events: none;
+}
+
+.pf-card__meta {
+  display: grid;
+  gap: 4px;
+  padding: 12px 14px 14px;
+}
+
+.pf-card__cat {
+  font-family: var(--font-mono, 'JetBrains Mono', monospace);
+  font-size: 11px;
+  line-height: 1.3;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted, rgb(255 255 255 / 0.62));
+}
+
+.pf-card__title {
+  font-family: var(--font-body, 'Inter', sans-serif);
+  font-size: 16px;
+  line-height: 1.25;
+  font-weight: 500;
+}
+```
+
+---
+
+### 4. Витрина + админка
+
+```jsx
+// storefront.jsx
+import { useEffect, useMemo, useState } from 'react';
+
+export const TEMPLATES = [
+  {
+    id: 'tpl-site-landing-01',
+    name: 'Лендинг продукта',
+    cat: 'Сайты',
+    sub: 'Лендинги',
+    kind: 'Шаблон',
+    price: 58000,
+    status: 'published',
+    cover: '/img/storefront/landing-01.jpg',
+  },
+  {
+    id: 'tpl-site-corp-01',
+    name: 'Корпоративный сайт',
+    cat: 'Сайты',
+    sub: 'Корпоративные',
+    kind: 'Шаблон',
+    price: 96000,
+    status: 'published',
+    cover: '/img/storefront/corp-01.jpg',
+  },
+  {
+    id: 'tpl-ui-dashboard-01',
+    name: 'Дашборд аналитики',
+    cat: 'Интерфейсы',
+    sub: 'Дашборды',
+    kind: 'Шаблон',
+    price: 74000,
+    status: 'published',
+    cover: '/img/storefront/dashboard-01.jpg',
+  },
+  {
+    id: 'srv-design-support',
+    name: 'Дизайн-поддержка',
+    cat: 'Сервис',
+    kind: 'Сервис',
+    price: 120000,
+    status: 'published',
+    cover: '/img/storefront/support.jpg',
+  },
+];
+
+const DRAFT_KEY = 'storefront.draft.v1';
+const PUBLISHED_KEY = 'storefront.published.v1';
+const isBrowser = typeof window !== 'undefined';
+
+function seedStore() {
+  const categories = [];
+
+  TEMPLATES.forEach((item) => {
+    let cat = categories.find((c) => c.name === item.cat);
+
+    if (!cat) {
+      cat = { name: item.cat, subs: [] };
+      categories.push(cat);
+    }
+
+    if (item.sub && !cat.subs.includes(item.sub)) {
+      cat.subs.push(item.sub);
+    }
+  });
+
+  return {
+    categories,
+    items: TEMPLATES,
+    meta: {
+      updatedAt: null,
+      published: false,
+    },
+  };
+}
+
+function loadDraft() {
+  if (!isBrowser) return seedStore();
+
+  try {
+    const raw = localStorage.getItem(DRAFT_KEY);
+    return raw ? JSON.parse(raw) : seedStore();
+  } catch {
+    return seedStore();
+  }
+}
+
+function loadPublished() {
+  if (!isBrowser) return seedStore();
+
+  try {
+    const raw = localStorage.getItem(PUBLISHED_KEY);
+    return raw ? JSON.parse(raw) : seedStore();
+  } catch {
+    return seedStore();
+  }
+}
+
+function downloadJSON(data, filename = 'storefront.draft.json') {
+  const blob = new Blob([JSON.stringify(data, null, 2)], {
+    type: 'application/json',
+  });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+
+  a.href = url;
+  a.download = filename;
+  a.click();
+
+  URL.revokeObjectURL(url);
+}
+
+function useHashRoute() {
+  const [hash, setHash] = useState(isBrowser ? window.location.hash : '');
+
+  useEffect(() => {
+    const onChange = () => setHash(window.location.hash);
+    window.addEventListener('hashchange', onChange);
+
+    return () => window.removeEventListener('hashchange', onChange);
+  }, []);
+
+  return hash.replace(/^#/, '');
+}
+
+export function StorefrontRoot() {
+  const route = useHashRoute();
+
+  if (route === '/admin') {
+    return <StorefrontAdmin />;
+  }
+
+  return <StorefrontCatalog />;
+}
+
+export function StorefrontCatalog() {
+  const [store] = useState(loadPublished);
+  const [cat, setCat] = useState('all');
+  const [sub, setSub] = useState('all');
+  const [q, setQ] = useState('');
+
+  const categories = useMemo(() => {
+    return store.categories.filter((c) =>
+      store.items.some((i) => i.status === 'published' && i.cat === c.name)
+    );
+  }, [store.categories, store.items]);
+
+  const subs = useMemo(() => {
+    if (cat === 'all') return [];
+
+    const current = store.categories.find((c) => c.name === cat);
+    if (!current) return [];
+
+    return current.subs.filter((s) =>
+      store.items.some(
+        (i) => i.status === 'published' && i.cat === cat && i.sub === s
+      )
+    );
+  }, [cat, store.categories, store.items]);
+
+  const items = useMemo(() => {
+    const query = q.trim().toLowerCase();
+
+    return store.items
+      .filter((i) => i.status === 'published')
+      .filter((i) => cat === 'all' || i.cat === cat)
+      .filter((i) => sub === 'all' || i.sub === sub)
+      .filter((i) => {
+        if (!query) return true;
+
+        return [i.name, i.cat, i.sub, i.kind]
+          .filter(Boolean)
+          .join(' ')
+          .toLowerCase()
+          .includes(query);
+      });
+  }, [store.items, cat, sub, q]);
+
+  return (
+    <section className="sf" id="storefront">
+      <div className="sf-filters">
+        <input
+          className="sf-search"
+          type="search"
+          value={q}
+          onChange={(e) => {
+            setQ(e.target.value);
+            setSub('all');
+          }}
+          placeholder="Поиск по витрине"
+          aria-label="Поиск по витрине"
+        />
+
+        <div className="sf-chips">
+          <button
+            type="button"
+            className={cat === 'all' ? 'chip chip--active' : 'chip'}
+            onClick={() => {
+              setCat('all');
+              setSub('all');
+            }}
+          >
+            Все
+          </button>
+
+          {categories.map((c) => (
+            <button
+              key={c.name}
+              type="button"
+              className={cat === c.name ? 'chip chip--active' : 'chip'}
+              onClick={() => {
+                setCat(c.name);
+                setSub('all');
+              }}
+            >
+              {c.name}
+            </button>
+          ))}
+        </div>
+
+        {cat !== 'all' && subs.length > 0 && (
+          <div className="sf-chips sf-chips--sub">
+            <button
+              type="button"
+              className={sub === 'all' ? 'chip chip--active' : 'chip'}
+              onClick={() => setSub('all')}
+            >
+              Все
+            </button>
+
+            {subs.map((s) => (
+              <button
+                key={s}
+                type="button"
+                className={sub === s ? 'chip chip--active' : 'chip'}
+                onClick={() => setSub(s)}
+              >
+                {s}
+              </button>
+            ))}
+          </div>
+        )}
+      </div>
+
+      <div className="sf-grid">
+        {items.map((item) => (
+          <TemplateCard key={item.id} item={item} />
+        ))}
+      </div>
+
+      {items.length === 0 && <p className="sf-empty">Ничего не найдено.</p>}
+    </section>
+  );
+}
+
+function TemplateCard({ item }) {
+  const price = new Intl.NumberFormat('ru-RU', {
+    style: 'currency',
+    currency: 'RUB',
+    maximumFractionDigits: 0,
+  }).format(item.price);
+
+  const cta = item.kind === 'Сервис' ? 'Заказать' : 'Купить';
+
+  return (
+    <article className="sf-card">
+      <div className="sf-card__media">
+        {item.cover ? (
+          <img src={item.cover} alt="" loading="lazy" />
+        ) : (
+          <div className="sf-card__placeholder">{item.kind}</div>
+        )}
+
+        <span className="sf-card__badge">{item.kind}</span>
+      </div>
+
+      <div className="sf-card__body">
+        <p className="sf-card__meta">
+          {item.cat}
+          {item.sub ? ` / ${item.sub}` : ''}
+        </p>
+
+        <h3 className="sf-card__title">{item.name}</h3>
+
+        <div className="sf-card__row">
+          <strong className="sf-card__price">{price}</strong>
+          <a className="btn btn--sm" href={`#/order/${encodeURIComponent(item.id)}`}>
+            {cta}
+          </a>
+        </div>
+      </div>
+    </article>
+  );
+}
+
+constnode:internal/modules/run_main:123
+    triggerUncaughtException(
+    ^
+
+DOMException [TimeoutError]: The operation was aborted due to timeout
+    at new DOMException (node:internal/per_context/domexception:76:18)
+    at Timeout._onTimeout (node:internal/abort_controller:155:9)
+    at listOnTimeout (node:internal/timers:585:17)
+    at process.processTimers (node:internal/timers:521:7)
+
+Node.js v22.22.3

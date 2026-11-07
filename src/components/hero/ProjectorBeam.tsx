@@ -25,6 +25,11 @@ export default function ProjectorBeam({ beamRef, navRef }: Props) {
   const coreRef = useRef<SVGPathElement>(null);
   const emitRef = useRef<SVGCircleElement>(null);
   const hitRef = useRef<SVGEllipseElement>(null);
+  const lineRef = useRef<SVGLineElement>(null);
+  const ringRef = useRef<SVGEllipseElement>(null);
+  const packARef = useRef<SVGCircleElement>(null);
+  const packBRef = useRef<SVGCircleElement>(null);
+  const packCRef = useRef<SVGCircleElement>(null);
 
   useEffect(() => {
     const svg = svgRef.current;
@@ -33,7 +38,10 @@ export default function ProjectorBeam({ beamRef, navRef }: Props) {
     const core = coreRef.current;
     const emit = emitRef.current;
     const hit = hitRef.current;
-    if (!svg || !halo || !body || !core || !emit || !hit) return;
+    const line = lineRef.current;
+    const ring = ringRef.current;
+    const packs = [packARef.current, packBRef.current, packCRef.current];
+    if (!svg || !halo || !body || !core || !emit || !hit || !line || !ring) return;
 
     // rects change only on scroll (stage unpinning) and resize — reading
     // getBoundingClientRect every frame would force synchronous layout
@@ -121,6 +129,36 @@ export default function ProjectorBeam({ beamRef, navRef }: Props) {
       hit.setAttribute("cy", ty.toFixed(1));
       hit.setAttribute("rx", (w1 * 1.05).toFixed(1));
       hit.setAttribute("ry", Math.min(30, w1 * 0.7).toFixed(1));
+
+      // extra layers: dashed carrier line, endpoint lock ring, data packets
+      const t = performance.now() / 1000;
+      const flicker = 0.93 + 0.07 * Math.sin(t * 21.3);
+      line.setAttribute("x1", sx.toFixed(1));
+      line.setAttribute("y1", sy.toFixed(1));
+      line.setAttribute("x2", cx2.toFixed(1));
+      line.setAttribute("y2", cy2.toFixed(1));
+      line.style.opacity = ((0.24 + 0.4 * power) * flicker).toFixed(3);
+      line.style.strokeDashoffset = `${(-t * 54).toFixed(1)}px`;
+
+      const pulse = 1 + 0.06 * Math.sin(t * 2.4);
+      ring.setAttribute("cx", tx.toFixed(1));
+      ring.setAttribute("cy", ty.toFixed(1));
+      ring.setAttribute("rx", (Math.max(10, w1 * 0.34) * pulse).toFixed(1));
+      ring.setAttribute("ry", (Math.max(10, w1 * 0.34) * pulse).toFixed(1));
+
+      for (let i = 0; i < packs.length; i++) {
+        const node = packs[i];
+        if (!node) continue;
+        const speed = 0.14 + (i % 3) * 0.022;
+        const offset = i / packs.length;
+        const k = (t * speed + offset) % 1;
+        node.setAttribute("cx", (sx + dx * k).toFixed(1));
+        node.setAttribute("cy", (sy + dy * k).toFixed(1));
+        const twinkle = 0.45 + 0.55 * Math.sin(t * 18 + i * 2.39);
+        const fade = k < 0.08 ? k / 0.08 : k > 0.9 ? (1 - k) / 0.1 : 1;
+        node.style.opacity = Math.max(0, (0.18 + 0.5 * twinkle) * fade * flicker).toFixed(3);
+      }
+
       svg.style.opacity = power.toFixed(3);
       hidden = false;
     };
@@ -154,6 +192,12 @@ export default function ProjectorBeam({ beamRef, navRef }: Props) {
         <path ref={bodyRef} fill="#59e7f4" opacity="0.20" filter="url(#pb-b7)" />
         <ellipse ref={hitRef} fill="#7ff1fb" opacity="0.16" filter="url(#pb-b7)" />
         <path ref={coreRef} fill="#c9fbff" opacity="0.55" filter="url(#pb-b3)" />
+        {/* carrier line + data packets + endpoint lock ring */}
+        <line ref={lineRef} className="pb-line" opacity="0" />
+        <circle ref={packARef} className="pb-packet" r="2.2" opacity="0" />
+        <circle ref={packBRef} className="pb-packet" r="1.7" opacity="0" />
+        <circle ref={packCRef} className="pb-packet" r="1.4" opacity="0" />
+        <ellipse ref={ringRef} className="pb-ring" rx="12" ry="12" opacity="0.55" />
         <circle ref={emitRef} fill="#b7f8ff" opacity="0.6" filter="url(#pb-b7)" />
       </svg>
     </div>

@@ -14,14 +14,16 @@ import Process from "../components/sections/Process";
 import Faq from "../components/sections/Faq";
 import Contacts from "../components/sections/Contacts";
 import DirectionPage from "../components/pages/DirectionPage";
+import StorefrontAdmin from "../components/pages/StorefrontAdmin";
 
 // tiny hash router: #/napravlenie/<slug> → direction landing page,
-// anything else → the main one-pager
-function routeOf(): { dir: string | null; anchor: string | null } {
+// #/admin → owner storefront tool, anything else → the main one-pager
+function routeOf(): { dir: string | null; admin: boolean; anchor: string | null } {
   const h = window.location.hash;
+  if (h === "#/admin") return { dir: null, admin: true, anchor: null };
   const m = h.match(/^#\/napravlenie\/([\w-]+)/);
-  if (m) return { dir: m[1], anchor: null };
-  return { dir: null, anchor: h.length > 1 && !h.startsWith("#/") ? h : null };
+  if (m) return { dir: m[1], admin: false, anchor: null };
+  return { dir: null, admin: false, anchor: h.length > 1 && !h.startsWith("#/") ? h : null };
 }
 
 export default function App() {
@@ -34,7 +36,7 @@ export default function App() {
   }, []);
 
   useEffect(() => {
-    if (route.dir) {
+    if (route.dir || route.admin) {
       window.scrollTo(0, 0);
     } else if (route.anchor) {
       // coming back from a subpage to a section anchor
@@ -49,7 +51,9 @@ export default function App() {
     <>
       <Boot />
       <Header />
-      {route.dir ? (
+      {route.admin ? (
+        <StorefrontAdmin />
+      ) : route.dir ? (
         <DirectionPage slug={route.dir} />
       ) : (
         <main>

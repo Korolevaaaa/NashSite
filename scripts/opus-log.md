@@ -1219,3 +1219,186 @@ _usage: _
 **3. Вся страница** — не FAIL: оба блокера локальные (контактный адрес и контент обложек), каркас, ритм и типографика готовы к публикации сразу после их закрытия.
 
 _usage: _
+
+
+---
+## 2026-11-07T10:32:21.866Z — scripts/opus-prompt-9.md
+
+```css
+/* ───────────── 7 — hero-copy: статус-строка вместо кикера ───────────── */
+
+/* Разметка:
+   <p class="hero-status" role="status">
+     <span class="hero-status__dot" aria-hidden="true"></span>
+     Открыты для проектов · 2 слота в Q1 2026
+   </p>
+*/
+
+.hero-status {
+  display: inline-flex;
+  align-items: center;
+  gap: .65em;
+  margin: 0 0 clamp(14px, 2vw, 22px);
+  font-family: var(--font-mono, "JetBrains Mono", ui-monospace, monospace);
+  font-size: clamp(11px, 1.05vw, 13px);
+  font-weight: 500;
+  line-height: 1;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  color: rgb(255 255 255 / .62);
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
+.hero-status__dot {
+  flex: 0 0 auto;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--accent, #6ee7b7);
+  animation: hero-status-pulse 2.6s cubic-bezier(.4, 0, .2, 1) infinite;
+}
+
+@keyframes hero-status-pulse {
+  0%   { box-shadow: 0 0 0 0   rgb(110 231 183 / .55); }
+  70%  { box-shadow: 0 0 0 9px rgb(110 231 183 / 0);   }
+  100% { box-shadow: 0 0 0 0   rgb(110 231 183 / 0);   }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero-status__dot { animation: none; }
+}
+
+@media (max-width: 560px) {
+  .hero-status {
+    white-space: normal;
+    letter-spacing: .1em;
+    line-height: 1.35;
+    align-items: flex-start;
+  }
+  .hero-status__dot { margin-top: .45em; }
+}
+```
+
+```css
+/* ───────────── 8 — Scrim под hero-copy ───────────── */
+
+:root {
+  /* подставь реальный токен фона, если он уже есть */
+  --scrim-rgb: 6 8 12;
+}
+
+.hero-copy {
+  position: relative;
+  isolation: isolate; /* держит z-index:-1 внутри, не уводит под фон страницы */
+}
+
+.hero-copy::before {
+  content: "";
+  position: absolute;
+  inset: -14% -22% -16% -18%;
+  z-index: -1;
+  pointer-events: none;
+  background:
+    radial-gradient(75% 92% at 15% 45%,
+      rgb(var(--scrim-rgb) / .94) 0%,
+      rgb(var(--scrim-rgb) / .78) 40%,
+      rgb(var(--scrim-rgb) / .28) 68%,
+      rgb(var(--scrim-rgb) / 0)  88%),
+    linear-gradient(105deg,
+      rgb(var(--scrim-rgb) / .82) 0%,
+      rgb(var(--scrim-rgb) / .45) 55%,
+      rgb(var(--scrim-rgb) / 0)  85%);
+  -webkit-mask-image: radial-gradient(100% 100% at 50% 50%, #000 0%, #000 55%, transparent 100%);
+          mask-image: radial-gradient(100% 100% at 50% 50%, #000 0%, #000 55%, transparent 100%);
+  filter: blur(14px);
+  will-change: transform;
+}
+
+@media (max-width: 768px) {
+  .hero-copy::before {
+    inset: -10% -14% -12% -12%;
+    filter: blur(8px); /* на мобиле дешевле */
+  }
+}
+
+/* Если hero-copy лежит в overflow:hidden или линии сетки — отдельный слой выше по z-index,
+   ::before использовать нельзя. Тогда:
+
+   <div class="hero__scrim" aria-hidden="true"></div>
+
+   .hero { position: relative; }
+   .hero__scrim {
+     position: absolute; inset: 0; z-index: 1; pointer-events: none;
+     background: radial-gradient(60% 80% at 22% 50%,
+       rgb(var(--scrim-rgb) / .92) 0%, rgb(var(--scrim-rgb) / .6) 45%, rgb(var(--scrim-rgb) / 0) 80%);
+     -webkit-mask-image: linear-gradient(90deg, #000 0%, #000 52%, transparent 78%);
+             mask-image: linear-gradient(90deg, #000 0%, #000 52%, transparent 78%);
+   }
+   .hero-copy { position: relative; z-index: 2; }
+*/
+```
+
+```css
+/* ───────────── 9 — Шрифты ───────────── */
+
+:root {
+  --font-display: "Unbounded", "Inter", system-ui, sans-serif;
+  --font-body:    "Inter", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --font-mono:    "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+
+/* Unbounded: только два веса — 500 и 700, грузим вариативным диапазоном (один файл)
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400..600&family=JetBrains+Mono:wght@400..500&family=Unbounded:wght@400..700&display=swap">
+*/
+
+/* Где применять */
+.hero-title {
+  font-family: var(--font-display);
+  font-weight: 700;
+  letter-spacing: -.035em;
+  line-height: .98;
+  text-wrap: balance;
+}
+
+.zt-title {
+  font-family: var(--font-display);
+  font-weight: 500;
+  letter-spacing: -.02em;
+  line-height: 1.08;
+  text-wrap: balance;
+}
+
+/* mono остаётся: hero-микротекст, статус, holo, цифры/метки */
+.hero-status,
+.hero-eyebrow,
+.hero-meta,
+.holo {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+}
+
+/* body */
+body,
+p,
+li,
+button,
+input,
+textarea {
+  font-family: var(--font-body);
+}
+```
+
+```bash
+# Space Grotesk — удаляем полностью. Найти остатки:
+grep -rn -iE 'space[ _-]?grotesk|SpaceGrotesk|font-grotesk' \
+  --include='*.{html,css,js,jsx,ts,tsx,scss,astro,vue}' .
+```
+
+Замена по назначению: заголовки → `var(--font-display)`; мелкие uppercase-лейблы и цифры → `var(--font-mono)`; интерфейсный текст и кнопки → `var(--font-body)`. Отдельного `--font-grotesk` не оставляем — иначе он всплывёт обратно.
+
+Оговорка про `.zt-title`: если это не заголовок секции, а мелкий надзаголовок-лейбл, Unbounded туда не ставить — оставить `--font-mono`. Тогда display работает только на `.hero-title` и заголовках секций.
+
+_usage: _

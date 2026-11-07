@@ -7,8 +7,10 @@ import ProjectorBeam from "./ProjectorBeam";
 import type { BeamAnchorState, PointerState } from "./heroTypes";
 import { toClipProgress } from "./heroProgress";
 
-/** progress at which the holographic nav turns on (projector fires ~0.68–0.92) */
-const NAV_ON = 0.7;
+/** progress at which the holographic nav turns on (projector fires ~0.68–0.92;
+    the beam must visibly reach the panel BEFORE it materializes — 0.8 leaves
+    ~0.12 of clip progress where the beam shines alone) */
+const NAV_ON = 0.8;
 const COPY_OUT = 0.14;
 
 /**

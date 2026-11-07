@@ -1,9 +1,51 @@
-import { CONTACT_EMAIL, TEMPLATES } from "../../data/content";
+import { useMemo, useState } from "react";
+import { CONTACT_EMAIL } from "../../data/content";
+import {
+  publishedItems,
+  taxonomy,
+  type StoreItem,
+} from "../../data/storefront";
 import { useInView } from "../../hooks/useInView";
 import SectionHead from "./SectionHead";
 
+const priceFmt = new Intl.NumberFormat("ru-RU", {
+  style: "currency",
+  currency: "RUB",
+  maximumFractionDigits: 0,
+});
+
 export default function Templates() {
   const { ref, inView } = useInView<HTMLElement>();
+  const [items] = useState(publishedItems);
+  const [cat, setCat] = useState("all");
+  const [sub, setSub] = useState("all");
+  const [q, setQ] = useState("");
+
+  const cats = useMemo(() => taxonomy(items), [items]);
+
+  const subs = useMemo(() => {
+    if (cat === "all") return [];
+    const current = cats.find((c) => c.name === cat);
+    if (!current) return [];
+    return current.subs.filter((s) =>
+      items.some((i) => i.cat === cat && i.sub === s),
+    );
+  }, [cat, cats, items]);
+
+  const filtered = useMemo(() => {
+    const query = q.trim().toLowerCase();
+    return items
+      .filter((i) => cat === "all" || i.cat === cat)
+      .filter((i) => sub === "all" || i.sub === sub)
+      .filter((i) => {
+        if (!query) return true;
+        return [i.name, i.cat, i.sub, i.kind]
+          .filter(Boolean)
+          .join(" ")
+          .toLowerCase()
+          .includes(query);
+      });
+  }, [items, cat, sub, q]);
 
   return (
     <section
@@ -12,31 +54,130 @@ export default function Templates() {
       className={`reveal zt-sec px-[var(--page-gutter)] ${inView ? "is-in" : ""}`}
     >
       <div className="mx-auto max-w-[var(--content-max)]">
-        <SectionHead title="Готовые макеты" />
+        <SectionHead
+          title="Готовые макеты"
+          sub="Проверенные дизайны, которые адаптируем под ваш бизнес за одну-две недели — быстрее и дешевле проекта с нуля."
+        />
 
-        <div className="tpl-banner">
-          <div>
-            <p className="zt-lead">
-              Запуск за одну-две недели вместо долгого проектирования. Три
-              формата появятся первыми — сообщим, когда откроется продажа.
-            </p>
+        <div className="sf-filters">
+          <input
+            className="sf-search"
+            type="search"
+            value={q}
+            onChange={(e) => setQ(e.target.value)}
+            placeholder="Поиск — «суши», «лендинг», «магазин»…"
+            aria-label="Поиск по витрине"
+          />
+
+          <div className="sf-chips" role="group" aria-label="Категории">
+            <button
+              type="button"
+              className={`sf-chip${cat === "all" ? " is-active" : ""}`}
+              onClick={() => {
+                setCat("all");
+                setSub("all");
+              }}
+            >
+              Все
+            </button>
+            {cats.map((c) => (
+              <button
+                key={c.name}
+                type="button"
+                className={`sf-chip${cat === c.name ? " is-active" : ""}`}
+                onClick={() => {
+                  setCat(c.name);
+                  setSub("all");
+                }}
+              >
+                {c.name}
+              </button>
+            ))}
           </div>
-          <ul className="flex flex-col">
-            {TEMPLATES.map((t) => (
-              <li key={t.id} className="tpl-row">
-                <span className="tpl-name">{t.name}</span>
-                <span className="tpl-kind">{t.kind}</span>
-                <a
-                  className="tpl-notify"
-                  href={`mailto:${CONTACT_EMAIL}?subject=${encodeURIComponent(`Сообщите, когда появится: ${t.name}`)}`}
+
+          {cat !== "all" && subs.length > 0 && (
+            <div className="sf-chips sf-chips--sub" role="group" aria-label="Подкатегории">
+              <button
+                type="button"
+                className={`sf-chip${sub === "all" ? " is-active" : ""}`}
+                onClick={() => setSub("all")}
+              >
+                Все
+              </button>
+              {subs.map((s) => (
+                <button
+                  key={s}
+                  type="button"
+                  className={`sf-chip${sub === s ? " is-active" : ""}`}
+                  onClick={() => setSub(s)}
                 >
-                  Сообщить мне
-                </a>
-              </li>
+                  {s}
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {filtered.length > 0 ? (
+          <ul className="sf-grid">
+            {filtered.map((item) => (
+              <TemplateCard key={item.id} item={item} />
             ))}
           </ul>
-        </div>
+        ) : (
+          <p className="sf-empty">
+            По этому запросу ничего нет. Попробуйте другую категорию — или{" "}
+            <a
+              href={`mailto:${CONTACT_EMAIL}?subject=${encodeURIComponent("Нужен макет: не нашёл на витрине")}`}
+            >
+              напишите нам
+            </a>
+            , подберём под задачу.
+          </p>
+        )}
       </div>
     </section>
+  );
+}
+
+function TemplateCard({ item }: { item: StoreItem }) {
+  const cta = item.kind === "Макет" ? "Купить" : "Заказать";
+  const subject = encodeURIComponent(
+    item.kind === "Макет"
+      ? `Хочу купить макет: ${item.name}`
+      : `Хочу заказать: ${item.name}`,
+  );
+
+  return (
+    <li className="sf-card">
+      <div className="sf-card__media">
+        {item.cover ? (
+          <img src={item.cover} alt="" loading="lazy" />
+        ) : (
+          <span className="sf-card__placeholder" aria-hidden="true">
+            {item.name}
+          </span>
+        )}
+        <span className="sf-card__badge">{item.kind}</span>
+      </div>
+      <div className="sf-card__body">
+        <p className="sf-card__meta">
+          {item.cat}
+          {item.sub ? ` / ${item.sub}` : ""}
+        </p>
+        <h3 className="sf-card__title">{item.name}</h3>
+        <div className="sf-card__row">
+          <strong className="sf-card__price">
+            {priceFmt.format(item.price)}
+          </strong>
+          <a
+            className="sf-card__cta"
+            href={`mailto:${CONTACT_EMAIL}?subject=${subject}`}
+          >
+            {cta}
+          </a>
+        </div>
+      </div>
+    </li>
   );
 }

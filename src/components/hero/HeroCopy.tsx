@@ -8,7 +8,10 @@ export default function HeroCopy() {
   return (
     <div className="hero-copy">
       <div className="hero-intro">
-        <p className="hero-kicker">Веб-студия ZETRONIX</p>
+        <p className="hero-status" role="status">
+          <span className="hero-status__dot" aria-hidden="true" />
+          Открыты для новых проектов
+        </p>
 
         <h1 className="hero-title">Сайты и цифровые продукты для бизнеса</h1>
 

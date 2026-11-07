@@ -1,0 +1,309 @@
+# РАУНД 5 — СПЕКА + РЕЗКА
+
+Сначала резка. Что я **не** буду делать и почему, чтобы потом не возвращаться:
+
+| Требование | Решение | Причина |
+|---|---|---|
+| Постеры 9:16 отдельными плитками в портфолио | **РЕЖУ.** Кроп-правило `object-position: 50% 18%` в слоте 4:5 | Постерные плитки ломают ритм скана сетки и дублируют инфу обложки; 9:16 в колонке 330px = 587px высоты, карточка уходит за второй экран |
+| Фасеты/сайдбар/3-й уровень таксономии в витрине | **РЕЖУ.** Chips ≤2 уровней + поиск | Владелец сам поставил UX-ограничение «не заблудиться». Трет уровень = дерево, дерево = потерянный посетитель |
+| «Настоящая» админка с авторизацией | **РЕЖУ.** localStorage + export JSON + честный бейдж «черновик» | Статика без бэкенда. Любая «авторизация» на клиенте — театр безопасности, посетитель всё равно не увидит данные владельца |
+| Рябь «постоянно» | **РЕЖУ.** Duty cycle ~1.5с из 13с | Иначе рейв, а не голограмма |
+| 5-й текстовый блок в hero-copy | **РЕЖУ.** Кикер уходит, приходит статус-строка | Кикер «Веб-студия ZETRONIX» дублирует логотип (repetition ban), слот освобождается бесплатно |
+| Дипломы в модалке/карусели | **РЕЖУ.** Inline-disclosure | Модалка съест контекст секции, карусель скроет слоты «под загрузку» |
+| Inter + Manrope + Space Grotesk | **РЕЖУ все три.** См. п.9 | Unbounded закрывает и латиницу — четвёртая семья не нужна |
+
+---
+
+## 1. КОМПЕТЕНЦИИ → КНОПКА «ДИПЛОМЫ» + СЛОТЫ
+
+Механика: `grid-template-rows: 0fr → 1fr` (анимируется без JS-замеров высоты), `aria-expanded`, кнопка-pill 44px. Слоты — неинтерактивные dashed-контейнеры 4:3 (диплом ландшафтный), когда владелец положит файл — `<img>` встаёт в тот же слот без смены разметки.
+
+```tsx
+// src/components/sections/Competencies.tsx — добавить после grid компетенций
+const DIPLOMA_SLOTS = 6; // владелец подтверждает количество
+
+<button
+  className="comp-toggle"
+  aria-expanded={open}
+  aria-controls="diplomas"
+  onClick={() => setOpen(v => !v)}
+>
+  Дипломы и сертификаты
+  <span className="comp-toggle__note latn-mono">{DIPLOMA_SLOTS} slots</span>
+  <i className="comp-toggle__ico" aria-hidden="true">+</i>
+</button>
+
+<div id="diplomas" className={`comp-diplomas ${open ? "is-open" : ""}`}>
+  <div className="comp-diplomas__clip">
+    <ul className="dipl-grid">
+      {Array.from({ length: DIPLOMA_SLOTS }, (_, i) => (
+        <li key={i} className="dipl-slot">
+          {/* когда появится файл: <img src={...} alt={`Диплом ${i+1}`} loading="lazy" /> */}
+          <span className="dipl-slot__label latn-mono">
+            SLOT {String(i + 1).padStart(2, "0")} · ожидает загрузки
+          </span>
+        </li>
+      ))}
+    </ul>
+  </div>
+</div>
+```
+
+```css
+/* ---- competencies: diplomas disclosure ---- */
+.comp-toggle {
+  margin-top: 56px;
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  gap: 14px;
+  padding: 0 22px;
+  border: 1px solid var(--color-line);
+  border-radius: var(--r-pill);
+  background: transparent;
+  font-family: var(--font-body);
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--color-ink);
+  cursor: pointer;
+  transition: border-color .2s ease, background-color .2s ease;
+}
+.comp-toggle:hover { border-color: var(--color-ink); background: rgba(255,255,255,.55); }
+.comp-toggle__note { font-size: 10px; letter-spacing: .14em; color: var(--color-ink-faint); }
+.comp-toggle__ico {
+  font-style: normal; font-size: 18px; line-height: 1;
+  color: var(--color-accent-deep);
+  transition: transform .3s cubic-bezier(.22,1,.36,1);
+}
+.comp-toggle[aria-expanded="true"] .comp-toggle__ico { transform: rotate(45deg); }
+
+.comp-diplomas {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows .45s cubic-bezier(.22,1,.36,1);
+}
+.comp-diplomas.is-open { grid-template-rows: 1fr; }
+.comp-diplomas__clip { overflow: hidden; min-height: 0; }
+
+.dipl-grid {
+  list-style: none; margin: 0; padding: 28px 0 0;
+  display: grid; gap: 16px;
+  grid-template-columns: repeat(2, minmax(0,1fr));
+}
+@media (min-width: 1024px) { .dipl-grid { grid-template-columns: repeat(3, minmax(0,1fr)); } }
+@media (max-width: 639px)  { .dipl-grid { grid-template-columns: 1fr; } }
+
+.dipl-slot {
+  aspect-ratio: 4 / 3;
+  border: 1px dashed rgba(13,17,23,.24);
+  border-radius: var(--r-card);
+  display: grid; place-items: center;
+  background: rgba(255,255,255,.35);
+  overflow: hidden;
+}
+.dipl-slot img { width: 100%; height: 100%; object-fit: cover; }
+.dipl-slot__label { font-size: 10px; letter-spacing: .16em; color: var(--color-ink-faint); }
+
+@media (prefers-reduced-motion: reduce) {
+  .comp-diplomas { transition: none; }
+  .comp-toggle__ico { transition: none; }
+}
+```
+
+---
+
+## 2. HOLONAV: СЕКВЕНЦИЯ BEAM→NAV + ГОЛОГРАММА
+
+### 2b. Секвенция (точное значение порога)
+
+Луч живёт от `beam.intensity` (GLB-канал, старт клипа ≈0.68). Панель сейчас включается на `clipP >= 0.7` — почти одновременно, отсюда «нереалистично». Разносим: луч стартует как есть, панель — на **0.80**, и материализация идёт CSS-анимацией, которая срабатывает один раз в момент добавления класса (никаких JS-рендеров).
+
+```ts
+// HeroScene.tsx — заменить константы и toggle-блок
+const NAV_ON = 0.8;   // было 0.7: ~0.12 clip-прогресса луч светит в пустоту
+const COPY_OUT = 0.14;
+// ...в update():
+stage.classList.toggle("is-nav", clipP >= NAV_ON);
+```
+
+Плюс «lock-кольцо» в точке попадания: луч «пристrelивается», панель материализуется. Кольцо добавляется в ProjectorBeam (см. 2c), анимируется тем же классом.
+
+```css
+/* ---- sequence: beam first, panel materializes second ---- */
+.holo-nav {
+  /* hide — быстро и без задержек; show — целиком несёт animation ниже */
+  transition: opacity .22s ease, visibility .22s ease;
+}
+.hero-stage.is-nav .holo-nav {
+  opacity: 1; visibility: visible; translate: 0 0; scale: 1;
+  transition: none;               /* reveal = animation, не transition */
+}
+.hero-stage.is-nav .holo-panel {
+  animation: holo-materialize .64s cubic-bezier(.3,.7,.2,1) both;
+}
+@keyframes holo-materialize {
+  0%   { opacity: 0;   clip-path: inset(0 0 100% 0); filter: blur(6px) brightness(1.7); }
+  12%  { opacity: .85; clip-path: inset(0 0 62% 0); }
+  18%  { opacity: .22; }
+  26%  { opacity: .9;  clip-path: inset(0 0 28% 0); filter: blur(2px) brightness(1.3); }
+  34%  { opacity: .45; }
+  48%  { opacity: 1;   clip-path: inset(0 0 0 0);   filter: blur(0) brightness(1.1); }
+  62%  { opacity: .8; }
+  74%  { opacity: 1;   filter: none; }
+  100% { opacity: 1;   clip-path: inset(0 0 0 0);   filter: none; }
+}
+/* lock-ring в SVG луча: один проход в момент is-nav */
+.hero-stage.is-nav .pb-ring { animation: pb-lock .7s cubic-bezier(.22,1,.36,1) 1 both; }
+@keyframes pb-lock {
+  0%   { stroke-opacity: .55; transform: scale(.4); }
+  100% { stroke-opacity: 0;   transform: scale(1.6); }
+}
+.pb-ring { transform-box: fill-box; transform-origin: center; }
+```
+
+Обратный скролл: класс снят → animation исчезает, opacity 0.22s уводит панель; луч гаснет от своей intensity. Никаких хвостов.
+
+### 2a. Голограмма: слои и точные keyframes
+
+Набор слоёв (панель = 4 слоя, ничего нового в DOM кроме ring в SVG):
+
+1. **Статичные сканлайны** — переезжают в `background` панели (4px период, alpha .04), освобождают `::before`.
+2. **`::before` — corner-тики** (4 уголка градиентами): читаемая «голографическая рамка» без новых DOM-узлов.
+3. **`::after` — sweep-полоса**, 7.5s infinite, blend `soft-light`, старт через 1.2s после материализации.
+4. **Хроматизм текста** — двойной text-shadow ±0.6px cyan/magenta, alpha ≤.3.
+5. **Рябь «иногда»** — вторая animation на панели: 13s цикл, возмущение только в окне 84–90% (~0.8с каждые 13с).
+6. **Idle-дыхание** — box-shadow pulse 5.5s alternate, амплитуда .10→.18 alpha.
+7. **Blink-точка** в `.holo-tag` — статус-диод 3s steps.
+
+```css
+/* ---- hologram build-up ---- */
+.holo-panel {
+  background:
+    repeating-linear-gradient(180deg, rgba(0,201,212,.04) 0 1px, transparent 1px 4px),
+    linear-gradient(160deg, rgba(255,255,255,.75), rgba(230,252,253,.55));
+  outline: 1px solid rgba(0,255,240,.20);
+  outline-offset: 3px;
+}
+.hero-stage.is-nav .holo-panel {
+  animation:
+    holo-materialize .64s cubic-bezier(.3,.7,.2,1) both,
+    holo-ripple 13s linear 2.4s infinite,
+    holo-breathe 5.5s ease-in-out 1s infinite alternate;
+}
+.holo-panel::before {
+  content: ""; position: absolute; inset: 0; border-radius: inherit;
+  pointer-events: none;
+  background:
+    linear-gradient(var(--color-accent), var(--color-accent)) left 10px top 10px / 14px 1px,
+    linear-gradient(var(--color-accent), var(--color-accent)) left 10px top 10px / 1px 14px,
+    linear-gradient(var(--color-accent), var(--color-accent)) right 10px top 10px / 14px 1px,
+    linear-gradient(var(--color-accent), var(--color-accent)) right 10px top 10px / 1px 14px,
+    linear-gradient(var(--color-accent), var(--color-accent)) left 10px bottom 10px / 14px 1px,
+    linear-gradient(var(--color-accent), var(--color-accent)) left 10px bottom 10px / 1px 14px,
+    linear-gradient(var(--color-accent), var(--color-accent)) right 10px bottom 10px / 14px 1px,
+    linear-gradient(var(--color-accent), var(--color-accent)) right 10px bottom 10px / 1px 14px;
+  background-repeat: no-repeat;
+  opacity: .5;
+}
+.holo-panel::after {
+  content: ""; position: absolute; left: 0; right: 0; top: -30%; height: 60%;
+  border-radius: inherit; pointer-events: none;
+  background: linear-gradient(180deg,
+    transparent 0%, rgba(0,255,240,.10) 42%,
+    rgba(255,255,255,.20) 50%,
+    rgba(0,255,240,.10) 58%, transparent 100%);
+  mix-blend-mode: soft-light;
+  opacity: 0;
+}
+.hero-stage.is-nav .holo-panel::after {
+  animation: holo-sweep 7.5s cubic-bezier(.45,0,.55,1) 1.2s infinite;
+}
+@keyframes holo-sweep {
+  0%   { transform: translateY(-40%); opacity: 0; }
+  8%   { opacity: 1; }
+  46%  { transform: translateY(240%); opacity: 1; }
+  54%, 100% { transform: translateY(240%); opacity: 0; }
+}
+/* рябь: возмущение только в окне 84–90% цикла */
+@keyframes holo-ripple {
+  0%, 84%, 100% { transform: none; }
+  85%   { transform: translateX(1.5px) skewX(.7deg); }
+  86.5% { transform: translateX(-1px) skewX(-.5deg); }
+  88%   { transform: translateX(.5px); }
+  89.5% { transform: none; }
+}
+@keyframes holo-breathe {
+  from { box-shadow: 0 0 0 1px rgba(255,255,255,.6) inset, 0 18px 44px rgba(0,140,150,.14), 0 0 30px rgba(0,201,212,.10); }
+  to   { box-shadow: 0 0 0 1px rgba(255,255,255,.6) inset, 0 18px 44px rgba(0,140,150,.14), 0 0 46px rgba(0,201,212,.18); }
+}
+/* хроматизм — только на читаемых метках, alpha держим ≤.3 */
+.holo-label, .holo-tag {
+  text-shadow: .6px 0 rgba(255,0,90,.22), -.6px 0 rgba(0,255,240,.28);
+}
+.holo-tag::after {
+  content: ""; display: inline-block; width: 5px; height: 5px; margin-left: 8px;
+  border-radius: 50%; background: var(--color-accent); vertical-align: 1px;
+  animation: holo-blink 3s steps(2, jump-none) infinite;
+}
+@keyframes holo-blink { 0%, 88% { opacity: 1; } 92%, 100% { opacity: .15; } }
+
+/* ---- reduced-motion: голограмма СТАТИЧНА, секвенция схлопнута ---- */
+@media (prefers-reduced-motion: reduce) {
+  .holo-nav, .hero-stage.is-nav .holo-nav { transition: none; }
+  .hero-stage.is-nav .holo-panel,
+  .hero-stage.is-nav .holo-panel::after,
+  .holo-tag::after,
+  .hero-stage.is-nav .pb-ring { animation: none !important; }
+  .holo-panel::after { opacity: 0; }
+  .pb-packet, .pb-line { display: none; }
+}
+```
+
+Итого duty cycle ряби: 0.8с / 13с ≈ 6% — «иногда», не рейв. Sweep ходит раз в 7.5с, но его пик яркости alpha .20 в soft-light — это фоновое дыхание, не событие.
+
+### 2c. Луч: визуальные слои в том же SVG/цикле
+
+Геометрия веера, эмиттер, endpoint — не трогаем. Добавляем 5 узлов и ~20 строк в `frame()`:
+
+```tsx
+// ProjectorBeam.tsx — в refs и разметку svg
+const lineRef  = useRef<SVGPathElement>(null);   // pb-line
+const ringRef  = useRef<SVGEllipseElement>(null);// pb-ring
+const packRefs = [useRef<SVGCircleElement>(null), useRef<SVGCircleElement>(null), useRef<SVGCircleElement>(null)];
+// ...в <svg> послеnode:internal/deps/undici/undici:11350
+            fetchParams.controller.controller.error(new TypeError("terminated", {
+                                                    ^
+
+TypeError: terminated
+    at Fetch.onAborted (node:internal/deps/undici/undici:11350:53)
+    at Fetch.emit (node:events:519:28)
+    at Fetch.terminate (node:internal/deps/undici/undici:10508:14)
+    at Object.onError (node:internal/deps/undici/undici:11473:38)
+    at Request.onError (node:internal/deps/undici/undici:2232:31)
+    at Object.errorRequest (node:internal/deps/undici/undici:1726:17)
+    at TLSSocket.<anonymous> (node:internal/deps/undici/undici:6461:16)
+    at TLSSocket.emit (node:events:531:35)
+    at node:net:346:12
+    at TCP.done (node:internal/tls/wrap:671:7) {
+  [cause]: SocketError: other side closed
+      at TLSSocket.<anonymous> (node:internal/deps/undici/undici:6436:28)
+      at TLSSocket.emit (node:events:531:35)
+      at endReadableNT (node:internal/streams/readable:1698:12)
+      at process.processTicksAndRejections (node:internal/process/task_queues:89:21) {
+    code: 'UND_ERR_SOCKET',
+    socket: {
+      localAddress: '192.168.0.14',
+      localPort: 63821,
+      remoteAddress: '64.188.65.157',
+      remotePort: 443,
+      remoteFamily: 'IPv4',
+      timeout: undefined,
+      bytesWritten: 937865,
+      bytesRead: 1445922
+    },
+    [Symbol(undici.error.UND_ERR)]: true,
+    [Symbol(undici.error.UND_ERR_SOCKET)]: true
+  }
+}
+
+Node.js v22.22.3

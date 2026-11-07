@@ -14,21 +14,28 @@ export default function Portfolio() {
       <div className="mx-auto max-w-[var(--content-max)]">
         <SectionHead
           title="Портфолио"
-          sub="Четыре формата, в которых мы сильнее всего. Полные версии с цифрами — на первом созвоне."
+          sub="Часть недавних работ. Полные кейсы с цифрами показываем на созвоне."
         />
 
-        <ul className="case-grid">
+        <ul className="pf-grid">
           {WORKS.map((w) => (
-            <li key={w.name} className="case-card">
-              {/* cover is a reserved slot — owner drops real screenshots here later */}
-              <div className="case-card__cover" aria-hidden="true">
-                <span className="case-card__mark latn-display">{w.name}</span>
-              </div>
-              <div className="case-card__meta">
-                <h3 className="case-card__title latn-display">{w.name}</h3>
-                <p className="case-card__kind">{w.kind}</p>
-                <p className="case-card__year">{w.year}</p>
-              </div>
+            <li key={w.name} className="pf-card">
+              <span className="pf-card__cover">
+                {w.cover ? (
+                  <img src={w.cover} alt="" loading="lazy" />
+                ) : (
+                  <span className="pf-card__mark latn-display" aria-hidden="true">
+                    {w.name}
+                  </span>
+                )}
+                <span className="pf-card__tint" aria-hidden="true" />
+              </span>
+              <span className="pf-card__meta">
+                <span className="pf-card__cat">
+                  {w.kind} · {w.year}
+                </span>
+                <span className="pf-card__title latn-display">{w.name}</span>
+              </span>
             </li>
           ))}
         </ul>

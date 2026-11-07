@@ -1,9 +1,13 @@
+import { useState } from "react";
 import { COMPETENCIES } from "../../data/content";
 import { useInView } from "../../hooks/useInView";
 import SectionHead from "./SectionHead";
 
+const DIPLOMA_SLOTS = 6;
+
 export default function Competencies() {
   const { ref, inView } = useInView<HTMLElement>();
+  const [open, setOpen] = useState(false);
 
   return (
     <section
@@ -32,6 +36,37 @@ export default function Competencies() {
               </ul>
             </div>
           ))}
+        </div>
+
+        <button
+          className="comp-toggle"
+          aria-expanded={open}
+          aria-controls="diplomas"
+          onClick={() => setOpen((v) => !v)}
+        >
+          Дипломы и сертификаты
+          <span className="comp-toggle__note">{DIPLOMA_SLOTS} шт.</span>
+          <i className="comp-toggle__ico" aria-hidden="true">
+            +
+          </i>
+        </button>
+
+        <div
+          id="diplomas"
+          className={`comp-diplomas${open ? " is-open" : ""}`}
+        >
+          <div className="comp-diplomas__clip">
+            <ul className="dipl-grid">
+              {Array.from({ length: DIPLOMA_SLOTS }, (_, i) => (
+                <li key={i} className="dipl-slot">
+                  {/* slot for a future <img> — same frame, no markup change */}
+                  <span className="dipl-slot__label">
+                    Диплом {String(i + 1).padStart(2, "0")} — скоро
+                  </span>
+                </li>
+              ))}
+            </ul>
+          </div>
         </div>
       </div>
     </section>

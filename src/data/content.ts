@@ -4,6 +4,10 @@
 
 export const CONTACT_EMAIL = "noreply@zetronix.ru";
 
+/* Telegram contact link — when the owner sets a real handle here, the
+   "Написать в Telegram" button appears in Contacts automatically. */
+export const TELEGRAM_URL = "";
+
 /* Confirmed by owner 2026-11-07: 2 years on market, 20+ shipped projects
    (not only websites). Do not add client counts — not tracked. */
 export const STATS = [
@@ -44,12 +48,20 @@ export const SERVICES = [
   },
 ] as const;
 
-export const WORKS = [
+/* Portfolio entries — cover slots take 9:16 poster renders; they are
+   cropped into a compact 4:5 frame (object-position keeps the top of the
+   layout in view). Drop the file into /public/covers and set `cover`. */
+export const WORKS: ReadonlyArray<{
+  name: string;
+  kind: string;
+  year: string;
+  cover?: string;
+}> = [
   { name: "NEOBANK", kind: "Финтех-платформа", year: "2026" },
   { name: "ORBITAL", kind: "Marketplace спутниковых данных", year: "2025" },
   { name: "BIO/TECH", kind: "Сайт лаборатории", year: "2025" },
   { name: "AERON", kind: "Конфигуратор дронов", year: "2024" },
-] as const;
+];
 
 /* Business directions — each entry gets its own landing page
    (hash route #/napravlenie/<slug>) for SEO and Yandex Direct. */
@@ -204,14 +216,6 @@ export const DIRECTIONS = [
       cta: "Обсудить бронирование",
     },
   },
-] as const;
-
-/* Ready-made layouts for sale — vitrine is being assembled,
-   entries are presentation examples until real items land. */
-export const TEMPLATES = [
-  { id: "T-01", name: "Лендинг студии", kind: "Одностраничный · тёмная тема" },
-  { id: "T-02", name: "Витрина магазина", kind: "Каталог + карточка · светлая тема" },
-  { id: "T-03", name: "Сайт услуг", kind: "Многостраничный · редакционный" },
 ] as const;
 
 export const ABOUT = {
