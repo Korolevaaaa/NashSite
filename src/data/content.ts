@@ -57,7 +57,7 @@ export const WORKS: ReadonlyArray<{
   year: string;
   cover?: string;
 }> = [
-  { name: "NEOBANK", kind: "Финтех-платформа", year: "2026" },
+  { name: "NEOBANK", kind: "Финтех-платформа", year: "2025" },
   { name: "ORBITAL", kind: "Marketplace спутниковых данных", year: "2025" },
   { name: "BIO/TECH", kind: "Сайт лаборатории", year: "2025" },
   { name: "AERON", kind: "Конфигуратор дронов", year: "2024" },

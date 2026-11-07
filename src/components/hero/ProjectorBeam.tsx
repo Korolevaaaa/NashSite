@@ -93,10 +93,10 @@ export default function ProjectorBeam({ beamRef, navRef }: Props) {
 
       const sx = beam.x - sr.left;
       const sy = beam.y - sr.top;
-      // nearest border point of the panel — right edge on desktop,
-      // top edge for the bottom mobile sheet, all handled by clamping
+      // aim at the panel's vertical centre (x stays clamped to its edge) —
+      // the beam lands on the panel, not in the gap between nav rows
       const tx = Math.min(Math.max(sx, pr.left - sr.left + 10), pr.right - sr.left - 10);
-      const ty = Math.min(Math.max(sy, pr.top - sr.top + 14), pr.bottom - sr.top - 14);
+      const ty = Math.min(Math.max(pr.top - sr.top + pr.height / 2, pr.top - sr.top + 14), pr.bottom - sr.top - 14);
       const dx = tx - sx;
       const dy = ty - sy;
       const len = Math.hypot(dx, dy);

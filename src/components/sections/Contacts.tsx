@@ -54,12 +54,12 @@ export default function Contacts() {
 
           <dl className="zt-meta mt-12 space-y-2">
             <div>
-              <dt className="inline">ответ — </dt>
-              <dd className="inline text-[var(--z-ink)]">тот же или следующий рабочий день</dd>
-            </div>
-            <div>
               <dt className="inline">смета и сроки — </dt>
               <dd className="inline text-[var(--z-ink)]">фиксируются до старта</dd>
+            </div>
+            <div>
+              <dt className="inline">формат — </dt>
+              <dd className="inline text-[var(--z-ink)]">созвон или переписка, как удобнее</dd>
             </div>
           </dl>
         </div>
