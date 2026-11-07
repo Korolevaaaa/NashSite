@@ -460,3 +460,11 @@ font-size: clamp(96px, 9.8vw, 144px);
 Итог: **направление правильное, но текущий `p15` переусердствует с исчезновением.** Сначала верни устойчивую основу и видимый контраст эхо. Только после этого можно считать метафору работающей.
 
 _usage: {"completion_tokens":8991,"prompt_tokens":4055,"total_tokens":13046,"completion_tokens_details":{"reasoning_tokens":7250,"accepted_prediction_tokens":0,"audio_tokens":0,"rejected_prediction_tokens":0,"image_tokens":0},"cost":0.13804,"prompt_tokens_details":{"audio_tokens":0,"cached_tokens":0,"cache_write_tokens":0,"video_tokens":0},"is_byok":false}_
+
+
+---
+## 2026-11-07T14:47:08.213Z — gpt-6-astra — scripts/gpt-prompt-wm4.md
+
+PASS — «несведённый луч» теперь читается; основа стабильна, эхо отделено и не размывает объект.
+
+_usage: {"completion_tokens":430,"prompt_tokens":3482,"total_tokens":3912,"completion_tokens_details":{"reasoning_tokens":395,"accepted_prediction_tokens":0,"audio_tokens":0,"rejected_prediction_tokens":0,"image_tokens":0},"cost":0.019368,"prompt_tokens_details":{"audio_tokens":0,"cached_tokens":0,"cache_write_tokens":0,"video_tokens":0},"is_byok":false}_
