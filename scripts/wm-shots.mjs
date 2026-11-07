@@ -20,7 +20,7 @@ for (const [name, scrub, w, h] of shots) {
   await page.setViewport({ width: w, height: h, deviceScaleFactor: 1 });
   await page.goto(`http://localhost:5310/?scrub=${scrub}`, { waitUntil: "networkidle0", timeout: 45000 });
   await new Promise((r) => setTimeout(r, 4500));
-  await page.screenshot({ path: `${OUT}wm-${name}.png` });
+  await page.screenshot({ path: `${OUT}wm-${name}.jpg`, type: "jpeg", quality: 72 });
   console.log("shot", name);
   await page.close();
 }
