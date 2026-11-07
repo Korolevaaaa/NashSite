@@ -12,33 +12,22 @@ export default function Portfolio() {
       className={`reveal zt-sec px-[var(--page-gutter)] ${inView ? "is-in" : ""}`}
     >
       <div className="mx-auto max-w-[var(--content-max)]">
-        <div className="flex items-end justify-between gap-6">
-          <SectionHead
-            kicker="03 · Портфолио"
-            title="Портфолио"
-            sub="Направления и форматы, в которых работаем. Примеры оформления, реальные кейсы покажем на созвоне."
-          />
-          <p className="zt-meta hidden pb-2 md:block">04 примера</p>
-        </div>
+        <SectionHead
+          title="Портфолио"
+          sub="Четыре формата, в которых мы сильнее всего. Полные версии с цифрами — на первом созвоне."
+        />
 
-        <ul className="mt-12">
-          {WORKS.map((w, i) => (
-            <li
-              key={w.name}
-              style={{ "--i": i } as React.CSSProperties}
-              className="case flex flex-col gap-3 border-b border-[var(--z-line-soft)] py-9 last:border-b-0 md:flex-row md:items-baseline md:justify-between"
-            >
-              <div>
-                <span aria-hidden="true" className="mb-5 block h-px w-16 bg-line" />
-                <h3 className="latn-display text-[clamp(28px,2.8vw,40px)] font-medium leading-none tracking-[-0.01em] text-[var(--z-ink)]">
-                  {w.name}
-                </h3>
+        <ul className="case-grid">
+          {WORKS.map((w) => (
+            <li key={w.name} className="case-card">
+              {/* cover is a reserved slot — owner drops real screenshots here later */}
+              <div className="case-card__cover" aria-hidden="true">
+                <span className="case-card__mark latn-display">{w.name}</span>
               </div>
-              <div className="md:text-right">
-                <p className="text-[15px] text-[var(--z-muted)]">{w.kind}</p>
-                <p className="zt-meta mt-2 text-[11px] uppercase tracking-[0.12em]">
-                  {w.year} · пример оформления
-                </p>
+              <div className="case-card__meta">
+                <h3 className="case-card__title latn-display">{w.name}</h3>
+                <p className="case-card__kind">{w.kind}</p>
+                <p className="case-card__year">{w.year}</p>
               </div>
             </li>
           ))}

@@ -62,7 +62,6 @@ export default function Faq() {
       <div className="mx-auto grid max-w-[var(--content-max)] grid-cols-1 gap-12 md:grid-cols-[minmax(0,380px)_minmax(0,1fr)] md:gap-20">
         <div className="self-start md:sticky md:top-28">
           <SectionHead
-            kicker="09 · Вопросы"
             title="Частые вопросы"
             sub="Сроки, стоимость, поддержка и другие важные моменты."
           />

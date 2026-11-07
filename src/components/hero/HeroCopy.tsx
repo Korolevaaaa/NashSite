@@ -19,7 +19,7 @@ export default function HeroCopy() {
 
       <div className="hero-actions">
         <a className="hero-primary" href="#contacts">
-          Рассчитать смету
+          Обсудить проект
           <span aria-hidden="true">→</span>
         </a>
 

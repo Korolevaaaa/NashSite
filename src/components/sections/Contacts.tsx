@@ -12,7 +12,7 @@ export default function Contacts() {
     >
       <div className="mx-auto grid max-w-[var(--content-max)] grid-cols-1 items-end gap-12 md:grid-cols-[minmax(0,1fr)_auto]">
         <div>
-          <p className="zt-kicker">10 · Контакты</p>
+          <p className="zt-kicker">Следующий шаг</p>
           <h2 className="mt-6 font-display text-[clamp(44px,5.6vw,72px)] font-medium leading-[1.02] tracking-[-0.02em] text-[var(--z-ink)]">
             Обсудим
             <br />
@@ -23,7 +23,7 @@ export default function Contacts() {
             следующий рабочий день.
           </p>
           <a
-            href={`mailto:${CONTACT_EMAIL}`}
+            href={`mailto:${CONTACT_EMAIL}?subject=${encodeURIComponent("Заявка с сайта zetronix.ru")}`}
             className="group mt-10 inline-flex items-center gap-4 text-[clamp(24px,2.6vw,36px)] font-medium text-[var(--z-ink)] underline decoration-[rgba(13,17,23,0.24)] decoration-1 underline-offset-[10px] transition-colors hover:decoration-[var(--z-action)]"
           >
             {CONTACT_EMAIL}

@@ -19,6 +19,8 @@
 :root {
   --content-max: 1440px;
   --page-gutter: clamp(20px, 4vw, 64px);
+  --r-pill: 999px; /* interactive: buttons, links, chips, arrows */
+  --r-card: 12px; /* containers: banners, covers */
 
   /* runtime vars driven by JS */
   --gx: -500px;

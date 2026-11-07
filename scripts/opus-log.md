@@ -818,3 +818,404 @@ fill.style.height = (c[active] - c[0]) + 'px';  // прогресс: height, н�
 Следующим приоритетом, не блокируя релиз: `prefers-reduced-motion` для анимаций рельса/точек, `aria-current="step"` на активном этапе и `contain: layout paint` на шапке с блюром для слабых GPU.
 
 _usage: _
+
+
+---
+## 2026-11-07T09:30:54.691Z — scripts/opus-prompt-4.md
+
+# ВЕРИКТ
+
+Страница отпугивает не деталями, а голосом: она разговаривает с владельцем химчисток языком внутренней спецификации студии. Десять секций собраны из трёх одинаковых приёмов — моно-кикер, дублирующий заголовок («01 · УСЛУГИ» → «Услуги»), реестровая строка с hairline и моно-индексом, и отложенное доказательство («реальные кейсы покажем на созвоне», «витрина собирается», «сетка не меняется»). Бизнес-клиент видит не оферту, а черновик внутреннего документа: цены — самым нечитаемым кеглем на странице (12px mono), доказательств ноль, вместо портфолио — лестница из названий, вместо витрины — пустые тайлы и признание «состав уточняем». «Рассинхрон», который чувствует клиент, — это отсутствие ритма: секции не чередуют плотность и воздух по логике, а просто повторяют один и тот же ledger-блок с произвольными паддингами (`zt-sec` / `zt-sec--dense` без системы). Плюс два самоубийственных артефакта: контакт `noreply@` и плашка «слот … сетка не меняется» в продакшене.
+
+---
+
+# КРИТИЧЕСКИЙ СПИСОК
+
+### 1. [БЛОКЕР] Контактный email — `noreply@zetronix.ru`
+Скрин Contacts + Footer + Templates: главный CTA страницы — `mailto:noreply@zetronix.ru`. «Noreply» буквально означает «не отвечай». Владелец пекарни, который решился написать, отправляет письмо в ящик-пустышку. Это не дизайн, это потерянная выручка на каждом CTA.
+Правило: ui-ux-pro-max §9 (navigation/CTA предсказуемость) + copy self-audit.
+Фикс (`src/data/content.ts`):
+```ts
+// Владелец подтверждает рабочий ящик ДО деплоя. noreply в продакшене = потерянные лиды.
+export const CONTACT_EMAIL = "hello@zetronix.ru";
+```
+И во всех mailto добавь тему, чтобы письмо не падало пустым (`Contacts.tsx`, `Templates.tsx`):
+```tsx
+href={`mailto:${CONTACT_EMAIL}?subject=${encodeURIComponent("Заявка с сайта zetronix.ru")}`}
+```
+
+### 2. [БЛОКЕР] Портфолио-каскад («лестница из блоков») — запрещён клиентом дословно
+Скрин Portfolio: NEOBANK на x≈57, ORBITAL на x≈113, BIO/TECH на x≈169 — ступени по 56px. Клиент сказал «не вот эти лестницы» — и лестница осталась в коде.
+Код-пруф: `global.css`
+```css
+@media (min-width: 768px) {
+  .case { margin-left: calc(var(--i, 0) * 56px); }
+}
+```
++ `Portfolio.tsx` `style={{ "--i": i }}`. Плюс тик-штрих `h-px w-16 bg-line` над каждым именем — немотивированная риска, и моно-счётчик «04 примера» справа.
+Правило: прямое требование клиента + Section-Layout-Repetition Ban (третья секция подряд в семье «реестровые строки»).
+Фикс — убрать каскад, перейти на честную сетку 2×2 с плоскими тонированными обложками (НЕ fake-скриншоты; слоты под реальные снимки, `aspect-ratio` резервирует место → CLS 0):
+```css
+/* global.css: УДАЛИТЬ блок .case margin-left и .tile-grid */
+.case-grid { display: grid; grid-template-columns: 1fr; gap: 32px; margin-top: 56px; }
+@media (min-width: 768px) { .case-grid { grid-template-columns: 1fr 1fr; gap: 44px 32px; } }
+.case-card__cover {
+  aspect-ratio: 4 / 3;               /* резерв под реальный снимок, CLS = 0 */
+  border-radius: var(--r-card);
+  background: var(--cover, rgba(0, 201, 212, 0.10));
+  display: grid; place-items: center;
+}
+.case-card:nth-child(2) .case-card__cover { --cover: rgba(21, 27, 32, 0.06); }
+.case-card:nth-child(3) .case-card__cover { --cover: rgba(0, 107, 112, 0.10); }
+.case-card:nth-child(4) .case-card__cover { --cover: rgba(21, 27, 32, 0.10); }
+.case-card__mark { font-size: clamp(28px, 3vw, 44px); letter-spacing: -0.02em; color: var(--z-ink); opacity: .85; }
+.case-card__meta { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 12px; margin-top: 14px; }
+.case-card__title { font-size: 18px; font-weight: 600; color: var(--z-ink); }
+.case-card__kind  { font-size: 14px; color: var(--z-muted); }
+.case-card__year  { margin-left: auto; font-size: 13px; color: var(--z-muted); font-variant-numeric: tabular-nums; }
+```
+```tsx
+<ul className="case-grid">
+  {WORKS.map((w) => (
+    <li key={w.name} className="case-card">
+      {/* НЕДЕЛЯ ВЛАДЕЛЬЦУ: вставить <img src={w.shot} alt={`${w.name} — ${w.kind}`} /> внутрь cover */}
+      <div className="case-card__cover" aria-hidden="true">
+        <span className="case-card__mark latn-display">{w.name}</span>
+      </div>
+      <div className="case-card__meta">
+        <h3 className="case-card__title latn-display">{w.name}</h3>
+        <p className="case-card__kind">{w.kind}</p>
+        <p className="case-card__year">{w.year}</p>
+      </div>
+    </li>
+  ))}
+</ul>
+```
+Сабзаголовок заменить с «примеры оформления, реальные кейсы покажем на созвоне» на: «Четыре формата, в которых мы сильнее всего. Полные версии с цифрами — на первом созвоне.»
+
+### 3. [БЛОКЕР] «Готовые макеты»: ступенчатая полка + fake-тайлы + внутренний статус в продакшене
+Скрин Templates: карточки сдвинуты `md:mt-10 / md:mt-20` (вторая запрещённая клиентом лестница), тайлы 220px — пустая CSS-сетка (div-based fake preview), подзаголовок публикует внутренний статус: «Витрина собирается, состав уточняем». CTA «Скоро в продаже — сообщить мне» ведёт mailto на noreply. Секция целиком — шум для клиента, который пришёл за сайтом для своего бизнеса.
+Правила: Div-based fake screenshots banned; прямое требование клиента; copy self-audit.
+Фикс — секция схлопывается в один широкий баннер-полку без тайлов и без ступеней:
+```css
+.tpl-banner {
+  display: grid; gap: 32px;
+  padding: clamp(28px, 4vw, 48px);
+  border: 1px solid var(--z-line);
+  border-radius: var(--r-card);
+  background: rgba(255, 255, 255, 0.5);
+}
+@media (min-width: 900px) { .tpl-banner { grid-template-columns: minmax(280px, 380px) 1fr; gap: 48px; } }
+.tpl-list { display: flex; flex-direction: column; }
+.tpl-row { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 16px; padding: 14px 0; border-top: 1px solid var(--z-line-soft); }
+.tpl-row:first-child { border-top: 0; }
+.tpl-name { font-family: var(--font-display); font-size: 17px; font-weight: 500; color: var(--z-ink); }
+.tpl-kind { font-size: 13px; color: var(--z-muted); }
+.tpl-notify {
+  margin-left: auto; min-height: 44px; display: inline-flex; align-items: center;
+  padding: 0 18px; border: 1px solid var(--z-line); border-radius: var(--r-pill);
+  font-size: 13px; font-weight: 500; color: var(--z-action); text-decoration: none;
+  transition: background .2s ease, color .2s ease, border-color .2s ease;
+}
+.tpl-notify:hover { background: var(--z-action); border-color: var(--z-action); color: #fff; }
+```
+```tsx
+<div className="tpl-banner">
+  <div>
+    <h2 className="zt-title">Готовые макеты</h2>
+    <p className="zt-lead mt-4">Запуск за одну-две недели вместо долгого проектирования. Сейчас готовы три формата, остальные в работе.</p>
+  </div>
+  <ul className="tpl-list">
+    {TEMPLATES.map((t) => (
+      <li key={t.id} className="tpl-row">
+        <span className="tpl-name">{t.name}</span>
+        <span className="tpl-kind">{t.kind}</span>
+        <a className="tpl-notify"
+           href={`mailto:${CONTACT_EMAIL}?subject=${encodeURIComponent("Сообщите, когда появится: " + t.name)}`}>
+          Сообщить мне
+        </a>
+      </li>
+    ))}
+  </ul>
+</div>
+```
+
+### 4. [БЛОКЕР] Team: служебная плашка «слот … сетка не меняется» в продакшене
+Скрин Team: пунктирная строка «имена и фото добавим сюда после знакомства — сетка не меняется». Это комментарий верстальчика о раскладке, опубликованный как контент. Владелец клиники читает это как «сайт недоделан».
+Фикс (`Team.tsx`) — удалить блок целиком:
+```tsx
+{/* УДАЛИТЬ:
+<p className="mt-8 inline-flex items-baseline gap-3 border-b border-dashed ...">
+  <span className="zt-meta">слот</span> ...
+</p>
+*/}
+```
+Сабзаголовок секции: вместо «Знакомим лично на созвоне» → «Шесть ролей закрывают проект целиком. С вами говорят те, кто делает работу.»
+
+### 5. [СЕРЬЁЗНО] Kicker дублирует заголовок на всех 10 секциях
+Скрины Services/Directions/Portfolio/Team/Competencies: «01 · УСЛУГИ» → «Услуги», «06 · КОМАНДА» → «Команда», «07 · КОМПЕТЕНЦИИ» → «Компетенции». Строка не несёт информации — это нумерация секций для разработчика. Признано: механическое нарушение EYEBROW RESTRAINT (1 на 3 секции; у нас 10 из 10).
+Фикс — `SectionHead.tsx` переписывается, kicker становится опциональным и остаётся ровно на двух секциях ниже hero (hero + 2 = бюджет на 10 секций):
+```tsx
+export default function SectionHead({
+  title,
+  sub,
+  eyebrow,
+}: {
+  title: string;
+  sub?: string;
+  eyebrow?: string; // ставить ТОЛЬКО там, где заголовок без него двусмыслен
+}) {
+  return (
+    <header className="max-w-[760px]">
+      {eyebrow && <p className="zt-kicker mb-4">{eyebrow}</p>}
+      <h2 className="zt-title">{title}</h2>
+      {sub && <p className="zt-lead mt-4">{sub}</p>}
+    </header>
+  );
+}
+```
+Проп `split` удаляется из компонента и из всех вызовов (см. пункт 6). Вызовы: `kicker` убирается везде; `eyebrow="Для вашего бизнеса"` остаётся только в Directions, `eyebrow="Следующий шаг"` — только в Contacts.
+
+### 6. [СЕРЬЁЗНО] SPLIT-HEADER использован как дефолт дважды
+Скрины Directions и Competencies: заголовок слева + абзац справа, причём абзац выровнен `text-right` — русский абзац с рваным левым краем читается плохо сам по себе, а композиция запрещена скилом как дефолт.
+Код-пруф: `SectionHead.tsx` ветка `split`, вызовы в `Directions.tsx` и `Competencies.tsx` (`md:text-right`).
+Фикс: после переписывания SectionHead (п.5) ветки `split` не существует; обе секции получают обычный левый head с одним фокусным сообщением.
+
+### 7. [СЕРЬЁЗНО] Одна композиционная семья на три секции: реестровые строки
+Services (5 строк), Directions (7 строк), Portfolio (4 строки) — один и тот же приём: hairline-строка, моно-индекс слева, цена/мета справа. Section-Layout-Repetition Ban: семья ≤1 раза. Для клиента это три экрана одного прайса без иерархии — взгляд не цепляется ни за что.
+Фикс: Services остаётся единственной секцией-реестром (это её честный жанр — прайс), но без индексов; Directions уходит в мозаику 12 колонок; Portfolio — в сетку 2×2 (п.2).
+`Directions.tsx` + CSS:
+```css
+.dir-grid {
+  display: grid; grid-template-columns: repeat(12, 1fr);
+  gap: 1px; background: var(--z-line-soft);      /* hairline-сетка без border-магии */
+  border-block: 1px solid var(--z-line-soft);
+  margin-top: 56px;
+}
+.dir-cell { background: var(--color-bg); grid-column: span 12; }
+@media (min-width: 768px) {
+  .dir-cell:nth-child(1), .dir-cell:nth-child(2),
+  .dir-cell:nth-child(6), .dir-cell:nth-child(7) { grid-column: span 6; }
+  .dir-cell:nth-child(3), .dir-cell:nth-child(4),
+  .dir-cell:nth-child(5) { grid-column: span 4; }
+}
+.dir-cell__link {
+  display: flex; flex-direction: column; gap: 10px; height: 100%;
+  padding: 26px 28px 22px; text-decoration: none;
+  transition: background .2s ease;
+}
+.dir-cell__link:hover, .dir-cell__link:focus-visible { background: rgba(0, 201, 212, 0.05); }
+.dir-cell__title { font-family: var(--font-display); font-size: 22px; font-weight: 500; letter-spacing: -0.01em; color: var(--z-ink); }
+.dir-cell__text  { font-size: 14px; line-height: 1.55; color: var(--z-muted); }
+.dir-cell__foot  { margin-top: auto; display: flex; align-items: center; justify-content: space-between; gap: 12px; padding-top: 16px; }
+.dir-cell__price { font-size: 14px; font-weight: 600; font-variant-numeric: tabular-nums; color: var(--z-ink); }
+.dir-cell__arrow {
+  width: 40px; height: 40px; flex: none;
+  display: inline-flex; align-items: center; justify-content: center;
+  border: 1px solid var(--z-line); border-radius: var(--r-pill);
+  color: var(--z-action); transition: background .2s, color .2s, border-color .2s;
+}
+.dir-cell__link:hover .dir-cell__arrow { background: var(--z-action); border-color: var(--z-action); color: #fff; }
+```
+```tsx
+<ul className="dir-grid">
+  {DIRECTIONS.map((d) => (
+    <li key={d.slug} className="dir-cell">
+      <a className="dir-cell__link" href={`#/napravlenie/${d.slug}`} aria-label={`${d.title} — открыть страницу`}>
+        <h3 className="dir-cell__title">{d.title}</h3>
+        <p className="dir-cell__text">{d.text}</p>
+        <span className="dir-cell__foot">
+          <span className="dir-cell__price">{d.price}</span>
+          <span className="dir-cell__arrow" aria-hidden="true">
+            <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
+              <path d="M3 13L13 3M13 3H6M13 3v7" stroke="currentColor" strokeWidth="1.5" />
+            </svg>
+          </span>
+        </span>
+      </a>
+    </li>
+  ))}
+</ul>
+```
+Ghost-цифры (`dir-ghost`, `-webkit-text-stroke`) удаляются вместе со старыми стилями — владелец химчисток не считывает контурный «03» ни как навигацию, ни как ценность. Мобильный fallback: `span 12` даёт одну колонку, вся строка — тач-цель.
+
+### 8. [СЕРЬЁЗНО] Моно-шрифт как голос интерфейса ниже hero
+Цены («от 20 000 ₽» — 12px JetBrains Mono, letter-spacing 0.06em), индексы «01…05», «04 примера», «этап 02 / 05», dl в Contacts, колонки футера. Цена — главная коммерческая цифра страницы — набрана наименее читаемым стилем. Это и есть «дизайн для программистов».
+Правило: Typography (base 16, читаемость) + аудитория-поворот.
+Фикс (`global.css`):
+```css
+.zt-meta {
+  font-family: var(--font-body);
+  font-size: 13px;
+  line-height: 1.45;
+  letter-spacing: 0.01em;
+  color: var(--z-muted);
+}
+.price {
+  font-family: var(--font-body);
+  font-size: 15px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  color: var(--z-ink);
+  white-space: nowrap;
+}
+.proc-step .proc-num {
+  font-family: var(--font-body);
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0;
+}
+.zt-chip {
+  font-family: var(--font-body);
+  font-size: 13px;
+  line-height: 1;
+  padding: 8px 14px;
+  border-radius: var(--r-pill);
+}
+```
+В `Services.tsx` цена: `<p className="price md:justify-self-end">{s.price}</p>`; в `Process.tsx` счётчик: `<p className="zt-meta mt-8">Этап {active + 1} из {PROCESS.length}</p>`. JetBrains Mono ниже hero не используется вообще (в hero и holo-nav — неприкосновенно).
+
+### 9. [СЕРЬЁЗНО] Разные лейблы одного intent
+Header: «Обсудить проект» → `#contacts`; hero primary: «Рассчитать смету» → `#contacts`; footer: «Обсудить проект». Два лейбла, одна цель, калькулятора сметы на странице нет — обещание «рассчитать» не выполнено ничем.
+Правило: CTA — один лейбл на один intent.
+Фикс (`HeroCopy.tsx`, правка текста разрешена):
+```tsx
+<a className="hero-primary" href="#contacts">
+  Обсудить проект
+  <span aria-hidden="true">→</span>
+</a>
+```
+Обещание сметы переезжает в текст: в Contacts dl уже есть «смета и сроки — фиксируются до старта» — этого достаточно.
+
+### 10. [СЕРЬЁЗНО] Мобильная навигация: тач-цели 31px
+Мобильный скрин шапки: `.site-nav a { font-size: 12px; padding: 8px 0; }` → высота цели ≈ 12×1.3 + 16 ≈ 31px при норме 44px. Палец владельца логистики попадает в «Портфолио» через раз.
+Правило: ui-ux-pro-max Touch CRITICAL.
+Фикс (`global.css`, внутри `@media (max-width: 767px)`):
+```css
+.site-nav a {
+  font-size: 13px;
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  padding: 0;
+}
+```
+
+### 11. [СЕРЬЁЗНО] Копирайт: агентские штампы и внутренние статусы
+- Services sub: «Полный цикл, от идеи до запуска… — одна команда» → «полный цикл» и «одна команда» — штампы из бан-листа («под ключ», «команда профессионалов»).
+- About: негативный параллелизм «без бюрократии и лишних посредников» + два teal-акцента в одном предложении (акцент размыт, COLOR LOCK).
+- Directions sub: «отдельная страница для поиска и рекламы» — внутренняя SEO-архитектура, клиенту непродающая.
+- Portfolio sub / Team sub / Competencies sub: трижды «покажем на созвоне» — системный отказ давать доказательство здесь и сейчас.
+- Statement About: 34 слова при лимите 25.
+Фиксы текстом:
+- Services sub → «Сайты, боты и приложения. Цена справа — стартовый пакет, точную смету считаем после брифа.»
+- Directions sub → «Семь направлений, в которых мы работаем каждый день. В каждом — свои сроки, цены и примеры.»
+- About statement → «ZETRONIX — небольшая веб-студия. Проектируем и разрабатываем сайты, интерфейсы и AI-инструменты. Вы говорите <accent>напрямую с теми, кто проектирует и собирает</accent>.» (один акцент)
+- Competencies sub → «Стек и практики, которые мы применяем в каждом проекте.»
+- Team sub → см. п.4.
+
+### 12. [ПОЛИРОВКА] Форма-хаос: 0 / 4px / 999px на одной странице
+Тайлы и `dir-arrow` — острые углы, `zt-chip` — 4px, кнопки — 999px. SHAPE CONSISTENCY LOCK нарушен ниже hero (holo-nav не трогаем — неприкосновенно).
+Фикс (`tokens.css` + применения):
+```css
+:root {
+  --r-pill: 999px;  /* кнопки, ссылки-пилюли, чипы, стрелки */
+  --r-card: 12px;   /* контейнеры: баннеры, обложки */
+}
+```
+Чипы и стрелки уже переведены на pill в п.7–8; баннер Templates и обложки кейсов получают `--r-card`; острых углов ниже hero не остаётся.
+
+### 13. [ПОЛИРОВКА] Мёртвый текст в футере
+Скрин Footer: «Юридическая информация и реквизиты» — span, выглядящий ссылкой, без href. Либо страница, либо ничего.
+Фикс (`Footer.tsx`): удалить span до появления страницы `/legal`; оставить `<span className="zt-meta">© 2026 ZETRONIX.RU</span>`.
+
+### 14. [ПОЛИРОВКА] Вертикальный ритм без логики
+`zt-sec--dense` стоит на Services, Directions, Competencies и нигде больше — паттерна нет, секции сливаются в серую массу без границ.
+Фикс (`global.css`): один паддинг + hairline-разделитель каждой секции — лента читается как страницы, а не как бесконечность:
+```css
+.zt-sec,
+.zt-sec--dense {
+  padding-block: clamp(76px, 8vw, 112px);
+  border-top: 1px solid var(--z-line-soft);
+}
+```
+
+---
+
+# ЦЕЛЬНАЯ СИСТЕМА (секции 3+)
+
+Почерк: **«тихий коммерческий редакторский»**. Одна лента на фоне `#f4f4f4`, секции разделены одной hairline сверху (п.14), один паддинг-ритм, заголовок Manrope 32–46 слева, lead Inter 17 ≤25 слов, **ни одного моно-индекса и ни одной ghost-цифры**, цена — Inter 600 tabular-nums, ровно один teal-акцент на секцию, доказательство вместо обещания. Композиции разные, почерк один:
+
+- **Services** — прайс-лист: строки без индексов, название+описание слева, цена Inter 600 справа; hover — teal-рэйл (уже есть, ок).
+- **Directions** — мозаика 12 колонок 6/6·4/4/4·6/6 из hairline-ячеек gap:1px, внутри ячейки название→строка→цена+стрелка-pill.
+- **Portfolio** — сетка 2×2 карточек с плоскими тонированными обложками 4:3 (слоты под реальные снимки владельца), мета в одну строку под обложкой.
+- **Templates** — один широкий баннер-панель `--r-card`: слева заголовок+оффер, справа три строки-позиции с pill-CTA «Сообщить мне».
+- **About** — statement в 8 колонок с одним акцентом; ниже hairline и три принципа в ряд без нумерации.
+- **Team** — абзац ролей через teal-слэши (ок) + одна честная строка про первый созвон; без плашек-слотов.
+- **Competencies** — 2×2 с border-t, чипы Inter pill, без индексов.
+- **Process** — sticky-колонка + рейл с точками: единственная «техническая» метафора, которую владелец читает как таймлайн, — оставляем.
+- **FAQ** — sticky-лево + аккордеон, без изменений.
+- **Contacts** — крупный вопрос + email (рабочий!) + dl справа Inter; eyebrow «Следующий шаг».
+
+Воздух: 76–112px между секциями, 56px от head до контента, 44–56px внутри групп. Никаких ступеней, сдвигов и каскадов: все сетки выровнены по общей 12-колоночной базе с `--page-gutter`.
+
+---
+
+# ЧТО ОСТАВИТЬ
+
+- Hero целиком и holo-nav с проектором — ок, вне критики.
+- Process: рейл, точки, sticky — мотивированный motion, ок.
+- FAQ: механика аккордеона и тайминг 240ms — ок.
+- Teal-рэйл на hover в Services — ок, переносится как семейный приём.
+- `:focus-visible` глобально и outline 3px — ок.
+- Pairing Manrope/Inter и hairline-язык разделителей — ок, теперь системно.
+- Reveal 0.7s и reduced-motion-блоки — ок.
+
+---
+
+# МЕХАНИЧЕСКИЕ ПРОВЕРКИ ПО СКИЛАМ
+
+- **Eyebrow restraint:** нарушено тотально — kicker на 10/10 секций (+hero). После фикса: hero + Directions + Contacts = 3 на 11 блоков, норма соблюдена.
+- **Content density:** About statement 34 слова (>25) — нарушено, сокращено (п.11). Portfolio: head + строки + счётчик «04 примера» = лишний текстовый элемент — удалён (п.2). Templates: head + 3 карточки + 3 CTA + статус — перегруз, схлопнуто в баннер (п.3). Остальные секции в лимите — ок.
+- **Shape lock:** нарушено (0/4/999) — приведено к шкале 999/12/0 (п.12).
+- **Color lock:** teal размыт четырьмя оттенками (`#00c9d4`, `#009aa0`, `#006b70`, `#00ffff`); ниже hero после фикса работают только `--z-action` для текста/акцентов и 5%-подложка hover; glow остаётся исключительно в hero/holo (неприкосновенно).
+- **Один лейбл на intent:** нарушено («Обсудить проект» / «Рассчитать смету») — унифицировано (п.9).
+- **Div-based fake screenshots:** нарушено (тайлы Templates) — секция пересобрана без превью (п.3).
+- **Long lists divide-y:** Directions 7 строк — нарушено, переведено в мозаику (п.7); Services 5 строк — на границе, оставлен как прайс осознанно.
+- **Marquee:** 0 отрисованных — ок, не добавлять.
+- **Zigzag cap:** 0 — ок.
+- **Touch 44px:** мобильная навигация 31px — нарушено, исправлено (п.10); остальные цели ≥44 — ок.
+- **Контраст:** `--z-muted` и `--z-action` на `#f4f4f4` дают ≥5.9:1 — ок; проблема была в кегле 12px mono, а не в контрасте — устранена (п.8).
+
+Итог для клиента после этих правок: страница говорит «вот что мы делаем, вот сколько это стоит, вот примеры, вот как связаться» — человеческим шрифтом, без внутренних комментариев и без лестниц. После внедрения жду от владельца не «рассинхронно», а «сколько стоит мой магазин».
+
+_usage: _
+
+
+---
+## 2026-11-07T09:41:23.929Z — scripts/opus-prompt-5.md
+
+**1. Вердикт по секциям**
+- Services — PASS: строки с hairline, цена справа читается как прайс, sub снимает вопрос «это окончательная цена?».
+- Directions — PASS: мозаика 6/6·4/4/4·6/6 читается, hairline-gap аккуратный, цена + стрелка-pill прижаты к низу карточек.
+- Portfolio — FAIL: обложки — пустые тонированные слоты с именем по центру; доказательств работы клиента нет.
+- Templates — PASS: banner с lead слева и тремя строками с pill-CTA справа; честная формулировка про старт продаж не отпугивает.
+- About — PASS: один teal-акцент, три опоры под hairline, ничего лишнего.
+- Team — PASS: роли одной строкой через слеши, мета-pro созвон вместо плашки; читается как договорённость, а не витрина.
+- Competencies — PASS: четыре группы с pill-чипами, моно только там, где разрешено.
+- Process — PASS: таймлайн с текущим шагом, «Этап 3 из 5» читается как индикатор, плашек нет.
+- FAQ — PASS: пять вопросов с плюсами, hairline, заголовок слева — всё чисто.
+- Contacts — FAIL: главный контактный адрес noreply@zetronix.ru — адрес с семантикой «не отвечай» в момент конверсии.
+- Footer — PASS: мёртвый span удалён, четыре колонки; почтовая ссылка чинится фиксом блокера №1.
+- Mobile (секции 3+) — PASS: nav ≥44px, карточки складываются без потерь, meta портфолио в одну строку.
+- Hero-copy — N/A: в кадр не попала, hero вне скоупа.
+
+**2. Остаточные блокеры**
+1. **noreply@ как единственный контакт во всех mailto** (крупная ссылка в Contacts, колонка СВЯЗЬ в футере, три CTA «Сообщить мне» в Templates). Клиент видит адрес, который буквально означает «не отвечай»; письмо туда уходит в пустоту — конверсия мертва при полностью верной вёрстке. Фикс (после подтверждения владельца, ты уже поднимаешь вопрос): глобальная замена токена в шаблоне `noreply@zetronix.ru` → отвечаемый ящик (например `hello@zetronix.ru`): `sed -i 's/noreply@zetronix\.ru/hello@zetronix.ru/g' index.html` — видимый текст в Contacts и футере обновится сам (текстовая нода равна адресу), три mailto в Templates сохранят темы (`?subject=Сообщите, когда появится: {name}`).
+2. **Портфолио без доказательств работы**: четыре тонированных прямоугольника с именем читаются как «сайт в разработке», клиент не видит ни одного экрана продукта. Фикс в уже готовые слоты 4:3: `.case-cover{position:relative;aspect-ratio:4/3;overflow:hidden;border-radius:var(--r-card)}` и внутрь каждой обложки `<img src="/img/cases/neobank.png" alt="NEOBANK — финтех-платформа" loading="lazy" decoding="async" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:top center">`; центрированный span с именем убрать после появления img (мета-строка имя/категория/год остаётся снизу).
+
+Явно не блокеры: моно JetBrains в zt-kicker двух секций — нарушением не считаю, это осознанный класс-решение, оставляем; пустое место внизу карточки Templates и «Этап 3 из 5» — вкусовщина, не трогаем.
+
+**3. Вся страница** — не FAIL: оба блокера локальные (контактный адрес и контент обложек), каркас, ритм и типографика готовы к публикации сразу после их закрытия.
+
+_usage: _

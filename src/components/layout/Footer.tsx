@@ -66,7 +66,6 @@ export default function Footer() {
 
       <div className="mx-auto mt-14 flex max-w-[var(--content-max)] flex-wrap items-baseline justify-between gap-x-10 gap-y-3 border-t border-line pt-6">
         <span className="zt-meta">© 2026 ZETRONIX.RU</span>
-        <span className="zt-meta">Юридическая информация и реквизиты</span>
       </div>
     </footer>
   );

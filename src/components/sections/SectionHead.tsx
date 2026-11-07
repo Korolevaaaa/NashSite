@@ -1,31 +1,18 @@
 export default function SectionHead({
-  kicker,
   title,
   sub,
-  split = false,
+  eyebrow,
 }: {
-  kicker: string;
   title: string;
   sub?: string;
-  /** split: title block left, lead right-aligned on desktop */
-  split?: boolean;
+  /** set ONLY where the title is ambiguous without it (max ~1 in 3 sections) */
+  eyebrow?: string;
 }) {
-  if (split) {
-    return (
-      <header className="flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
-        <div>
-          <p className="zt-kicker">{kicker}</p>
-          <h2 className="zt-title mt-4">{title}</h2>
-        </div>
-        {sub && <p className="zt-lead md:max-w-[38ch] md:pb-1 md:text-right">{sub}</p>}
-      </header>
-    );
-  }
   return (
-    <header>
-      <p className="zt-kicker">{kicker}</p>
-      <h2 className="zt-title mt-4">{title}</h2>
-      {sub && <p className="zt-lead mt-3">{sub}</p>}
+    <header className="max-w-[760px]">
+      {eyebrow && <p className="zt-kicker mb-4">{eyebrow}</p>}
+      <h2 className="zt-title">{title}</h2>
+      {sub && <p className="zt-lead mt-4">{sub}</p>}
     </header>
   );
 }

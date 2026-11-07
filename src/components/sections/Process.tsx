@@ -65,12 +65,11 @@ export default function Process() {
       <div className="mx-auto grid max-w-[var(--content-max)] grid-cols-1 gap-12 md:grid-cols-[minmax(0,380px)_minmax(0,1fr)] md:gap-20">
         <div className="self-start md:sticky md:top-28">
           <SectionHead
-            kicker="08 · Процесс"
             title="Как мы работаем"
             sub="Пять этапов, от знакомства до запуска. Сроки и смета фиксируются до старта."
           />
           <p className="zt-meta mt-8">
-            этап {String(active + 1).padStart(2, "0")} / {String(PROCESS.length).padStart(2, "0")}
+            Этап {active + 1} из {PROCESS.length}
           </p>
         </div>
 
@@ -91,7 +90,7 @@ export default function Process() {
             >
               <span aria-hidden="true" className="proc-dot hidden md:block" style={{ left: "-40px" }} />
               <h3 className="font-display text-[22px] font-medium text-[var(--z-ink)]">
-                <span className="proc-num mr-3 font-mono text-[12px] tracking-[0.08em]">{s.n}</span>
+                <span className="proc-num mr-3">{s.n}</span>
                 {s.title}
               </h3>
               <p className="mt-2 max-w-[52ch] text-[15px] leading-[1.6] text-[var(--z-muted)]">

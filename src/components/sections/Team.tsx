@@ -13,9 +13,8 @@ export default function Team() {
     >
       <div className="mx-auto max-w-[var(--content-max)]">
         <SectionHead
-          kicker="06 · Команда"
           title="Команда"
-          sub="Компактная команда без прокладок: с вами говорят те, кто делает. Знакомим лично на созвоне."
+          sub="Шесть ролей закрывают проект целиком. С вами говорят те, кто делает работу."
         />
 
         <p className="mt-12 max-w-[46ch] font-display text-[clamp(22px,2.4vw,32px)] font-medium leading-[1.35] tracking-[-0.005em] text-[var(--z-ink)]">
@@ -30,12 +29,8 @@ export default function Team() {
             </span>
           ))}
         </p>
-
-        <p className="mt-8 inline-flex items-baseline gap-3 border-b border-dashed border-[rgba(13,17,23,0.2)] pb-3">
-          <span className="zt-meta">слот</span>
-          <span className="text-[14px] text-[var(--z-muted)]">
-            имена и фото добавим сюда после знакомства — сетка не меняется
-          </span>
+        <p className="zt-meta mt-8 max-w-[46ch]">
+          Знакомим лично на первом созвоне — с теми, кто будет делать ваш проект.
         </p>
       </div>
     </section>
