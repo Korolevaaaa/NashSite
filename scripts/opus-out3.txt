@@ -1,0 +1,36 @@
+Принял поправку по направлениям: на полном скрине видно разделитель после 05 и начало следующих строк — 7 строк подтверждаю, футер синхронизирован, битых ссылок нет. Мой подсчёт в раунде 2 был по обрезанному скрину, снимаю замечание.
+
+По списку_fixes: кириллица в дисплее (Manrope) единообразна, латиница только в именах портфолио; шапка непрозрачна/блюр — контент и иглы под ней не просвечивают; колонки в «Услугах» и «Направлениях» бьются по x (тайтл, описание, цена на одних координатах, колонка цены зарезервирована под чип — читается как намеренное решение); mobile-направления и словарь стрелок соответствуют договорённости.
+
+Осталась одна проблема — ровно там, где был блокер:
+
+1. **Process: рельса нет вообще.** На скрине process видны точки (01 контур, 02 залита, «этап 02 / 05»), но между центрами точек нет ни серой базы, ни teal-заливки 01→02. Симптом «линия исчезла полностью» после перехода на JS-замеры обычно означает, что вертикальному элементу ставят размер не по той оси: прогрессу пишется `width` (или `scaleX`), при `height: 0` рельса схлопывается в ноль. Fix:
+
+```css
+.process-list { position: relative; }
+.process-rail { position: absolute; width: 2px; border-radius: 1px; background: #d6dadb; }
+.process-rail__fill { position: absolute; top: 0; left: 0; width: 100%; height: 0; background: var(--teal); }
+.process-dot { position: relative; z-index: 1; background: var(--bg); } /* кольцо маскирует рельсу внутри */
+.process-dot--active { background: var(--teal); }
+```
+
+```js
+// в колбэке ResizeObserver
+const list  = document.querySelector('.process-list');
+const dots  = [...list.querySelectorAll('.process-dot')];
+const base  = list.getBoundingClientRect();
+const c     = dots.map(d => { const r = d.getBoundingClientRect(); return r.top - base.top + r.height / 2; });
+const active = dots.findIndex(d => d.classList.contains('process-dot--active'));
+
+rail.style.top    = c[0] + 'px';
+rail.style.height = (c.at(-1) - c[0]) + 'px';   // база: центр 01 → центр 05
+fill.style.height = (c[active] - c[0]) + 'px';  // прогресс: height, не width
+```
+
+Плюс мелочь в том же фиксе: кольца точек полупрозрачные внутри — без `background: var(--bg)` на точке линия будет просвечивать сквозь центры колец 01/03/04/05.
+
+Всё остальное принято. Вердикт: приёмка держится на одном пункте выше — после фикса рельсы нужен один повторный скрин секции process, дальше релиз без дополнительных условий.
+
+Следующим приоритетом, не блокируя релиз: `prefers-reduced-motion` для анимаций рельса/точек, `aria-current="step"` на активном этапе и `contain: layout paint` на шапке с блюром для слабых GPU.
+
+[logged to scripts/opus-log.md]

@@ -10,7 +10,8 @@
   --color-accent-deep: #009aa0;
   --color-glow: #00ffff; /* decorative glow only — not for body text */
 
-  --font-display: "Space Grotesk", sans-serif;
+  --font-display: "Manrope", sans-serif;
+  --font-display-latn: "Space Grotesk", "Manrope", sans-serif;
   --font-body: "Inter", system-ui, sans-serif;
   --font-mono: "JetBrains Mono", "Consolas", monospace;
 }

@@ -84,7 +84,7 @@ body {
 .hero-title {
   margin: 0;
   color: var(--z-ink);
-  font-family: var(--font-body);
+  font-family: var(--font-display);
   font-size: clamp(26px, 2.5vw, 36px);
   font-weight: 500;
   line-height: 1.13;
@@ -481,9 +481,17 @@ section[id] {
   position: fixed;
   inset: 0 0 auto;
   z-index: 100;
+  background: rgba(244, 244, 244, 0.86);
+  backdrop-filter: blur(12px) saturate(1.1);
+  -webkit-backdrop-filter: blur(12px) saturate(1.1);
   transition:
     background-color 0.2s ease,
     box-shadow 0.2s ease;
+}
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .site-header {
+    background: #f4f4f4;
+  }
 }
 .site-header.is-solid {
   background: rgba(244, 244, 244, 0.94);
@@ -630,7 +638,7 @@ section[id] {
     );
 
     top: 50%;
-    width: min(440px, 38vw);
+    width: min(560px, 40vw);
     transform: translateY(-50%);
 
     display: flex;
@@ -696,19 +704,36 @@ section[id] {
 .hero-expertise ul {
   display: flex;
   flex-wrap: wrap;
-  gap: 6px 16px;
-
   list-style: none;
   margin: 12px 0 0;
   padding: 0;
 }
 
 .hero-expertise li {
-  color: #151b20;
   font-size: 13px;
   font-weight: 500;
   line-height: 1.4;
   letter-spacing: 0.01em;
+}
+
+.hero-expertise li a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  padding: 0 16px;
+  border-left: 1px solid rgba(21, 27, 32, 0.2);
+  color: #151b20;
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+
+.hero-expertise li:first-child a {
+  padding-left: 0;
+  border-left: none;
+}
+
+.hero-expertise li a:hover {
+  color: var(--z-action);
 }
 
 /* tablet: robot takes more relative width — narrow the column,
@@ -770,5 +795,263 @@ section[id] {
   .hero-expertise__label,
   .hero-expertise li {
     font-size: 12px;
+  }
+}
+
+/* ==============================================
+   ZT system — lower page (post-hero) design layer
+   ============================================== */
+
+:root {
+  --z-line-soft: rgba(13, 17, 23, 0.08);
+  --z-sec-pad: clamp(88px, 9vw, 128px);
+  --z-sec-pad-dense: clamp(72px, 7.5vw, 96px);
+}
+
+.zt-sec {
+  padding-block: var(--z-sec-pad);
+}
+.zt-sec--dense {
+  padding-block: var(--z-sec-pad-dense);
+}
+.zt-kicker {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 1.2;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--z-action);
+}
+.zt-title {
+  font-family: var(--font-display);
+  font-weight: 500;
+  font-size: clamp(32px, 3.2vw, 46px);
+  line-height: 1.08;
+  letter-spacing: -0.01em;
+  color: var(--z-ink);
+}
+.zt-lead {
+  font-family: var(--font-body);
+  font-size: 17px;
+  line-height: 1.6;
+  color: var(--z-muted);
+  max-width: 56ch;
+}
+.zt-meta {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  line-height: 1.4;
+  letter-spacing: 0.06em;
+  color: var(--z-muted);
+}
+
+/* latin-only display tokens (Space Grotesk has no Cyrillic) */
+.latn-display {
+  font-family: var(--font-display-latn);
+}
+
+/* — services: row with teal rail, no card fill — */
+.svc-row {
+  position: relative;
+}
+.svc-row::before {
+  content: "";
+  position: absolute;
+  left: -8px;
+  top: -1px;
+  bottom: -1px;
+  width: 2px;
+  background: var(--color-accent);
+  transform: scaleY(0);
+  transform-origin: top;
+  transition: transform 0.24s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.svc-title {
+  transition:
+    transform 0.24s cubic-bezier(0.16, 1, 0.3, 1),
+    color 0.24s ease;
+}
+@media (hover: hover) {
+  .svc-row:hover {
+    background: rgba(0, 201, 212, 0.05);
+  }
+  .svc-row:hover::before {
+    transform: scaleY(1);
+  }
+  .svc-row:hover .svc-title {
+    transform: translateX(4px);
+    color: var(--z-action);
+  }
+}
+@media (hover: none) {
+  .svc-row:active {
+    background: rgba(0, 201, 212, 0.07);
+  }
+}
+
+/* — directions registry: sibling dim + outline ghosts — */
+.dir-ghost {
+  font-family: var(--font-mono);
+  color: transparent;
+  -webkit-text-stroke: 1px rgba(13, 17, 23, 0.3);
+  transition:
+    -webkit-text-stroke-color 0.3s ease,
+    color 0.3s ease;
+}
+@media (hover: hover) and (pointer: fine) {
+  .dir-list:hover > li:not(:hover) {
+    opacity: 0.42;
+  }
+  .dir-row:hover .dir-ghost,
+  .dir-row:focus-visible .dir-ghost {
+    -webkit-text-stroke-color: var(--z-action);
+  }
+  .dir-row .dir-arrow {
+    transition:
+      border-color 0.24s ease,
+      color 0.24s ease,
+      transform 0.24s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .dir-row:hover .dir-arrow,
+  .dir-row:focus-visible .dir-arrow {
+    border-color: var(--z-action);
+    color: var(--z-action);
+    transform: translate(2px, -2px);
+  }
+  .dir-row .dir-name {
+    background-image: linear-gradient(var(--z-action), var(--z-action));
+    background-size: 0% 1.5px;
+    background-position: left bottom;
+    background-repeat: no-repeat;
+    transition: background-size 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .dir-row:hover .dir-name,
+  .dir-row:focus-visible .dir-name {
+    background-size: 100% 1.5px;
+  }
+}
+
+/* — portfolio cascade: each row steps right — */
+@media (min-width: 768px) {
+  .case {
+    margin-left: calc(var(--i, 0) * 56px);
+  }
+}
+
+/* — templates: blueprint tile texture — */
+.tile-grid {
+  background-image:
+    linear-gradient(rgba(13, 17, 23, 0.08) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(13, 17, 23, 0.08) 1px, transparent 1px);
+  background-size: 32px 32px;
+}
+
+/* — competencies chips — */
+.zt-chip {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  line-height: 1;
+  color: var(--z-ink);
+  border: 1px solid var(--color-line);
+  padding: 8px 11px;
+  border-radius: 4px;
+  background: transparent;
+}
+
+/* — process progress rail (geometry measured from dot centers in JS) — */
+.proc-rail {
+  position: absolute;
+  left: 5px;
+  width: 1px;
+  background: var(--color-line);
+}
+.proc-rail > i {
+  display: block;
+  width: 1px;
+  height: 100%;
+  background: var(--color-accent);
+  transform-origin: top;
+  transform: scaleY(0);
+  transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.proc-dot {
+  position: absolute;
+  left: 0;
+  top: 7px;
+  width: 11px;
+  height: 11px;
+  border-radius: 999px;
+  border: 1.5px solid var(--z-action);
+  background: var(--color-bg);
+  transition: background-color 0.24s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.proc-step[data-active="true"] .proc-dot {
+  background: var(--z-action);
+}
+.proc-step .proc-num {
+  color: var(--z-muted);
+  transition: color 0.24s ease;
+}
+.proc-step[data-active="true"] .proc-num {
+  color: var(--z-action);
+}
+
+/* — faq animated accordion — */
+.faq-item summary::-webkit-details-marker {
+  display: none;
+}
+.faq-item summary {
+  list-style: none;
+}
+.faq-plus {
+  position: relative;
+  width: 20px;
+  height: 20px;
+  flex: none;
+  transition: transform 0.24s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.faq-plus::before,
+.faq-plus::after {
+  content: "";
+  position: absolute;
+  background: var(--z-ink);
+  left: 50%;
+  top: 50%;
+}
+.faq-plus::before {
+  width: 15px;
+  height: 1.5px;
+  transform: translate(-50%, -50%);
+}
+.faq-plus::after {
+  width: 1.5px;
+  height: 15px;
+  transform: translate(-50%, -50%);
+}
+.faq-item[open] .faq-plus {
+  transform: rotate(45deg);
+}
+.faq-item[open] .faq-plus::before,
+.faq-item[open] .faq-plus::after {
+  background: var(--z-action);
+}
+.faq-body {
+  overflow: hidden;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .svc-row::before,
+  .svc-title,
+  .dir-ghost,
+  .dir-row .dir-arrow,
+  .dir-row .dir-name,
+  .proc-rail > i,
+  .proc-dot,
+  .faq-plus {
+    transition: none !important;
+  }
+  .dir-list:hover > li:not(:hover) {
+    opacity: 1;
   }
 }

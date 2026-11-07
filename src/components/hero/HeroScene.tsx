@@ -321,7 +321,7 @@ export default function HeroScene() {
   return (
     <section id="top" ref={sectionRef} className="hero-section" aria-label="ZETRONIX — веб-студия">
       <div ref={stageRef} className="hero-stage" style={{ "--hero-p": 0 } as React.CSSProperties}>
-        <KineticGridCanvas pointerRef={pointerRef} progressRef={progressRef} />
+        <KineticGridCanvas pointerRef={pointerRef} />
         <HeroCopy />
         <RobotVisual progressRef={progressRef} pointerRef={pointerRef} beamRef={beamRef} />
         <ProjectorBeam beamRef={beamRef} navRef={navRef} />

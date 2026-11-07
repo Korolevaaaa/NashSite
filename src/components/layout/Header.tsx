@@ -28,7 +28,7 @@ export default function Header() {
 
         <a className="site-header__cta" href="#contacts">
           Обсудить проект
-          <span aria-hidden="true">↗</span>
+          <span aria-hidden="true">→</span>
         </a>
       </nav>
     </header>

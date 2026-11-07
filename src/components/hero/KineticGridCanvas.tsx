@@ -1,5 +1,5 @@
 import { useEffect, useRef } from "react";
-import type { PointerRef, ProgressRef } from "./heroTypes";
+import type { PointerRef } from "./heroTypes";
 import { useReducedMotion } from "../../hooks/useReducedMotion";
 
 const CELL = 56; // CSS px grid pitch
@@ -11,26 +11,29 @@ const INK = "13, 17, 23";
 
 interface Props {
   pointerRef: PointerRef;
-  /** raw hero scroll progress — used to fade the sparks out as the
-   *  first screen leaves (no sparks in the hologram state) */
-  progressRef?: ProgressRef;
 }
 
-const PULSE_FADE_END = 0.125; // raw progress where the pulses are gone
-// energy field ported from the cybernetic-grid shader:
-//   e = sin(u·F + t·W1) · sin(v·F + t·W2),  lit where e > 0.8
-// evaluated per grid node, so the glowing patches travel along our
-// lines the same way the shader's pulses slide along its lines
-const P_F = 2.1;  // spatial frequency, rad per cell (shader: 20 / ~10 cells)
-const P_W1 = 1.2; // along-x travel speed, rad/s (shader: 5·0.2)
-const P_W2 = 0.7; // along-y travel speed, rad/s (shader: 3·0.2)
+interface Spark {
+  axis: 0 | 1; // 0 = horizontal grid line, 1 = vertical
+  line: number; // row or column index
+  u: number; // position along the line, in cells
+  dir: 1 | -1;
+  speed: number; // cells per second
+  age: number;
+  life: number;
+  delay: number; // spawn countdown while inactive
+  on: boolean;
+}
+
+const SPARK_TRAIL = 3.2; // laser-streak length in cells
+const SPARK_SAMPLES = 28; // dense sampling → smooth taper, no segmentation
 
 /**
  * Light kinetic grid for the Hero stage: thin ink lines on the blueprint
  * background that gently bow away from the cursor with a cyan highlight.
  * Canvas 2D, pointer-events: none — never blocks HTML links/buttons.
  */
-export default function KineticGridCanvas({ pointerRef, progressRef }: Props) {
+export default function KineticGridCanvas({ pointerRef }: Props) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const reduced = useReducedMotion();
 
@@ -53,9 +56,46 @@ export default function KineticGridCanvas({ pointerRef, progressRef }: Props) {
     // smoothed per-node displacement (index = row * cols + col)
     let disp = new Float32Array(0);
     let base: HTMLCanvasElement | null = null;
-    // per-axis wave terms for the pulse field (recomputed per frame)
-    let sx: number[] = []; // sin(col·F + t·W1)
-    let sy: number[] = []; // sin(row·F + t·W2)
+    let sparks: Spark[] = [];
+    let lastT = 0;
+
+    const rand = (a: number, b: number) => a + Math.random() * (b - a);
+
+    const respawn = (s: Spark) => {
+      s.axis = Math.random() < 0.5 ? 0 : 1;
+      const maxLine = s.axis === 0 ? rows : cols;
+      const maxU = s.axis === 0 ? cols - 1 : rows - 1;
+      s.line = Math.floor(rand(1, maxLine - 1));
+      s.dir = Math.random() < 0.5 ? 1 : -1;
+      s.u = rand(1.5, Math.max(2.5, maxU - 1.5));
+      s.speed = rand(2.2, 3.6); // brisk laser glide, not a slow crawl
+      s.age = 0;
+      s.life = rand(3.5, 6);
+      s.on = true;
+    };
+
+    // point on the VISIBLE (cursor-deformed) line at position u cells —
+    // interpolates inside the same node segment the grid draws, so the
+    // spark stays glued to a bowed line
+    const sparkPoint = (s: Spark, u: number, out: [number, number]) => {
+      const maxU = s.axis === 0 ? cols - 1 : rows - 1;
+      const cu = Math.max(0, Math.min(maxU - 0.001, u));
+      const i0 = Math.floor(cu);
+      const t = cu - i0;
+      let a: number;
+      let b: number;
+      if (s.axis === 0) {
+        a = (s.line * cols + i0) * 2;
+        b = a + 2;
+        out[0] = i0 * CELL + t * CELL + disp[a] * (1 - t) + disp[b] * t;
+        out[1] = s.line * CELL + disp[a + 1] * (1 - t) + disp[b + 1] * t;
+      } else {
+        a = (i0 * cols + s.line) * 2;
+        b = a + cols * 2;
+        out[0] = s.line * CELL + disp[a] * (1 - t) + disp[b] * t;
+        out[1] = i0 * CELL + t * CELL + disp[a + 1] * (1 - t) + disp[b + 1] * t;
+      }
+    };
 
     const drawBase = () => {
       if (!base) base = document.createElement("canvas");
@@ -90,9 +130,8 @@ export default function KineticGridCanvas({ pointerRef, progressRef }: Props) {
       cols = Math.floor(w / CELL) + 2;
       rows = Math.floor(h / CELL) + 2;
       disp = new Float32Array(cols * rows * 2);
-      sx = new Array(cols).fill(0);
-      sy = new Array(rows).fill(0);
       drawBase();
+      for (const s of sparks) s.on = false; // grid shape changed — respawn on new lines
       if (!running) {
         // static single paint (reduced motion / paused)
         ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
@@ -104,6 +143,8 @@ export default function KineticGridCanvas({ pointerRef, progressRef }: Props) {
     const frame = () => {
       raf = running ? requestAnimationFrame(frame) : 0;
       const now = performance.now();
+      const dt = lastT ? Math.min(0.05, (now - lastT) / 1000) : 0.016;
+      lastT = now;
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
       ctx.clearRect(0, 0, w, h);
       if (base) ctx.drawImage(base, 0, 0, w, h);
@@ -171,71 +212,116 @@ export default function KineticGridCanvas({ pointerRef, progressRef }: Props) {
         }
       }
 
-      // energy pulses gliding along the grid lines — same field as the
-      // cybernetic-grid shader: e = sin(x·F + t·W1)·sin(y·F + t·W2) with
-      // smoothstep(0.8, 1), evaluated per node so the glowing patches
-      // travel along OUR lines. Segments drawn between displaced node
-      // positions — pulses stay glued to the visible (cursor-bowed)
-      // line. First screen only, fades with the copy.
-      const pf = 1 - Math.min(1, (progressRef?.current ?? 0) / PULSE_FADE_END);
-      if (pf > 0.001 && cols > 2 && rows > 2) {
-        const dim = (w >= 768 ? 1 : 0.6) * pf;
-        const t = now * 0.001;
-        for (let c = 0; c < cols; c++) sx[c] = Math.sin(c * P_F + t * P_W1);
-        for (let r = 0; r < rows; r++) sy[r] = Math.sin(r * P_F + t * P_W2);
+      // neon laser streaks gliding along the grid lines — real canvas
+      // shadowBlur bloom + tapered cyan body + razor-thin hot core,
+      // no blob circles or segmented caterpillar look. Points sample
+      // the displaced nodes so streaks follow cursor-bowed lines.
+      // Visible in BOTH hero states — the grid is the same canvas
+      // under the holo nav; the loop stops off-screen via the
+      // IntersectionObserver below.
+      if (cols > 2 && rows > 2) {
+        const want = w >= 768 ? 4 : 2;
+        while (sparks.length < want) {
+          sparks.push({
+            on: false, axis: 0, line: 0, u: 0, dir: 1,
+            speed: 2.8, age: 0, life: 4.5, delay: rand(0.1, 1.8),
+          });
+        }
+        if (sparks.length > want) sparks.length = want;
+
+        const dim = w >= 768 ? 1 : 0.7;
+        const pts: [number, number][] = [];
+        for (let k = 0; k <= SPARK_SAMPLES; k++) pts.push([0, 0]);
+
+        ctx.save();
         ctx.lineCap = "round";
+        ctx.lineJoin = "round";
 
-        const soft = (v: number) => {
-          const k = Math.min(1, Math.max(0, (v - 0.72) / 0.28));
-          return k * k * (3 - 2 * k); // smoothstep(0.72, 1, v)
-        };
-        const pulse = (
-          x1: number, y1: number, x2: number, y2: number,
-          v1: number, v2: number,
-        ) => {
-          const a = (soft(v1) + soft(v2)) * 0.5 * dim;
-          if (a < 0.015) return;
-          // halo pass + hot core — reads as light, not a tinted line
-          ctx.strokeStyle = `rgba(${ACCENT}, ${(a * 0.35).toFixed(3)})`;
-          ctx.lineWidth = 5;
-          ctx.beginPath();
-          ctx.moveTo(x1, y1);
-          ctx.lineTo(x2, y2);
-          ctx.stroke();
-          ctx.strokeStyle = `rgba(${ACCENT}, ${Math.min(0.9, a * 0.95).toFixed(3)})`;
-          ctx.lineWidth = 1.8;
-          ctx.beginPath();
-          ctx.moveTo(x1, y1);
-          ctx.lineTo(x2, y2);
-          ctx.stroke();
-        };
+        for (const s of sparks) {
+          if (!s.on) {
+            s.delay -= dt;
+            if (s.delay <= 0) respawn(s);
+            continue;
+          }
+          s.age += dt;
+          s.u += s.dir * s.speed * dt;
+          const maxU = s.axis === 0 ? cols - 1 : rows - 1;
+          if (s.u < -0.5 || s.u > maxU + SPARK_TRAIL || s.age > s.life) {
+            s.on = false;
+            s.delay = rand(0.4, 2.0);
+            continue;
+          }
+          const env =
+            Math.min(1, Math.min(s.age * 2.2, (s.life - s.age) * 2.2)) * dim;
+          if (env <= 0.01) continue;
 
-        for (let r = 0; r < rows; r++) {
-          const ey = sy[r];
-          if (ey < 0.4) continue; // line outside the lit band — skip
-          for (let c = 0; c + 1 < cols; c++) {
-            const i = (r * cols + c) * 2;
-            const j = i + 2;
-            pulse(
-              c * CELL + disp[i], r * CELL + disp[i + 1],
-              (c + 1) * CELL + disp[j], r * CELL + disp[j + 1],
-              sx[c] * ey, sx[c + 1] * ey,
+          // sample the streak along the deformed line from tail → head
+          let n = 0;
+          for (let k = SPARK_SAMPLES; k >= 0; k--) {
+            const uu = s.u - s.dir * (k / SPARK_SAMPLES) * SPARK_TRAIL;
+            if (uu < 0 || uu > maxU) continue;
+            sparkPoint(s, uu, pts[n]);
+            n++;
+          }
+          if (n < 2) continue;
+
+          const x0 = pts[0][0], y0 = pts[0][1]; // tail
+          const x1 = pts[n - 1][0], y1 = pts[n - 1][1]; // head
+          if (Math.hypot(x1 - x0, y1 - y0) < 2) continue;
+
+          const trace = (fromIdx: number) => {
+            ctx.beginPath();
+            ctx.moveTo(pts[fromIdx][0], pts[fromIdx][1]);
+            for (let i = fromIdx + 1; i < n; i++) ctx.lineTo(pts[i][0], pts[i][1]);
+          };
+
+          // 1) wide atmospheric bloom — tapered at BOTH ends so the
+          //    streak is a clean laser needle, no lollipop bulb at the tip
+          const gBloom = ctx.createLinearGradient(x0, y0, x1, y1);
+          gBloom.addColorStop(0, "rgba(0, 215, 225, 0)");
+          gBloom.addColorStop(0.55, `rgba(0, 210, 220, ${(env * 0.25).toFixed(3)})`);
+          gBloom.addColorStop(0.88, `rgba(0, 235, 245, ${(env * 0.72).toFixed(3)})`);
+          gBloom.addColorStop(1, "rgba(0, 235, 245, 0)");
+          ctx.shadowColor = `rgba(0, 220, 230, ${(env * 0.9).toFixed(3)})`;
+          ctx.shadowBlur = 12;
+          ctx.strokeStyle = gBloom;
+          ctx.lineWidth = 2.2;
+          trace(0);
+          ctx.stroke();
+
+          // 2) saturated neon body — peak just behind the tip, razor taper at 1
+          const gBody = ctx.createLinearGradient(x0, y0, x1, y1);
+          gBody.addColorStop(0, "rgba(0, 185, 195, 0)");
+          gBody.addColorStop(0.4, `rgba(0, 195, 205, ${(env * 0.35).toFixed(3)})`);
+          gBody.addColorStop(0.86, `rgba(0, 235, 245, ${(env * 0.92).toFixed(3)})`);
+          gBody.addColorStop(0.95, `rgba(200, 255, 255, ${(env * 0.98).toFixed(3)})`);
+          gBody.addColorStop(1, "rgba(200, 255, 255, 0)");
+          ctx.shadowBlur = 5;
+          ctx.strokeStyle = gBody;
+          ctx.lineWidth = 1.1;
+          trace(0);
+          ctx.stroke();
+
+          // 3) razor-hot white-cyan filament in the front section —
+          //    what makes a line read as emitting light on a light bg
+          const coreStart = Math.floor(n * 0.5);
+          if (n - coreStart >= 2) {
+            const gCore = ctx.createLinearGradient(
+              pts[coreStart][0], pts[coreStart][1], x1, y1,
             );
+            gCore.addColorStop(0, "rgba(255, 255, 255, 0)");
+            gCore.addColorStop(0.72, `rgba(235, 255, 255, ${(env * 0.95).toFixed(3)})`);
+            gCore.addColorStop(0.93, `rgba(255, 255, 255, ${(env * 0.98).toFixed(3)})`);
+            gCore.addColorStop(1, "rgba(255, 255, 255, 0)");
+            ctx.shadowColor = `rgba(0, 240, 250, ${(env * 0.95).toFixed(3)})`;
+            ctx.shadowBlur = 6;
+            ctx.strokeStyle = gCore;
+            ctx.lineWidth = 0.65;
+            trace(coreStart);
+            ctx.stroke();
           }
         }
-        for (let c = 0; c < cols; c++) {
-          const ex = sx[c];
-          if (ex < 0.4) continue;
-          for (let r = 0; r + 1 < rows; r++) {
-            const i = (r * cols + c) * 2;
-            const j = i + cols * 2;
-            pulse(
-              c * CELL + disp[i], r * CELL + disp[i + 1],
-              c * CELL + disp[j], (r + 1) * CELL + disp[j + 1],
-              sy[r] * ex, sy[r + 1] * ex,
-            );
-          }
-        }
+        ctx.restore();
       }
     };
 
@@ -246,6 +332,7 @@ export default function KineticGridCanvas({ pointerRef, progressRef }: Props) {
     };
     const stop = () => {
       running = false;
+      lastT = 0;
       if (raf) cancelAnimationFrame(raf);
       raf = 0;
     };

@@ -1,5 +1,6 @@
 import { SERVICES } from "../../data/content";
 import { useInView } from "../../hooks/useInView";
+import SectionHead from "./SectionHead";
 
 export default function Services() {
   const { ref, inView } = useInView<HTMLElement>();
@@ -8,35 +9,34 @@ export default function Services() {
     <section
       id="services"
       ref={ref}
-      className={`reveal px-[var(--page-gutter)] py-[clamp(80px,12vh,140px)] ${inView ? "is-in" : ""}`}
+      className={`reveal zt-sec--dense px-[var(--page-gutter)] ${inView ? "is-in" : ""}`}
     >
       <div className="mx-auto max-w-[var(--content-max)]">
-        <header className="mb-12">
-          <h2 className="font-body text-[clamp(28px,3.4vw,42px)] font-medium tracking-[-0.035em] text-[var(--z-ink)]">
-            Услуги
-          </h2>
-          <p className="mt-2 text-[15px] text-[var(--z-muted)]">
-            Полный цикл: от идеи до запуска
-          </p>
-        </header>
+        <SectionHead
+          kicker="01 · Услуги"
+          title="Услуги"
+          sub="Полный цикл, от идеи до запуска. Сайты, боты и приложения — одна команда."
+        />
 
-        <div className="grid gap-y-8 border-t border-line md:grid-cols-3 md:gap-x-10 md:gap-y-0">
+        <ul className="mt-12 border-t border-line">
           {SERVICES.map((s, i) => (
-            <article
+            <li
               key={s.id}
-              className={`border-b border-line pb-8 pt-8 md:border-b-0 md:pb-0 md:pt-9 ${
-                i > 0 ? "md:border-l md:border-line md:pl-10" : ""
-              }`}
+              className="svc-row grid grid-cols-1 items-baseline gap-x-8 gap-y-2 border-b border-line py-9 md:grid-cols-[72px_minmax(300px,420px)_minmax(0,44ch)_auto]"
             >
-              <h3 className="font-body text-[19px] font-medium tracking-[-0.02em] text-[var(--z-ink)]">
+              <span className="zt-meta text-[var(--z-action)]">{String(i + 1).padStart(2, "0")}</span>
+              <h3 className="svc-title font-display text-[26px] font-medium leading-tight tracking-[-0.01em] text-[var(--z-ink)]">
                 {s.title}
               </h3>
-              <p className="mt-3 text-sm leading-[1.6] text-[var(--z-muted)]">
+              <p className="max-w-[46ch] text-[15px] leading-[1.55] text-[var(--z-muted)]">
                 {s.text}
               </p>
-            </article>
+              <p className="zt-meta whitespace-nowrap text-[var(--z-action)] md:justify-self-end">
+                {s.price}
+              </p>
+            </li>
           ))}
-        </div>
+        </ul>
       </div>
     </section>
   );
