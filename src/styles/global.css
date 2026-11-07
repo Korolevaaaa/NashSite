@@ -61,11 +61,11 @@ body {
   white-space: nowrap;
   pointer-events: none;
   user-select: none;
-  /* projection losing focus: drifts up, defocuses, fades ~p0.29 */
-  opacity: calc(1 - min(1, var(--hero-p, 0) * 3.5));
+  /* projection losing focus: drifts up, fades ~p0.37; only the
+     echo layers blur — the base stays a stable reference */
+  opacity: calc(1 - min(1, var(--hero-p, 0) * 2.7));
   transform: translate(-50%, -50%);
   translate: 0 calc(var(--hero-p, 0) * -56px);
-  filter: blur(calc(var(--hero-p, 0) * 3px));
 }
 .hero-wordmark span {
   position: relative;
@@ -94,8 +94,8 @@ body {
   color: transparent;
   background: linear-gradient(
     180deg,
-    rgba(13, 17, 23, 0.06),
-    rgba(13, 17, 23, 0.21)
+    rgba(13, 17, 23, 0.08),
+    rgba(13, 17, 23, 0.22)
   );
   -webkit-background-clip: text;
   background-clip: text;
@@ -110,14 +110,16 @@ body {
   color: transparent;
 }
 .hero-wordmark span::before {
-  -webkit-text-stroke: 1px rgba(0, 154, 160, 0.55);
-  translate: calc(-1px - var(--hero-p, 0) * 14px)
-    calc(var(--hero-p, 0) * -6px);
+  -webkit-text-stroke: 1px rgba(0, 154, 160, 0.6);
+  translate: calc(-1px - var(--hero-p, 0) * 18px)
+    calc(var(--hero-p, 0) * -7px);
+  filter: blur(calc(var(--hero-p, 0) * 2px));
 }
 .hero-wordmark span::after {
-  -webkit-text-stroke: 1px rgba(21, 27, 32, 0.28);
-  translate: calc(1px + var(--hero-p, 0) * 14px)
-    calc(var(--hero-p, 0) * 6px);
+  -webkit-text-stroke: 1px rgba(21, 27, 32, 0.32);
+  translate: calc(1px + var(--hero-p, 0) * 18px)
+    calc(var(--hero-p, 0) * 7px);
+  filter: blur(calc(var(--hero-p, 0) * 2px));
 }
 
 /* ---- hero copy ---- */
