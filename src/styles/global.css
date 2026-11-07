@@ -321,7 +321,7 @@ body {
   border-radius: 16px;
   /* hologram cues: visible raster + translucent body + glowing edge */
   background:
-    repeating-linear-gradient(180deg, rgba(0, 160, 168, 0.07) 0 1px, transparent 1px 3px),
+    repeating-linear-gradient(180deg, rgba(13, 116, 109, 0.12) 0 1px, transparent 1px 3px),
     linear-gradient(180deg, rgba(232, 246, 248, 0.62), rgba(232, 246, 248, 0.42));
   backdrop-filter: blur(3px) saturate(1.15);
   -webkit-backdrop-filter: blur(3px) saturate(1.15);
