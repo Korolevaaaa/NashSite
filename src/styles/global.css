@@ -1887,7 +1887,8 @@ section[id] {
   border: 1px solid var(--color-line);
   padding: 8px 14px;
   border-radius: var(--r-pill);
-  background: transparent;
+  background: rgba(255, 255, 255, 0.72);
+  backdrop-filter: blur(4px);
 }
 
 /* — competencies: diplomas disclosure (0fr→1fr, no JS height measure) — */
@@ -1900,7 +1901,8 @@ section[id] {
   padding: 0 22px;
   border: 1px solid var(--color-line);
   border-radius: var(--r-pill);
-  background: transparent;
+  background: rgba(255, 255, 255, 0.72);
+  backdrop-filter: blur(4px);
   font-family: var(--font-body);
   font-size: 14px;
   font-weight: 500;

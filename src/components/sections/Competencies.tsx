@@ -16,8 +16,8 @@ export default function Competencies() {
       ref={ref}
       className={`reveal zt-sec--dense relative overflow-hidden px-[var(--page-gutter)] ${inView ? "is-in" : ""}`}
     >
-      <ShaderBackground className="pointer-events-none absolute inset-0 h-full w-full opacity-60" />
-      <div className="relative mx-auto max-w-[var(--content-max)]">
+      <ShaderBackground className="pointer-events-none absolute inset-0 h-full w-full" />
+      <div className="relative z-10 mx-auto max-w-[var(--content-max)]">
         <SectionHead
           title="Компетенции"
           sub="Стек и практики, которые мы применяем в каждом проекте."
