@@ -48,20 +48,8 @@ export const SERVICES = [
   },
 ] as const;
 
-/* Portfolio entries — cover slots take 9:16 poster renders; they are
-   cropped into a compact 4:5 frame (object-position keeps the top of the
-   layout in view). Drop the file into /public/covers and set `cover`. */
-export const WORKS: ReadonlyArray<{
-  name: string;
-  kind: string;
-  year: string;
-  cover?: string;
-}> = [
-  { name: "NEOBANK", kind: "Финтех-платформа", year: "2025" },
-  { name: "ORBITAL", kind: "Marketplace спутниковых данных", year: "2025" },
-  { name: "BIO/TECH", kind: "Сайт лаборатории", year: "2025" },
-  { name: "AERON", kind: "Конфигуратор дронов", year: "2024" },
-];
+/* Case studies moved to src/data/cases.ts — richer model with
+   type/industry filters, per-case detail pages at #/case/<slug>. */
 
 /* Business directions — each entry gets its own landing page
    (hash route #/napravlenie/<slug>) for SEO and Yandex Direct. */
@@ -279,7 +267,8 @@ export const FAQ = [
 
 export const NAV_LINKS = [
   { href: "#services", label: "Услуги" },
-  { href: "#portfolio", label: "Портфолио" },
+  { href: "#cases", label: "Кейсы" },
+  { href: "#/blog", label: "Блог" },
   { href: "#contacts", label: "Контакты" },
 ] as const;
 

@@ -26,7 +26,7 @@ export default function HeroCopy() {
           <span aria-hidden="true">→</span>
         </a>
 
-        <a className="hero-secondary" href="#portfolio">
+        <a className="hero-secondary" href="#cases">
           Смотреть примеры
           <span aria-hidden="true">→</span>
         </a>
