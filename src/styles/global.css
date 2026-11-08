@@ -2401,7 +2401,8 @@ a.cs-card:focus-visible {
 /* staggered reveal when a slide reaches the middle of the viewport:
    num → heading → text → screenshot */
 .case-step__body > *,
-.case-step__shot {
+.case-step__shot,
+.case-step > .cm-rep {
   opacity: 0;
   transform: translateY(16px);
   transition:
@@ -2411,11 +2412,13 @@ a.cs-card:focus-visible {
 .case-step__num { --d: 0.05s; }
 .case-step__head { --d: 0.12s; }
 .case-step__text { --d: 0.2s; }
-.case-step__shot {
+.case-step__shot,
+.case-step > .cm-rep {
   --d: 0.28s;
 }
 .case-step.is-in .case-step__body > *,
-.case-step.is-in .case-step__shot {
+.case-step.is-in .case-step__shot,
+.case-step.is-in > .cm-rep {
   opacity: 1;
   transform: none;
 }
@@ -2721,6 +2724,82 @@ a.cs-card:focus-visible {
   4% { opacity: 1; transform: none; }
   30% { opacity: 1; }
   36%, 100% { opacity: 0; transform: translateY(-10px); }
+}
+
+/* 1b — отчёт: «приборная доска» Lighthouse, занимает слот скриншота */
+.cm-rep {
+  align-self: center;
+  display: grid;
+  gap: 18px;
+  width: 100%;
+  padding: clamp(22px, 3vw, 40px);
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  border-radius: var(--r-card);
+  background: #0d0f12;
+}
+.cm-rep__head {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.55);
+}
+.cm-rep__row {
+  display: grid;
+  grid-template-columns: minmax(0, 1.2fr) minmax(0, 1.6fr) 3ch;
+  align-items: center;
+  gap: 14px;
+  opacity: 0;
+  transform: translateY(10px);
+  transition:
+    opacity 0.5s ease calc(var(--i) * 0.12s),
+    transform 0.5s ease calc(var(--i) * 0.12s);
+}
+.case-step.is-in .cm-rep__row {
+  opacity: 1;
+  transform: none;
+}
+.cm-rep__label {
+  font-size: 13px;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.85);
+}
+.cm-rep__track {
+  height: 8px;
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.1);
+  overflow: hidden;
+}
+.cm-rep__fill {
+  display: block;
+  height: 100%;
+  border-radius: 6px;
+  background: linear-gradient(90deg, #006b70, #00c9d4);
+  transform: scaleX(0);
+  transform-origin: left center;
+  transition: transform 1s cubic-bezier(0.2, 0.7, 0.2, 1) calc(var(--i) * 0.12s + 0.2s);
+}
+.case-step.is-in .cm-rep__fill {
+  transform: scaleX(var(--s));
+}
+.cm-rep__num {
+  font-family: var(--font-mono);
+  font-size: 15px;
+  font-weight: 600;
+  color: #00d4de;
+  text-align: right;
+}
+.cm-rep__note {
+  margin-top: 4px;
+  padding-top: 14px;
+  border-top: 1px solid rgba(255, 255, 255, 0.09);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  color: rgba(255, 255, 255, 0.45);
 }
 
 /* 4b — заказ: строки чек-аута собираются по цепочке, цикл ~7.5с */
@@ -3082,6 +3161,7 @@ a.cs-card:focus-visible {
   }
   .case-step__body > *,
   .case-step__shot,
+  .case-step > .cm-rep,
   .case-metrics__item {
     opacity: 1 !important;
     transform: none !important;

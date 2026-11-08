@@ -246,6 +246,9 @@ export default function CasePage({ slug }: { slug: string }) {
                       />
                     )}
                   </div>
+                  {s.report && (
+                    <CaseMotion kind="report" report={s.report} />
+                  )}
                   {s.shot && (
                     <button
                       type="button"

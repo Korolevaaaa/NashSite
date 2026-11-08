@@ -40,6 +40,8 @@ export interface CaseStoryStep {
   inboxItems?: { src: string; text: string }[];
   /** before/after labels for motion "bars" */
   barLabels?: { old: string; new: string };
+  /** audit panel for motion "report" — real Lighthouse numbers only */
+  report?: { title: string; scores: { label: string; score: number }[]; note?: string };
 }
 
 export interface CaseStudy {
@@ -153,8 +155,17 @@ export const CASES: CaseStudy[] = [
       {
         heading: "Задача",
         text: "Мастерская делает авторские свечи-шкатулки из гипса и соевого воска и продавала через соцсети и ярмарки. Каждая покупка шла через переписку: какой аромат есть, сколько стоит доставка, как оплатить, куда привезти. Один заказ — десятки сообщений, а вопросы повторялись у каждого нового клиента. Нужен был магазин, который продаёт сам — от выбора аромата до оплаты и доставки.",
-        shot: "/cases/yaruska/collections.png",
         motion: "chats",
+        report: {
+          title: "Lighthouse · yaruska.ru",
+          scores: [
+            { label: "SEO", score: 100 },
+            { label: "Best practices", score: 100 },
+            { label: "Performance", score: 99 },
+            { label: "Accessibility", score: 95 },
+          ],
+          note: "LCP 1.6 с · CLS 0 · TBT 10 мс",
+        },
       },
       {
         heading: "Каталог в эстетике бренда",
