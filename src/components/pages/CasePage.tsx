@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState, type CSSProperties } from "react";
 import { CASES, type CaseStoryStep } from "../../data/cases";
 import { CONTACT_EMAIL } from "../../data/content";
+import { CaseMotion } from "../ui/case-motion";
 
 /** Case detail page — #/case/<slug>
  *  Hero → metrics → story as fullscreen slides (each step is a tall
@@ -234,6 +235,7 @@ export default function CasePage({ slug }: { slug: string }) {
                     </span>
                     <h2 className="case-step__head">{s.heading}</h2>
                     <p className="case-step__text">{s.text}</p>
+                    {s.motion && <CaseMotion kind={s.motion} />}
                   </div>
                   {s.shot && (
                     <button

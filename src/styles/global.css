@@ -2499,6 +2499,206 @@ a.cs-card:focus-visible {
   transition: transform 0.35s ease;
 }
 
+/* — drawn motion graphics inside slides (all CSS, hidden if reduced-motion) — */
+.cm {
+  margin-top: 26px;
+  max-width: 420px;
+}
+.cm-cap {
+  display: block;
+  margin-top: 12px;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--z-muted);
+}
+
+/* 1 — задача: пузырьки диалогов копятся один за другим */
+.cm-chats__row {
+  display: flex;
+  gap: 8px;
+}
+.cm-bubble {
+  width: 38px;
+  height: 25px;
+  border: 1px solid rgba(13, 17, 23, 0.28);
+  border-radius: 8px 8px 8px 2px;
+  background: rgba(255, 255, 255, 0.85);
+  opacity: 0;
+  animation: cm-pop 3.8s ease infinite;
+  animation-delay: calc(var(--i) * 0.55s);
+}
+.cm-bubble:nth-child(2n) {
+  border-color: rgba(0, 155, 160, 0.45);
+  background: rgba(0, 201, 212, 0.1);
+}
+@keyframes cm-pop {
+  0% { opacity: 0; transform: scale(0.4); }
+  10% { opacity: 1; transform: scale(1); }
+  80% { opacity: 1; }
+  100% { opacity: 0; transform: scale(0.9); }
+}
+
+/* 3 — бот: живой мини-чат, цикл ~8с */
+.cm-chat {
+  display: grid;
+  gap: 8px;
+}
+.cm-msg {
+  justify-self: start;
+  max-width: 85%;
+  padding: 8px 13px;
+  border-radius: 12px;
+  font-size: 12.5px;
+  line-height: 1.35;
+}
+.cm-msg--user {
+  justify-self: end;
+  border: 1px solid var(--color-line);
+  border-bottom-right-radius: 4px;
+  background: #fff;
+  color: var(--z-ink);
+  animation: cm-c-user 8s ease infinite;
+}
+.cm-msg--typing {
+  border: 1px solid var(--color-line);
+  border-bottom-left-radius: 4px;
+  background: rgba(255, 255, 255, 0.75);
+  animation: cm-c-typing 8s ease infinite;
+}
+.cm-msg--typing i {
+  display: inline-block;
+  width: 5px;
+  height: 5px;
+  margin-right: 4px;
+  border-radius: 50%;
+  background: var(--z-muted);
+  animation: cm-dot 0.9s ease infinite;
+}
+.cm-msg--typing i:nth-child(2) { animation-delay: 0.15s; }
+.cm-msg--typing i:nth-child(3) { animation-delay: 0.3s; }
+.cm-msg--bot {
+  border-bottom-left-radius: 4px;
+  background: var(--z-ink);
+  color: #fff;
+  animation: cm-c-bot 8s ease infinite;
+}
+.cm-msg--sent {
+  border: 1px solid rgba(0, 155, 160, 0.35);
+  border-radius: 999px;
+  background: rgba(0, 155, 160, 0.12);
+  color: var(--z-action);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  animation: cm-c-sent 8s ease infinite;
+}
+@keyframes cm-dot {
+  0%, 60%, 100% { transform: none; opacity: 0.4; }
+  30% { transform: translateY(-3px); opacity: 1; }
+}
+@keyframes cm-c-user {
+  0% { opacity: 0; transform: translateY(8px); }
+  5% { opacity: 1; transform: none; }
+  90% { opacity: 1; }
+  100% { opacity: 0; }
+}
+@keyframes cm-c-typing {
+  0%, 14% { opacity: 0; transform: translateY(8px); }
+  18% { opacity: 1; transform: none; }
+  42% { opacity: 1; }
+  48%, 100% { opacity: 0; }
+}
+@keyframes cm-c-bot {
+  0%, 46% { opacity: 0; transform: translateY(8px); }
+  51% { opacity: 1; transform: none; }
+  90% { opacity: 1; }
+  100% { opacity: 0; }
+}
+@keyframes cm-c-sent {
+  0%, 66% { opacity: 0; transform: translateY(8px); }
+  72% { opacity: 1; transform: none; }
+  92% { opacity: 1; }
+  100% { opacity: 0; }
+}
+
+/* 4 — telegram: заявки слетаются в одну ленту */
+.cm-inbox {
+  display: grid;
+  gap: 8px;
+}
+.cm-req {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  padding: 9px 14px;
+  border: 1px solid var(--color-line);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.75);
+  font-size: 12.5px;
+  color: var(--z-ink);
+  opacity: 0;
+  animation: cm-req 6.5s ease infinite;
+  animation-delay: calc(var(--i) * 1.4s);
+}
+.cm-req b {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--z-action);
+}
+@keyframes cm-req {
+  0% { opacity: 0; transform: translateX(26px); }
+  4% { opacity: 1; transform: none; }
+  86% { opacity: 1; }
+  100% { opacity: 0; transform: translateY(-8px); }
+}
+
+/* 5 — результат: длинная полоса «было» vs короткая «стало», одноразово */
+.cm-bars {
+  display: grid;
+  gap: 14px;
+}
+.cm-bars__row {
+  display: grid;
+  gap: 6px;
+}
+.cm-bars__label {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--z-muted);
+}
+.cm-bars__bar {
+  display: block;
+  height: 10px;
+  border-radius: 6px;
+  transform: scaleX(0);
+  transform-origin: left center;
+  transition: transform 0.9s cubic-bezier(0.2, 0.7, 0.2, 1);
+}
+.cm-bars__bar--old {
+  width: 100%;
+  background: rgba(13, 17, 23, 0.75);
+}
+.cm-bars__bar--new {
+  width: 34%;
+  background: var(--z-action);
+  transition-delay: 0.45s;
+}
+.case-step.is-in .cm-bars__bar {
+  transform: scaleX(1);
+}
+@media (prefers-reduced-motion: reduce) {
+  .cm {
+    display: none;
+  }
+}
+
 /* bottom gallery strip — free horizontal browse */
 .case-gallery {
   margin-top: 72px;
