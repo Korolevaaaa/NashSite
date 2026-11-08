@@ -18,7 +18,9 @@ const page = await browser.newPage();
 await page.setViewport({ width: W, height: H, deviceScaleFactor: 1 });
 
 import { readFileSync } from "node:fs";
-const img = "data:image/png;base64," + readFileSync(ROOT + "hero.png").toString("base64");
+const img =
+  "data:image/png;base64," +
+  readFileSync(ROOT + "hero-narrow.png").toString("base64");
 
 const html = `<!doctype html><style>
   * { margin: 0; box-sizing: border-box; }
@@ -62,24 +64,27 @@ const html = `<!doctype html><style>
   }
   .win {
     position: relative; z-index: 2;
-    width: 1000px;
+    width: 1060px;
     border-radius: 18px;
     background: #fff;
     box-shadow: 0 40px 80px rgba(13,17,23,.18), 0 2px 6px rgba(13,17,23,.08);
     overflow: hidden;
+    transform: translateY(40px);
   }
   .chrome {
     display: flex; align-items: center; gap: 8px;
-    padding: 16px 20px; background: #fbfbfb;
+    padding: 18px 22px; background: #fbfbfb;
     border-bottom: 1px solid rgba(13,17,23,.08);
   }
-  .chrome i { width: 12px; height: 12px; border-radius: 50%; background: rgba(13,17,23,.14); }
+  .chrome i { width: 13px; height: 13px; border-radius: 50%; background: rgba(13,17,23,.14); }
   .chrome span {
-    margin-left: 14px; flex: 1; height: 26px;
+    margin-left: 14px; flex: 1; height: 30px;
     border-radius: 999px; background: rgba(13,17,23,.05);
-    font: 500 13px/26px system-ui; color: #4e5b60; padding: 0 16px;
+    font: 500 15px/30px system-ui; color: #4e5b60; padding: 0 18px;
   }
-  .shot { display: block; width: 100%; height: 640px; object-fit: cover; object-position: 50% 12%; }
+  /* narrow-viewport shot at ~1:1 — site stays crisp, hero reads on the card */
+  .shot-wrap { height: 786px; overflow: hidden; }
+  .shot { display: block; width: 100%; height: auto; }
 </style>
 <div class="grid"></div>
 <div class="frame"></div>
@@ -87,7 +92,7 @@ const html = `<!doctype html><style>
 <div class="tag2">graffiti-zerkalo.ru</div>
 <div class="win">
   <div class="chrome"><i></i><i></i><i></i><span>graffiti-zerkalo.ru</span></div>
-  <img class="shot" src="${img}" />
+  <div class="shot-wrap"><img class="shot" src="${img}" /></div>
 </div>`;
 
 await page.setContent(html);
