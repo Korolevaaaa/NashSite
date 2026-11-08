@@ -397,7 +397,7 @@ export const CASES: CaseStudy[] = [
       {
         heading: "Расписание и запись к специалистам",
         text: "Через расписание клиент записывается на онлайн-приём к психологу — встреча проходит по видеоконференции внутри платформы, на консультацию массажиста по видео или на живую терапию в центре. Администратор в панели управляет всем этим хозяйством: трансляции и их цены, товары, лабораторию, пользователей, тесты диагностики и журнал действий.",
-        shot: "/cases/koosmo/admin.png",
+        shot: "/cases/koosmo/schedule.png",
         motion: "inbox",
         inboxTitle: "Записи · экосистема сайта",
         inboxCaption: "всё остаётся внутри платформы",
@@ -416,7 +416,7 @@ export const CASES: CaseStudy[] = [
       },
     ],
     gallery: [
-      "/cases/koosmo/services.png",
+      "/cases/koosmo/about.png",
       "/cases/koosmo/login.png",
       "/cases/koosmo/stream-new.png",
       "/cases/koosmo/admin.png",
