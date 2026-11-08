@@ -1,12 +1,20 @@
 /* Drawn, CSS-driven motion graphics for case story slides.
    Each kind loops a small narrative diagram tied to the slide's point.
+   Scripts/labels come from the case data — never hardcoded here.
    Everything is pure DOM/CSS — hidden entirely under reduced-motion. */
 
 import type { CSSProperties } from "react";
 
-export type CaseMotionKind = "chats" | "chat" | "inbox" | "bars";
+export type CaseMotionKind = "chats" | "chat" | "inbox" | "bars" | "order";
 
-export function CaseMotion({ kind }: { kind: CaseMotionKind }) {
+export interface CaseMotionProps {
+  kind: CaseMotionKind;
+  chat?: { botName: string; u1: string; b1: string; u2: string; b2: string; sent: string };
+  items?: { src: string; text: string }[];
+  bars?: { old: string; new: string };
+}
+
+export function CaseMotion({ kind, chat, items, bars }: CaseMotionProps) {
   if (kind === "chats") {
     return (
       <div className="cm cm-chats" aria-hidden="true">
@@ -15,33 +23,35 @@ export function CaseMotion({ kind }: { kind: CaseMotionKind }) {
             <i key={i} className="cm-bubble" style={{ "--i": i } as CSSProperties} />
           ))}
         </div>
-        <span className="cm-cap">десятки одинаковых диалогов в директе</span>
+        <span className="cm-cap">десятки одинаковых диалогов в переписке</span>
       </div>
     );
   }
-  if (kind === "chat") {
+
+  if (kind === "chat" && chat) {
     return (
       <div className="cm cm-chat" aria-hidden="true">
         <div className="cm-chat__head">
-          <i className="cm-online" /> RAMCY бот · онлайн
+          <i className="cm-online" /> {chat.botName}
         </div>
         <div className="cm-chat__flow">
-          <div className="cm-msg cm-msg--u1">Хочу зеркало с тегом</div>
+          <div className="cm-msg cm-msg--u1">{chat.u1}</div>
           <div className="cm-msg cm-msg--typing cm-msg--t1">
             <i /><i /><i />
           </div>
-          <div className="cm-msg cm-msg--b1">Какой размер? 40, 60 или 90 см</div>
-          <div className="cm-msg cm-msg--u2">60 см, привезти в Москву</div>
+          <div className="cm-msg cm-msg--b1">{chat.b1}</div>
+          <div className="cm-msg cm-msg--u2">{chat.u2}</div>
           <div className="cm-msg cm-msg--typing cm-msg--t2">
             <i /><i /><i />
           </div>
-          <div className="cm-msg cm-msg--b2">Смета: тег · 60 см · Москва — передаю Виталию</div>
-          <div className="cm-msg cm-msg--sent">Заявка ушла в Telegram ✓</div>
+          <div className="cm-msg cm-msg--b2">{chat.b2}</div>
+          <div className="cm-msg cm-msg--sent">{chat.sent}</div>
         </div>
       </div>
     );
   }
-  if (kind === "inbox") {
+
+  if (kind === "inbox" && items?.length) {
     return (
       <div className="cm cm-tg" aria-hidden="true">
         <div className="cm-tg__head">
@@ -54,14 +64,10 @@ export function CaseMotion({ kind }: { kind: CaseMotionKind }) {
           Telegram · входящие
         </div>
         <div className="cm-tg__win">
-          {[
-            ["сайт", "Тег · 60 см · Москва"],
-            ["бот", "Фраза · 90 см · Казань"],
-            ["сайт", "Персонаж · 40 см · СПб"],
-          ].map(([src, t], i) => (
-            <div key={t} className="cm-tgc" style={{ "--i": i } as CSSProperties}>
-              <b>Заявка · {src}</b>
-              <span>{t}</span>
+          {items.map((it, i) => (
+            <div key={it.text} className="cm-tgc" style={{ "--i": i } as CSSProperties}>
+              <b>Заявка · {it.src}</b>
+              <span>{it.text}</span>
             </div>
           ))}
         </div>
@@ -69,16 +75,38 @@ export function CaseMotion({ kind }: { kind: CaseMotionKind }) {
       </div>
     );
   }
-  return (
-    <div className="cm cm-bars" aria-hidden="true">
-      <div className="cm-bars__row">
-        <span className="cm-bars__label">было — вопросы в директе</span>
-        <i className="cm-bars__bar cm-bars__bar--old" />
+
+  if (kind === "order") {
+    return (
+      <div className="cm cm-order" aria-hidden="true">
+        {[
+          ["Товар", "Свеча-шкатулка + аромат на выбор"],
+          ["Доставка", "СДЭК · пункт выдачи по городу"],
+          ["Оплата", "ЮKassa · оплачено ✓"],
+        ].map(([b, t], i) => (
+          <div key={t} className="cm-ord" style={{ "--i": i } as CSSProperties}>
+            <b>{b}</b>
+            <span>{t}</span>
+            <i className="cm-ord__check">✓</i>
+          </div>
+        ))}
       </div>
-      <div className="cm-bars__row">
-        <span className="cm-bars__label">стало — готовые сметы</span>
-        <i className="cm-bars__bar cm-bars__bar--new" />
+    );
+  }
+
+  if (kind === "bars" && bars) {
+    return (
+      <div className="cm cm-bars" aria-hidden="true">
+        <div className="cm-bars__row">
+          <span className="cm-bars__label">{bars.old}</span>
+          <i className="cm-bars__bar cm-bars__bar--old" />
+        </div>
+        <div className="cm-bars__row">
+          <span className="cm-bars__label">{bars.new}</span>
+          <i className="cm-bars__bar cm-bars__bar--new" />
+        </div>
       </div>
-    </div>
-  );
+    );
+  }
+  return null;
 }

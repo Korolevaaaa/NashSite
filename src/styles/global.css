@@ -2723,6 +2723,66 @@ a.cs-card:focus-visible {
   36%, 100% { opacity: 0; transform: translateY(-10px); }
 }
 
+/* 4b — заказ: строки чек-аута собираются по цепочке, цикл ~7.5с */
+.cm-order {
+  display: grid;
+  gap: 10px;
+}
+.cm-ord {
+  position: relative;
+  display: grid;
+  gap: 2px;
+  padding: 10px 48px 10px 16px;
+  border: 1px solid var(--color-line);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.85);
+  opacity: 0;
+  animation: cm-ord 7.5s ease infinite;
+  animation-delay: calc(var(--i) * 1.6s);
+}
+.cm-ord b {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--z-action);
+}
+.cm-ord span {
+  font-size: 13px;
+  color: var(--z-ink);
+}
+.cm-ord__check {
+  position: absolute;
+  right: 14px;
+  top: 50%;
+  transform: translateY(-50%) scale(0.4);
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: var(--z-action);
+  color: #fff;
+  font-size: 11px;
+  font-style: normal;
+  display: grid;
+  place-items: center;
+  opacity: 0;
+  animation: cm-ordck 7.5s ease infinite;
+  animation-delay: calc(var(--i) * 1.6s + 0.4s);
+}
+@keyframes cm-ord {
+  0% { opacity: 0; transform: translateY(10px); }
+  4% { opacity: 1; transform: none; }
+  90% { opacity: 1; }
+  100% { opacity: 0; }
+}
+@keyframes cm-ordck {
+  0%, 10% { opacity: 0; transform: translateY(-50%) scale(0.4); }
+  14% { opacity: 1; transform: translateY(-50%) scale(1); }
+  90% { opacity: 1; }
+  100% { opacity: 0; }
+}
+
 /* 5 — результат: длинная полоса «было» vs короткая «стало», одноразово */
 .cm-bars {
   display: grid;

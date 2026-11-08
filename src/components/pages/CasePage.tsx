@@ -237,7 +237,14 @@ export default function CasePage({ slug }: { slug: string }) {
                     </span>
                     <h2 className="case-step__head">{s.heading}</h2>
                     <p className="case-step__text">{s.text}</p>
-                    {s.motion && <CaseMotion kind={s.motion} />}
+                    {s.motion && (
+                      <CaseMotion
+                        kind={s.motion}
+                        chat={s.chat}
+                        items={s.inboxItems}
+                        bars={s.barLabels}
+                      />
+                    )}
                   </div>
                   {s.shot && (
                     <button
