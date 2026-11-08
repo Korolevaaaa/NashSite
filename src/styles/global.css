@@ -2280,7 +2280,7 @@ a.cs-card:focus-visible {
   object-position: 50% 0;
 }
 
-/* metrics strip */
+/* metrics strip — items cascade in when the strip enters view */
 .case-metrics {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
@@ -2296,6 +2296,15 @@ a.cs-card:focus-visible {
   border: 1px solid var(--color-line);
   border-radius: var(--r-card);
   background: rgba(255, 255, 255, 0.5);
+  opacity: 0;
+  transform: translateY(14px);
+  transition:
+    opacity 0.5s ease calc(var(--i, 0) * 90ms),
+    transform 0.5s ease calc(var(--i, 0) * 90ms);
+}
+.case-metrics.is-in .case-metrics__item {
+  opacity: 1;
+  transform: none;
 }
 .case-metrics__value {
   font-family: var(--font-display);
@@ -2389,15 +2398,30 @@ a.cs-card:focus-visible {
   }
 }
 
-/* gentle reveal when a slide reaches the middle of the viewport */
-.case-step > * {
+/* staggered reveal when a slide reaches the middle of the viewport:
+   num → heading → text → screenshot */
+.case-step__body > *,
+.case-step__shot {
   opacity: 0;
   transform: translateY(16px);
-  transition: opacity 0.55s ease, transform 0.55s ease;
+  transition:
+    opacity 0.55s ease var(--d, 0s),
+    transform 0.55s ease var(--d, 0s);
 }
-.case-step.is-in > * {
+.case-step__num { --d: 0.05s; }
+.case-step__head { --d: 0.12s; }
+.case-step__text { --d: 0.2s; }
+.case-step__shot {
+  --d: 0.28s;
+}
+.case-step.is-in .case-step__body > *,
+.case-step.is-in .case-step__shot {
   opacity: 1;
   transform: none;
+}
+/* screenshot drifts slightly with scroll (JS parallax), keep it smooth */
+.case-step__shot img {
+  will-change: transform;
 }
 
 /* floating slide counter + prev/next arrows (visible while story scrolls) */
@@ -2443,6 +2467,22 @@ a.cs-card:focus-visible {
   font-size: 11px;
   letter-spacing: 0.14em;
   color: var(--z-muted);
+}
+.case-steps-nav__cur-wrap {
+  white-space: nowrap;
+}
+.case-steps-nav__cur {
+  display: inline-block;
+  min-width: 2ch;
+  font-weight: 600;
+  color: var(--z-ink);
+  animation: case-nav-roll 0.28s ease;
+}
+@keyframes case-nav-roll {
+  from {
+    transform: translateY(70%);
+    opacity: 0;
+  }
 }
 .case-steps-nav__bar {
   display: block;
@@ -2698,9 +2738,14 @@ a.cs-card:focus-visible {
   .blog-item {
     transition: none !important;
   }
-  .case-step > * {
+  .case-step__body > *,
+  .case-step__shot,
+  .case-metrics__item {
     opacity: 1 !important;
     transform: none !important;
     transition: none !important;
+  }
+  .case-steps-nav__cur {
+    animation: none !important;
   }
 }

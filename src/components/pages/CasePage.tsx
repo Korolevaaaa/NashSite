@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, type CSSProperties } from "react";
 import { CASES, type CaseStoryStep } from "../../data/cases";
 import { CONTACT_EMAIL } from "../../data/content";
 
@@ -68,6 +68,55 @@ export default function CasePage({ slug }: { slug: string }) {
     if (!root) return;
     const io = new IntersectionObserver(([e]) => setStoryInView(e.isIntersecting));
     io.observe(root);
+    return () => io.disconnect();
+  }, [slug]);
+
+  // subtle parallax: each slide's screenshot drifts a few px with scroll
+  useEffect(() => {
+    const reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const root = stepsRef.current;
+    if (reduced || !root) return;
+    const shots = Array.from(
+      root.querySelectorAll<HTMLElement>(".case-step__shot img"),
+    );
+    if (!shots.length) return;
+    let raf = 0;
+    const update = () => {
+      raf = 0;
+      const vh = innerHeight;
+      for (const img of shots) {
+        const r = img.getBoundingClientRect();
+        if (r.bottom < 0 || r.top > vh) continue;
+        const p = (r.top + r.height / 2 - vh / 2) / vh;
+        img.style.transform = `translateY(${(p * -22).toFixed(1)}px)`;
+      }
+    };
+    const onScroll = () => {
+      if (!raf) raf = requestAnimationFrame(update);
+    };
+    addEventListener("scroll", onScroll, { passive: true });
+    update();
+    return () => {
+      removeEventListener("scroll", onScroll);
+      cancelAnimationFrame(raf);
+    };
+  }, [slug, steps.length]);
+
+  // metrics cascade-in once the strip enters view
+  const metricsRef = useRef<HTMLUListElement>(null);
+  useEffect(() => {
+    const el = metricsRef.current;
+    if (!el) return;
+    const io = new IntersectionObserver(
+      ([e]) => {
+        if (e.isIntersecting) {
+          el.classList.add("is-in");
+          io.disconnect();
+        }
+      },
+      { rootMargin: "-20% 0px" },
+    );
+    io.observe(el);
     return () => io.disconnect();
   }, [slug]);
 
@@ -160,9 +209,13 @@ export default function CasePage({ slug }: { slug: string }) {
         )}
 
         {c.metrics.length > 0 && (
-          <ul className="case-metrics">
-            {c.metrics.map((m) => (
-              <li key={m.label} className="case-metrics__item">
+          <ul className="case-metrics" ref={metricsRef}>
+            {c.metrics.map((m, i) => (
+              <li
+                key={m.label}
+                className="case-metrics__item"
+                style={{ "--i": i } as CSSProperties}
+              >
                 <span className="case-metrics__value">{m.value}</span>
                 <span className="case-metrics__label">{m.label}</span>
               </li>
@@ -247,7 +300,13 @@ export default function CasePage({ slug }: { slug: string }) {
             ↑
           </button>
           <span className="case-steps-nav__count">
-            {String(activeStep + 1).padStart(2, "0")} / {String(steps.length).padStart(2, "0")}
+            <span className="case-steps-nav__cur-wrap">
+              <b key={activeStep} className="case-steps-nav__cur">
+                {String(activeStep + 1).padStart(2, "0")}
+              </b>
+              {" / "}
+              {String(steps.length).padStart(2, "0")}
+            </span>
             <i className="case-steps-nav__bar">
               <i style={{ transform: `scaleX(${(activeStep + 1) / steps.length})` }} />
             </i>
