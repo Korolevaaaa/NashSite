@@ -33,15 +33,22 @@ export interface CaseStoryStep {
   heading: string; // "Задача" / "Решение" / "Результат" or free-form
   text: string;
   shot?: string; // screenshot shown on the slide
-  motion?: "chats" | "chat" | "inbox" | "bars" | "order"; // drawn animated diagram
+  motion?: "chats" | "chat" | "inbox" | "bars" | "order" | "report"; // drawn animated diagram
   /** scripted bot dialog for motion "chat" — per-case, never hardcoded */
   chat?: { botName: string; u1: string; b1: string; u2: string; b2: string; sent: string };
   /** rotating entries for motion "inbox" */
   inboxItems?: { src: string; text: string }[];
   /** before/after labels for motion "bars" */
   barLabels?: { old: string; new: string };
-  /** audit panel for motion "report" — real Lighthouse numbers only */
-  report?: { title: string; scores: { label: string; score: number }[]; note?: string };
+  /** audit panel for motion "report" — real Lighthouse numbers only, plain-Russian labels */
+  report?: {
+    title: string; // e.g. "Проверка качества сайта"
+    url: string; // e.g. "yaruska.ru"
+    main: { score: number; label: string }; // big gauge
+    scores: { label: string; score: number }[]; // bar rows
+    facts: { value: string; label: string }[]; // small fact tiles
+    note?: string; // methodology footnote
+  };
 }
 
 export interface CaseStudy {
@@ -157,14 +164,20 @@ export const CASES: CaseStudy[] = [
         text: "Мастерская делает авторские свечи-шкатулки из гипса и соевого воска и продавала через соцсети и ярмарки. Каждая покупка шла через переписку: какой аромат есть, сколько стоит доставка, как оплатить, куда привезти. Один заказ — десятки сообщений, а вопросы повторялись у каждого нового клиента. Нужен был магазин, который продаёт сам — от выбора аромата до оплаты и доставки.",
         motion: "chats",
         report: {
-          title: "Lighthouse · yaruska.ru",
+          title: "Проверка качества сайта",
+          url: "yaruska.ru",
+          main: { score: 99, label: "скорость загрузки" },
           scores: [
-            { label: "SEO", score: 100 },
-            { label: "Best practices", score: 100 },
-            { label: "Performance", score: 99 },
-            { label: "Accessibility", score: 95 },
+            { label: "Поиск и SEO", score: 100 },
+            { label: "Технологии", score: 100 },
+            { label: "Удобство", score: 95 },
           ],
-          note: "LCP 1.6 с · CLS 0 · TBT 10 мс",
+          facts: [
+            { value: "1,6 с", label: "страница открывается" },
+            { value: "0", label: "сдвигов вёрстки" },
+            { value: "10 мс", label: "отклик на действия" },
+          ],
+          note: "замерено независимым аудитом Google Lighthouse",
         },
       },
       {

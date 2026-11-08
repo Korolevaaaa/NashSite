@@ -12,7 +12,14 @@ export interface CaseMotionProps {
   chat?: { botName: string; u1: string; b1: string; u2: string; b2: string; sent: string };
   items?: { src: string; text: string }[];
   bars?: { old: string; new: string };
-  report?: { title: string; scores: { label: string; score: number }[]; note?: string };
+  report?: {
+    title: string;
+    url: string;
+    main: { score: number; label: string };
+    scores: { label: string; score: number }[];
+    facts: { value: string; label: string }[];
+    note?: string;
+  };
 }
 
 /* counts 0→to once the parent .case-step enters the middle band */
@@ -57,6 +64,23 @@ function ScoreRow({ label, score, i }: { label: string; score: number; i: number
       <span ref={ref} className="cm-rep__num">
         {v}
       </span>
+    </div>
+  );
+}
+
+/* big circular gauge — arc sweeps to the score when the slide enters */
+function Gauge({ score, label }: { score: number; label: string }) {
+  const { ref, v } = useCountUp(score);
+  return (
+    <div className="cm-rep__gauge" style={{ "--p": score / 100 } as CSSProperties}>
+      <svg viewBox="0 0 120 120" aria-hidden="true">
+        <circle className="cm-rep__ring" cx="60" cy="60" r="52" />
+        <circle className="cm-rep__arc" cx="60" cy="60" r="52" />
+      </svg>
+      <div className="cm-rep__gauge-txt">
+        <b ref={ref}>{v}</b>
+        <span>{label}</span>
+      </div>
     </div>
   );
 }
@@ -146,10 +170,24 @@ export function CaseMotion({ kind, chat, items, bars, report }: CaseMotionProps)
       <div className="cm-rep" aria-hidden="true">
         <div className="cm-rep__head">
           <i className="cm-online" /> {report.title}
+          <span className="cm-rep__url">{report.url}</span>
         </div>
-        {report.scores.map((s, i) => (
-          <ScoreRow key={s.label} label={s.label} score={s.score} i={i} />
-        ))}
+        <div className="cm-rep__body">
+          <Gauge score={report.main.score} label={report.main.label} />
+          <div className="cm-rep__scores">
+            {report.scores.map((s, i) => (
+              <ScoreRow key={s.label} label={s.label} score={s.score} i={i} />
+            ))}
+          </div>
+        </div>
+        <div className="cm-rep__facts">
+          {report.facts.map((f, i) => (
+            <div key={f.label} className="cm-rep__fact" style={{ "--i": i } as CSSProperties}>
+              <b>{f.value}</b>
+              <span>{f.label}</span>
+            </div>
+          ))}
+        </div>
         {report.note && <div className="cm-rep__note">{report.note}</div>}
       </div>
     );
