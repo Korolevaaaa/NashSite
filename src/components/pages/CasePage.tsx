@@ -33,6 +33,24 @@ export default function CasePage({ slug }: { slug: string }) {
     return () => io.disconnect();
   }, [slug, shotSteps.length]);
 
+  useEffect(() => {
+    if (!c) return;
+    const el = document.createElement("script");
+    el.type = "application/ld+json";
+    el.id = "ld-case";
+    el.textContent = JSON.stringify({
+      "@context": "https://schema.org",
+      "@type": "CreativeWork",
+      name: c.title || c.name,
+      description: c.teaser,
+      dateCreated: String(c.year),
+      creator: { "@type": "Organization", name: "ZETRONIX", url: "https://zetronix.ru" },
+      ...(c.url ? { url: c.url } : {}),
+    });
+    document.head.appendChild(el);
+    return () => el.remove();
+  }, [c]);
+
   if (!c) {
     return (
       <main className="px-[var(--page-gutter)] py-[160px]">

@@ -61,7 +61,7 @@ function titleOf(r: Route): string {
       return "Кейсы — ZETRONIX";
     case "case": {
       const c = CASES.find((x) => x.slug === r.slug);
-      return c ? `${c.name} — кейс ZETRONIX` : "Кейс — ZETRONIX";
+      return c ? `${c.title || c.name} — кейс ZETRONIX` : "Кейс — ZETRONIX";
     }
     case "blog":
       return "Блог — ZETRONIX";

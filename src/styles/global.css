@@ -2391,6 +2391,10 @@ a.cs-card:focus-visible {
 }
 .case-gallery__strip img {
   width: 100%;
+  aspect-ratio: 16 / 10;
+  object-fit: cover;
+  object-position: 50% 0;
+  background: rgba(0, 201, 212, 0.06);
   border: 1px solid var(--color-line);
   border-radius: var(--r-card);
   scroll-snap-align: start;
