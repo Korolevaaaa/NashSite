@@ -22,27 +22,50 @@ export function CaseMotion({ kind }: { kind: CaseMotionKind }) {
   if (kind === "chat") {
     return (
       <div className="cm cm-chat" aria-hidden="true">
-        <div className="cm-msg cm-msg--user">Сколько стоит зеркало 60 см?</div>
-        <div className="cm-msg cm-msg--typing">
-          <i /><i /><i />
+        <div className="cm-chat__head">
+          <i className="cm-online" /> RAMCY бот · онлайн
         </div>
-        <div className="cm-msg cm-msg--bot">От 7 500 ₽ · RAMCY бот</div>
-        <div className="cm-msg cm-msg--sent">Заявка ушла в Telegram ✓</div>
+        <div className="cm-chat__flow">
+          <div className="cm-msg cm-msg--u1">Хочу зеркало с тегом</div>
+          <div className="cm-msg cm-msg--typing cm-msg--t1">
+            <i /><i /><i />
+          </div>
+          <div className="cm-msg cm-msg--b1">Какой размер? 40, 60 или 90 см</div>
+          <div className="cm-msg cm-msg--u2">60 см, привезти в Москву</div>
+          <div className="cm-msg cm-msg--typing cm-msg--t2">
+            <i /><i /><i />
+          </div>
+          <div className="cm-msg cm-msg--b2">Смета: тег · 60 см · Москва — передаю Виталию</div>
+          <div className="cm-msg cm-msg--sent">Заявка ушла в Telegram ✓</div>
+        </div>
       </div>
     );
   }
   if (kind === "inbox") {
     return (
-      <div className="cm cm-inbox" aria-hidden="true">
-        {["Тег · 60 см · Москва", "Фраза · 90 см · Казань", "Персонаж · 40 см · СПб"].map(
-          (t, i) => (
-            <div key={t} className="cm-req" style={{ "--i": i } as CSSProperties}>
-              <b>Заявка</b>
-              {t}
+      <div className="cm cm-tg" aria-hidden="true">
+        <div className="cm-tg__head">
+          <svg viewBox="0 0 24 24" width="13" height="13" fill="none" aria-hidden="true">
+            <path
+              d="M21.4 4.3 3.7 11.2c-.9.4-.9 1.7.1 2l4.5 1.5 1.7 5.1c.3.9 1.5 1 2 .2l2.4-3.1 4.8 3.5c.8.6 1.9.2 2.1-.8l2.5-13.7c.2-1-.7-1.8-1.7-1.5Z"
+              fill="#00a8b0"
+            />
+          </svg>
+          Telegram · входящие
+        </div>
+        <div className="cm-tg__win">
+          {[
+            ["сайт", "Тег · 60 см · Москва"],
+            ["бот", "Фраза · 90 см · Казань"],
+            ["сайт", "Персонаж · 40 см · СПб"],
+          ].map(([src, t], i) => (
+            <div key={t} className="cm-tgc" style={{ "--i": i } as CSSProperties}>
+              <b>Заявка · {src}</b>
+              <span>{t}</span>
             </div>
-          ),
-        )}
-        <span className="cm-cap">всё падает в один чат Telegram</span>
+          ))}
+        </div>
+        <span className="cm-cap">всё падает в один чат</span>
       </div>
     );
   }
