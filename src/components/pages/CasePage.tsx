@@ -13,7 +13,21 @@ export default function CasePage({ slug }: { slug: string }) {
   const steps: CaseStoryStep[] = c?.story ?? [];
   const shotSteps = steps.filter((s) => s.shot);
   const [activeShot, setActiveShot] = useState<string | null>(shotSteps[0]?.shot ?? null);
+  const [zoom, setZoom] = useState<{ src: string; alt: string } | null>(null);
   const stepsRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!zoom) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setZoom(null);
+    };
+    document.addEventListener("keydown", onKey);
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.removeEventListener("keydown", onKey);
+      document.body.style.overflow = "";
+    };
+  }, [zoom]);
 
   useEffect(() => {
     const root = stepsRef.current;
@@ -88,12 +102,13 @@ export default function CasePage({ slug }: { slug: string }) {
         )}
         {c.url && (
           <a
-            className="mt-4 inline-block text-[14px] font-medium text-[var(--z-action)]"
+            className="btn case-url"
             href={c.url}
             target="_blank"
             rel="noreferrer"
           >
-            Открыть сайт ↗
+            <span>Открыть сайт</span>
+            <i className="btn-arrow">↗</i>
           </a>
         )}
 
@@ -125,13 +140,27 @@ export default function CasePage({ slug }: { slug: string }) {
                   <h2 className="case-step__head">{s.heading}</h2>
                   <p className="case-step__text">{s.text}</p>
                   {s.shot && (
-                    <img className="case-step__shotmob" src={s.shot} alt="" loading="lazy" />
+                    <button
+                      type="button"
+                      className="case-step__shotmob"
+                      aria-label={`Увеличить скриншот: ${s.heading}`}
+                      onClick={() => setZoom({ src: s.shot!, alt: s.heading })}
+                    >
+                      <img src={s.shot} alt="" loading="lazy" />
+                    </button>
                   )}
                 </section>
               ))}
             </div>
             {shotSteps.length > 0 && (
-              <div className="case-story__sticky" aria-hidden="true">
+              <button
+                type="button"
+                className="case-story__sticky"
+                aria-label="Увеличить скриншот"
+                onClick={() =>
+                  activeShot && setZoom({ src: activeShot, alt: `Скриншот — ${c.name}` })
+                }
+              >
                 {shotSteps.map((s) => (
                   <img
                     key={s.shot}
@@ -140,7 +169,7 @@ export default function CasePage({ slug }: { slug: string }) {
                     className={`case-story__shot${activeShot === s.shot ? " is-active" : ""}`}
                   />
                 ))}
-              </div>
+              </button>
             )}
           </div>
         )}
@@ -150,7 +179,15 @@ export default function CasePage({ slug }: { slug: string }) {
             <h2 className="case-step__head">Экраны</h2>
             <div className="case-gallery__strip">
               {c.gallery.map((g, i) => (
-                <img key={i} src={g} alt={`${c.name} — экран ${i + 1}`} loading="lazy" />
+                <button
+                  key={i}
+                  type="button"
+                  className="case-gallery__item"
+                  aria-label={`Увеличить экран ${i + 1}`}
+                  onClick={() => setZoom({ src: g, alt: `${c.name} — экран ${i + 1}` })}
+                >
+                  <img src={g} alt="" loading="lazy" />
+                </button>
               ))}
             </div>
           </section>
@@ -174,6 +211,26 @@ export default function CasePage({ slug }: { slug: string }) {
           )}
         </div>
       </div>
+
+      {zoom && (
+        <div
+          className="case-lightbox"
+          role="dialog"
+          aria-modal="true"
+          aria-label={zoom.alt}
+          onClick={() => setZoom(null)}
+        >
+          <button
+            type="button"
+            className="case-lightbox__close"
+            aria-label="Закрыть"
+            onClick={() => setZoom(null)}
+          >
+            ×
+          </button>
+          <img src={zoom.src} alt={zoom.alt} onClick={(e) => e.stopPropagation()} />
+        </div>
+      )}
     </main>
   );
 }
