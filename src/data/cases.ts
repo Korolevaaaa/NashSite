@@ -141,7 +141,7 @@ export const CASES: CaseStudy[] = [
     year: 2026,
     teaser:
       "Магазин свечей-шкатулок: каталог с выбором аромата, оплата ЮKassa, доставка СДЭК до пункта выдачи, личный кабинет покупателя и заказы в Telegram владельца.",
-    // cover: "/cases/yaruska/cover.jpg",
+    cover: "/cases/yaruska/cover.png",
     hero: "/cases/yaruska/hero.png",
     url: "https://yaruska.ru",
     metrics: [
