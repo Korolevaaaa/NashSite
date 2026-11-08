@@ -38,6 +38,10 @@ export interface CaseStoryStep {
   chat?: { botName: string; u1: string; b1: string; u2: string; b2: string; sent: string };
   /** rotating entries for motion "inbox" */
   inboxItems?: { src: string; text: string }[];
+  /** header label of the inbox motion — defaults to "Telegram · входящие" */
+  inboxTitle?: string;
+  /** caption under the inbox slot — defaults to "всё падает в один чат" */
+  inboxCaption?: string;
   /** before/after labels for motion "bars" */
   barLabels?: { old: string; new: string };
   /** chain rows for motion "order" — label + detail, each gets a ✓ */
@@ -333,6 +337,7 @@ export const CASES: CaseStudy[] = [
     year: 2026,
     teaser:
       "Больше тридцати страниц: витрина, магазин видеокурсов самомассажа, собственный блок прямых эфиров, видео-приёмы психолога и массажиста по расписанию, личный кабинет и админка.",
+    cover: "/cases/koosmo/cover.jpg",
     hero: "/cases/koosmo/hero.png",
     url: "https://koosmo.ru",
     metrics: [
@@ -394,6 +399,8 @@ export const CASES: CaseStudy[] = [
         text: "Через расписание клиент записывается на онлайн-приём к психологу — встреча проходит по видеоконференции внутри платформы, на консультацию массажиста по видео или на живую терапию в центре. Администратор в панели управляет всем этим хозяйством: трансляции и их цены, товары, лабораторию, пользователей, тесты диагностики и журнал действий.",
         shot: "/cases/koosmo/admin.png",
         motion: "inbox",
+        inboxTitle: "Записи · экосистема сайта",
+        inboxCaption: "всё остаётся внутри платформы",
         inboxItems: [
           { src: "сайт", text: "Психолог · чт 19:00 · видеозвонок" },
           { src: "сайт", text: "Массажист · сб 12:00 · видеоконсультация" },

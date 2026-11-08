@@ -242,6 +242,8 @@ export default function CasePage({ slug }: { slug: string }) {
                         kind={s.motion}
                         chat={s.chat}
                         items={s.inboxItems}
+                        inboxTitle={s.inboxTitle}
+                        inboxCaption={s.inboxCaption}
                         bars={s.barLabels}
                         order={s.order}
                       />
