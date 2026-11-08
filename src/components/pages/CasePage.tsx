@@ -243,6 +243,7 @@ export default function CasePage({ slug }: { slug: string }) {
                         chat={s.chat}
                         items={s.inboxItems}
                         bars={s.barLabels}
+                        order={s.order}
                       />
                     )}
                   </div>

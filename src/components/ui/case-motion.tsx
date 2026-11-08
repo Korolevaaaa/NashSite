@@ -12,6 +12,7 @@ export interface CaseMotionProps {
   chat?: { botName: string; u1: string; b1: string; u2: string; b2: string; sent: string };
   items?: { src: string; text: string }[];
   bars?: { old: string; new: string };
+  order?: { b: string; t: string }[];
   report?: {
     title: string;
     url: string;
@@ -85,7 +86,7 @@ function Gauge({ score, label }: { score: number; label: string }) {
   );
 }
 
-export function CaseMotion({ kind, chat, items, bars, report }: CaseMotionProps) {
+export function CaseMotion({ kind, chat, items, bars, order, report }: CaseMotionProps) {
   if (kind === "chats") {
     return (
       <div className="cm cm-chats" aria-hidden="true">
@@ -147,14 +148,10 @@ export function CaseMotion({ kind, chat, items, bars, report }: CaseMotionProps)
     );
   }
 
-  if (kind === "order") {
+  if (kind === "order" && order?.length) {
     return (
       <div className="cm cm-order" aria-hidden="true">
-        {[
-          ["Товар", "Свеча-шкатулка + аромат на выбор"],
-          ["Доставка", "СДЭК · пункт выдачи по городу"],
-          ["Оплата", "ЮKassa · оплачено ✓"],
-        ].map(([b, t], i) => (
+        {order.map(({ b, t }, i) => (
           <div key={t} className="cm-ord" style={{ "--i": i } as CSSProperties}>
             <b>{b}</b>
             <span>{t}</span>
