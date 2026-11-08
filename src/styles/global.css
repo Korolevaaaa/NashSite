@@ -2802,9 +2802,9 @@ a.cs-card:focus-visible {
   text-align: center;
 }
 .cm-rep__gauge-txt b {
-  font-family: var(--font-display);
-  font-size: clamp(30px, 3vw, 42px);
-  font-weight: 600;
+  font-family: var(--font-mono);
+  font-size: clamp(30px, 3vw, 40px);
+  font-weight: 700;
   line-height: 1;
   color: var(--z-ink);
 }
