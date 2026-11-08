@@ -82,7 +82,7 @@ export const CASES: CaseStudy[] = [
       {
         heading: "Задача",
         text: "Виталий делает зеркала с авторским граффити в единственном экземпляре и продавал их через соцсети. Каждый пост приносил волну сообщений: сколько стоит, какие размеры, сделаешь такое, привезёте в другой город. Один и тот же диалог размножался на десятки чатов в директе и личке, вопросы тонули, часть клиентов уходила без ответа. Нужна была точка входа, которая снимет с художника рутину переписки.",
-        shot: "/cases/instabarter/mobile-hero.png",
+        shot: "/cases/instabarter/services.png",
         motion: "chats",
       },
       {
@@ -125,10 +125,10 @@ export const CASES: CaseStudy[] = [
     ],
     gallery: [
       "/cases/instabarter/about.png",
+      "/cases/instabarter/hero-narrow.png",
       "/cases/instabarter/services.png",
       "/cases/instabarter/reviews.png",
       "/cases/instabarter/contact.png",
-      "/cases/instabarter/mobile-portfolio.png",
     ],
   },
   {
@@ -153,7 +153,7 @@ export const CASES: CaseStudy[] = [
       {
         heading: "Задача",
         text: "Мастерская делает авторские свечи-шкатулки из гипса и соевого воска и продавала через соцсети и ярмарки. Каждая покупка шла через переписку: какой аромат есть, сколько стоит доставка, как оплатить, куда привезти. Один заказ — десятки сообщений, а вопросы повторялись у каждого нового клиента. Нужен был магазин, который продаёт сам — от выбора аромата до оплаты и доставки.",
-        shot: "/cases/yaruska/mobile-hero.png",
+        shot: "/cases/yaruska/collections.png",
         motion: "chats",
       },
       {
@@ -187,11 +187,11 @@ export const CASES: CaseStudy[] = [
       },
     ],
     gallery: [
-      "/cases/yaruska/collections.png",
       "/cases/yaruska/fragrances.png",
       "/cases/yaruska/product.png",
       "/cases/yaruska/delivery-page.png",
-      "/cases/yaruska/mobile-catalog.png",
+      "/cases/yaruska/checkout.png",
+      "/cases/yaruska/delivery.png",
     ],
   },
   {
