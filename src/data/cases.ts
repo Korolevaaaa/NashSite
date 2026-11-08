@@ -63,7 +63,7 @@ export const CASES: CaseStudy[] = [
     year: 2025,
     teaser:
       "Витрина граффити-зеркал, админка для портфолио и бот, который собирает смету в чате и выгрузил личку автора от одинаковых вопросов.",
-    cover: "/cases/instabarter/hero.png",
+    cover: "/cases/instabarter/cover.png",
     hero: "/cases/instabarter/hero.png",
     url: "https://graffiti-zerkalo.ru",
     metrics: [
