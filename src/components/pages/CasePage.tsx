@@ -3,16 +3,17 @@ import { CASES, type CaseStoryStep } from "../../data/cases";
 import { CONTACT_EMAIL } from "../../data/content";
 
 /** Case detail page — #/case/<slug>
- *  Hero → metrics → story steps with a sticky screenshot column
- *  (shot swaps as the reader scrolls) → full gallery strip → CTA + next case. */
+ *  Hero → metrics → story as fullscreen slides (each step is a tall
+ *  "slide" with its own screenshot; a floating counter/arrows pill
+ *  tracks progress; scroll stays native) → gallery strip → CTA. */
 export default function CasePage({ slug }: { slug: string }) {
   const idx = CASES.findIndex((c) => c.slug === slug);
   const c = idx >= 0 ? CASES[idx] : null;
   const next = CASES[(idx + 1) % CASES.length];
 
   const steps: CaseStoryStep[] = c?.story ?? [];
-  const shotSteps = steps.filter((s) => s.shot);
-  const [activeShot, setActiveShot] = useState<string | null>(shotSteps[0]?.shot ?? null);
+  const [activeStep, setActiveStep] = useState(0);
+  const [storyInView, setStoryInView] = useState(false);
   const [zoom, setZoom] = useState<{ src: string; alt: string } | null>(null);
   const stepsRef = useRef<HTMLDivElement>(null);
 
@@ -29,23 +30,60 @@ export default function CasePage({ slug }: { slug: string }) {
     };
   }, [zoom]);
 
+  // scoped scroll-snap: only while a case page with steps is mounted
+  useEffect(() => {
+    const el = document.documentElement;
+    el.classList.add("has-case-slides");
+    return () => el.classList.remove("has-case-slides");
+  }, []);
+
+  // step tracking: which slide is near viewport center → counter + reveal
   useEffect(() => {
     const root = stepsRef.current;
-    if (!root || shotSteps.length < 2) return;
-    const els = root.querySelectorAll<HTMLElement>("[data-shot]");
+    if (!root) return;
+    const els = Array.from(root.querySelectorAll<HTMLElement>(".case-step"));
     const io = new IntersectionObserver(
       (entries) => {
         for (const e of entries) {
+          const el = e.target as HTMLElement;
           if (e.isIntersecting) {
-            setActiveShot((e.target as HTMLElement).dataset.shot ?? null);
+            el.classList.add("is-in");
+            const i = els.indexOf(el);
+            if (i >= 0) setActiveStep(i);
+          } else if (e.boundingClientRect.bottom < 0) {
+            // slide already scrolled past (e.g. deep-link mid-page) — keep it revealed
+            el.classList.add("is-in");
           }
         }
       },
-      { rootMargin: "-40% 0px -50% 0px" },
+      { rootMargin: "-45% 0px -45% 0px" },
     );
     els.forEach((el) => io.observe(el));
     return () => io.disconnect();
-  }, [slug, shotSteps.length]);
+  }, [slug, steps.length]);
+
+  // show the counter/arrows pill only while the story block is on screen
+  useEffect(() => {
+    const root = stepsRef.current;
+    if (!root) return;
+    const io = new IntersectionObserver(([e]) => setStoryInView(e.isIntersecting));
+    io.observe(root);
+    return () => io.disconnect();
+  }, [slug]);
+
+  const goStep = (i: number) => {
+    const root = stepsRef.current;
+    if (!root) return;
+    const reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const behavior: ScrollBehavior = reduced ? "auto" : "smooth";
+    const els = root.querySelectorAll<HTMLElement>(".case-step");
+    if (i < 0 || i >= els.length) {
+      const nextEl = (i < 0 ? root.previousElementSibling : root.nextElementSibling) as HTMLElement | null;
+      (nextEl ?? root).scrollIntoView({ behavior, block: "start" });
+    } else {
+      els[i].scrollIntoView({ behavior, block: "start" });
+    }
+  };
 
   useEffect(() => {
     if (!c) return;
@@ -133,16 +171,21 @@ export default function CasePage({ slug }: { slug: string }) {
         )}
 
         {steps.length > 0 && (
-          <div className={`case-story${shotSteps.length > 0 ? " case-story--shots" : ""}`} ref={stepsRef}>
+          <div className="case-story" ref={stepsRef}>
             <div className="case-story__steps">
-              {steps.map((s) => (
-                <section key={s.heading} className="case-step" data-shot={s.shot ?? undefined}>
-                  <h2 className="case-step__head">{s.heading}</h2>
-                  <p className="case-step__text">{s.text}</p>
+              {steps.map((s, i) => (
+                <section key={s.heading} className="case-step">
+                  <div className="case-step__body">
+                    <span className="case-step__num">
+                      {String(i + 1).padStart(2, "0")} / {String(steps.length).padStart(2, "0")}
+                    </span>
+                    <h2 className="case-step__head">{s.heading}</h2>
+                    <p className="case-step__text">{s.text}</p>
+                  </div>
                   {s.shot && (
                     <button
                       type="button"
-                      className="case-step__shotmob"
+                      className="case-step__shot"
                       aria-label={`Увеличить скриншот: ${s.heading}`}
                       onClick={() => setZoom({ src: s.shot!, alt: s.heading })}
                     >
@@ -152,25 +195,6 @@ export default function CasePage({ slug }: { slug: string }) {
                 </section>
               ))}
             </div>
-            {shotSteps.length > 0 && (
-              <button
-                type="button"
-                className="case-story__sticky"
-                aria-label="Увеличить скриншот"
-                onClick={() =>
-                  activeShot && setZoom({ src: activeShot, alt: `Скриншот — ${c.name}` })
-                }
-              >
-                {shotSteps.map((s) => (
-                  <img
-                    key={s.shot}
-                    src={s.shot}
-                    alt=""
-                    className={`case-story__shot${activeShot === s.shot ? " is-active" : ""}`}
-                  />
-                ))}
-              </button>
-            )}
           </div>
         )}
 
@@ -211,6 +235,28 @@ export default function CasePage({ slug }: { slug: string }) {
           )}
         </div>
       </div>
+
+      {steps.length > 1 && storyInView && (
+        <nav className="case-steps-nav" aria-label="Навигация по слайдам кейса">
+          <button
+            type="button"
+            aria-label="Предыдущий слайд"
+            disabled={activeStep === 0}
+            onClick={() => goStep(activeStep - 1)}
+          >
+            ↑
+          </button>
+          <span className="case-steps-nav__count">
+            {String(activeStep + 1).padStart(2, "0")} / {String(steps.length).padStart(2, "0")}
+            <i className="case-steps-nav__bar">
+              <i style={{ transform: `scaleX(${(activeStep + 1) / steps.length})` }} />
+            </i>
+          </span>
+          <button type="button" aria-label="Следующий слайд" onClick={() => goStep(activeStep + 1)}>
+            ↓
+          </button>
+        </nav>
+      )}
 
       {zoom && (
         <div
