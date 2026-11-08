@@ -11,6 +11,8 @@ export default function CasePage({ slug }: { slug: string }) {
   const idx = CASES.findIndex((c) => c.slug === slug);
   const c = idx >= 0 ? CASES[idx] : null;
   const next = CASES[(idx + 1) % CASES.length];
+  // only filled cases (title present) qualify for the "Ещё проекты" strip
+  const related = CASES.filter((x) => x.slug !== slug && x.title).slice(0, 3);
 
   const steps: CaseStoryStep[] = c?.story ?? [];
   const [activeStep, setActiveStep] = useState(0);
@@ -289,6 +291,49 @@ export default function CasePage({ slug }: { slug: string }) {
             </a>
           )}
         </div>
+
+        {related.length > 0 && (
+          <section className="case-related" aria-label="Ещё проекты">
+            <div className="case-related__head">
+              <h2 className="case-step__head">Ещё проекты</h2>
+              <a
+                href="#/cases"
+                className="text-[14px] font-medium text-[var(--z-muted)] no-underline hover:text-[var(--z-ink)]"
+              >
+                Все кейсы →
+              </a>
+            </div>
+            <ul className="pf-grid">
+              {related.map((x) => (
+                <li key={x.slug}>
+                  <a className="pf-card cs-card" href={`#/case/${x.slug}`}>
+                    <span className="pf-card__cover">
+                      {x.cover ? (
+                        <img src={x.cover} alt="" loading="lazy" />
+                      ) : (
+                        <span className="pf-card__mark latn-display" aria-hidden="true">
+                          {x.name}
+                        </span>
+                      )}
+                      <span className="pf-card__tint" aria-hidden="true" />
+                      <span className="cs-card__tags" aria-hidden="true">
+                        <span className="cs-card__tag">{x.type}</span>
+                        <span className="cs-card__tag cs-card__tag--dim">{x.industry}</span>
+                      </span>
+                    </span>
+                    <span className="pf-card__meta">
+                      <span className="pf-card__cat">
+                        {x.industry} · {x.year}
+                      </span>
+                      <span className="pf-card__title latn-display">{x.name}</span>
+                      {x.teaser && <span className="cs-card__teaser">{x.teaser}</span>}
+                    </span>
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </section>
+        )}
       </div>
 
       {steps.length > 1 && storyInView && (

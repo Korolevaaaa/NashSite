@@ -2765,6 +2765,22 @@ a.cs-card:focus-visible {
   }
 }
 
+/* related cases — curated strip under the CTA */
+.case-related {
+  margin-top: 64px;
+  padding-top: 44px;
+  border-top: 1px solid var(--color-line);
+}
+.case-related__head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 16px;
+}
+.case-related .pf-grid {
+  margin-top: 28px;
+}
+
 /* bottom gallery strip — free horizontal browse */
 .case-gallery {
   margin-top: 72px;
