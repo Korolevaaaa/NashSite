@@ -250,6 +250,7 @@ export const CASES: CaseStudy[] = [
     year: 2026,
     teaser:
       "База отдыха под Бийском: домики с живым календарём занятости, заявки в общий чат команды, бот для подтверждения броней и админка для фото, домов и услуг.",
+    cover: "/cases/hawaii22/cover.png",
     hero: "/cases/hawaii22/hero.png",
     url: "https://hawaii22.ru",
     metrics: [
