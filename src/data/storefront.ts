@@ -82,6 +82,18 @@ export const SEED_ITEMS: StoreItem[] = [
     badge: "Кино-лендинг",
     cover: "/templates/sfera-dom/cover.jpg",
   },
+  {
+    id: "tpl-kartoshka",
+    name: "Крошка-картошка",
+    cat: "Еда и доставка",
+    sub: "Кафе и стритфуд",
+    kind: "Макет",
+    price: 20000,
+    priceText: "от 20 000 ₽",
+    status: "published",
+    slug: "kroshka-kartoshka",
+    cover: "/templates/kroshka-kartoshka/cover.jpg",
+  },
 ];
 
 export const DRAFT_KEY = "storefront.draft.v1";
