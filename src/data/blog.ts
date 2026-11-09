@@ -43,6 +43,7 @@ export const POSTS: BlogPost[] = [
     author: {
       name: "ZETRONIX",
       role: "студия сайтов и цифровых продуктов",
+      photo: "/blog/skolko-stoit-sayt/author.jpg",
     },
     body: [
       {

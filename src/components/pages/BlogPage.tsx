@@ -37,6 +37,14 @@ export default function BlogPage() {
                       {p.coverHook && (
                         <span className="blog-item__hook">{p.coverHook}</span>
                       )}
+                      {p.author?.photo && (
+                        <img
+                          className="blog-item__ava"
+                          src={p.author.photo}
+                          alt={p.author.name}
+                          onError={(e) => (e.currentTarget.style.display = "none")}
+                        />
+                      )}
                     </span>
                   )}
                   <span className="blog-item__body">

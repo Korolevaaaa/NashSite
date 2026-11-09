@@ -314,6 +314,14 @@ export default function BlogPostPage({ slug }: { slug: string }) {
                 {post.coverHook}
               </figcaption>
             )}
+            {post.author?.photo && (
+              <img
+                className="post-fig__ava"
+                src={post.author.photo}
+                alt={post.author.name}
+                onError={(e) => (e.currentTarget.style.display = "none")}
+              />
+            )}
           </figure>
         )}
 

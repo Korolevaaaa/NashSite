@@ -4240,3 +4240,23 @@ button.case-hero {
 .price-ladder__val.is-end {
   transform: translateX(-100%);
 }
+
+/* аватар автора поверх обложки — реальное фото, не генерация */
+.blog-item__ava,
+.post-fig__ava {
+  position: absolute;
+  right: 14px;
+  bottom: 12px;
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid rgba(255, 255, 255, 0.9);
+  box-shadow: 0 2px 10px rgba(13, 17, 23, 0.2);
+}
+.post-fig__ava {
+  right: 20px;
+  bottom: 18px;
+  width: 54px;
+  height: 54px;
+}
