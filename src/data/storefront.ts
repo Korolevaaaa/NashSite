@@ -42,6 +42,7 @@ export const SEED_ITEMS: StoreItem[] = [
     priceText: "от 25 000 ₽",
     status: "published",
     slug: "baza-otdyha",
+    cover: "/templates/baza-otdyha/cover.jpg",
   },
 ];
 
