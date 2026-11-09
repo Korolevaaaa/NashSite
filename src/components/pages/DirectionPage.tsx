@@ -1,24 +1,34 @@
-import { CONTACT_EMAIL, DIRECTIONS } from "../../data/content";
+import { CONTACT_EMAIL, DIRECTIONS, NICHES } from "../../data/content";
 import { CASES } from "../../data/cases";
 import { publishedItems } from "../../data/storefront";
 import { TemplateCard } from "../sections/Templates";
 import { useSeo } from "../../hooks/useSeo";
 
-/**
- * SEO landing for a single business direction: /napravlenie/<slug>.
- * Each direction gets unique meta + Service/Breadcrumb JSON-LD +
- * related storefront templates and case studies.
- */
-export default function DirectionPage({ slug }: { slug: string }) {
-  const d = DIRECTIONS.find((x) => x.slug === slug);
+type ServiceEntry = (typeof DIRECTIONS)[number] | (typeof NICHES)[number];
 
+/**
+ * Shared SEO landing for /napravlenie/<slug> and /dlya/<slug>.
+ * Same product layout: sticky price card, tasks, fit, steps, FAQ,
+ * related templates/cases + Service/Breadcrumb/FAQ JSON-LD.
+ */
+function ServiceLanding({
+  d,
+  base,
+  baseName,
+  eyebrow,
+}: {
+  d: ServiceEntry | undefined;
+  base: string;
+  baseName: string;
+  eyebrow: string;
+}) {
   const lowPrice = d
     ? Number(d.price.replace(/[^\d]/g, "")) || undefined
     : undefined;
 
   useSeo({
     description: d?.page.lead ?? "",
-    path: d ? `/napravlenie/${d.slug}` : "/",
+    path: d ? `${base}/${d.slug}` : "/",
     title: d ? `${d.title} — разработка от ZETRONIX` : undefined,
     jsonLd: d
       ? [
@@ -56,14 +66,14 @@ export default function DirectionPage({ slug }: { slug: string }) {
               {
                 "@type": "ListItem",
                 position: 2,
-                name: "Направления",
-                item: `${location.origin}/napravlenie`,
+                name: baseName,
+                item: `${location.origin}${base}`,
               },
               {
                 "@type": "ListItem",
                 position: 3,
                 name: d.title,
-                item: `${location.origin}/napravlenie/${d.slug}`,
+                item: `${location.origin}${base}/${d.slug}`,
               },
             ],
           },
@@ -88,7 +98,7 @@ export default function DirectionPage({ slug }: { slug: string }) {
     return (
       <main className="px-[var(--page-gutter)] py-[160px]">
         <div className="mx-auto max-w-[var(--content-max)]">
-          <p className="text-[var(--z-muted)]">Направление не найдено.</p>
+          <p className="text-[var(--z-muted)]">Страница не найдена.</p>
           <a className="btn mt-6" href="/">
             ← На главную
           </a>
@@ -97,7 +107,7 @@ export default function DirectionPage({ slug }: { slug: string }) {
     );
   }
 
-  const rel = d.related as unknown as
+  const rel = (d as { related?: unknown }).related as
     | { templates?: string[]; cases?: string[] }
     | undefined;
   const relTemplates = (rel?.templates ?? [])
@@ -111,17 +121,17 @@ export default function DirectionPage({ slug }: { slug: string }) {
     <main className="px-[var(--page-gutter)] pb-[clamp(80px,12vh,140px)] pt-[calc(var(--header-h,110px)+56px)]">
       <div className="mx-auto max-w-[var(--content-max)]">
         <a
-          href="/napravlenie"
+          href={base}
           className="font-mono text-[11px] uppercase tracking-[0.1em] text-[var(--z-muted)] no-underline hover:text-[var(--z-action)]"
         >
-          ← Все направления
+          ← {baseName}
         </a>
 
         <div className="mt-10 grid gap-10 lg:grid-cols-[1fr_360px] lg:gap-14">
           {/* заголовок */}
           <div>
             <p className="font-mono text-[11px] font-semibold uppercase tracking-[0.12em] text-[var(--z-action)]">
-              Направление ZETRONIX
+              {eyebrow}
             </p>
             <h1 className="mt-4 font-body text-[clamp(34px,4.6vw,62px)] font-medium leading-[1.05] tracking-[-0.045em] text-[var(--z-ink)]">
               {d.title}
@@ -264,7 +274,7 @@ export default function DirectionPage({ slug }: { slug: string }) {
           <div className="mt-16 border-t border-line pt-10">
             <div className="flex flex-wrap items-baseline justify-between gap-4">
               <h2 className="font-body text-[clamp(20px,2.4vw,28px)] font-semibold tracking-[-0.02em] text-[var(--z-ink)]">
-                Готовые макеты по этому направлению
+                Готовые макеты по теме
               </h2>
               <a
                 href="/templates"
@@ -285,7 +295,7 @@ export default function DirectionPage({ slug }: { slug: string }) {
           <div className="mt-16 border-t border-line pt-10">
             <div className="flex flex-wrap items-baseline justify-between gap-4">
               <h2 className="font-body text-[clamp(20px,2.4vw,28px)] font-semibold tracking-[-0.02em] text-[var(--z-ink)]">
-                Кейсы по этому направлению
+                Кейсы по теме
               </h2>
               <a
                 href="/cases"
@@ -340,5 +350,27 @@ export default function DirectionPage({ slug }: { slug: string }) {
         </div>
       </div>
     </main>
+  );
+}
+
+export default function DirectionPage({ slug }: { slug: string }) {
+  return (
+    <ServiceLanding
+      d={DIRECTIONS.find((x) => x.slug === slug)}
+      base="/napravlenie"
+      baseName="Направления"
+      eyebrow="Направление ZETRONIX"
+    />
+  );
+}
+
+export function NichePage({ slug }: { slug: string }) {
+  return (
+    <ServiceLanding
+      d={NICHES.find((x) => x.slug === slug)}
+      base="/dlya"
+      baseName="По отрасли"
+      eyebrow="Ниша ZETRONIX"
+    />
   );
 }

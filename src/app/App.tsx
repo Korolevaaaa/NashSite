@@ -13,7 +13,7 @@ import Competencies from "../components/sections/Competencies";
 import Process from "../components/sections/Process";
 import Faq from "../components/sections/Faq";
 import Contacts from "../components/sections/Contacts";
-import DirectionPage from "../components/pages/DirectionPage";
+import DirectionPage, { NichePage } from "../components/pages/DirectionPage";
 import StorefrontAdmin from "../components/pages/StorefrontAdmin";
 import HomeSeo from "../components/HomeSeo";
 import CasesPage from "../components/pages/CasesPage";
@@ -26,7 +26,7 @@ import NapravleniePage from "../components/pages/NapravleniePage";
 import { CASES } from "../data/cases";
 import { POSTS } from "../data/blog";
 import { TEMPLATES } from "../data/templates";
-import { DIRECTIONS } from "../data/content";
+import { DIRECTIONS, NICHES } from "../data/content";
 
 // path router (SEO-indexable real URLs; legacy #/x hashes redirect):
 //   /admin                 → owner storefront tool
@@ -42,6 +42,7 @@ type Route =
   | { name: "admin" }
   | { name: "direction"; slug: string }
   | { name: "directions" }
+  | { name: "niche"; slug: string }
   | { name: "cases" }
   | { name: "case"; slug: string }
   | { name: "blog" }
@@ -68,6 +69,8 @@ function routeOf(): Route {
   if (m) return { name: "post", slug: m[1] };
   m = p.match(/^\/napravlenie\/([\w-]+)/);
   if (m) return { name: "direction", slug: m[1] };
+  m = p.match(/^\/dlya\/([\w-]+)/);
+  if (m) return { name: "niche", slug: m[1] };
   m = p.match(/^\/template\/([\w-]+)/);
   if (m) return { name: "template", slug: m[1] };
   return { name: "main", anchor: h.length > 1 ? h : null };
@@ -80,6 +83,10 @@ function titleOf(r: Route): string {
     case "direction": {
       const d = DIRECTIONS.find((x) => x.slug === r.slug);
       return d ? `${d.title} — разработка от ZETRONIX` : "Направление — ZETRONIX";
+    }
+    case "niche": {
+      const n = NICHES.find((x) => x.slug === r.slug);
+      return n ? `${n.title} — разработка от ZETRONIX` : "Ниша — ZETRONIX";
     }
     case "directions":
       return "Направления разработки — цены и примеры | ZETRONIX";
@@ -176,6 +183,8 @@ export default function App() {
         <StorefrontAdmin />
       ) : route.name === "direction" ? (
         <DirectionPage slug={route.slug} />
+      ) : route.name === "niche" ? (
+        <NichePage slug={route.slug} />
       ) : route.name === "cases" ? (
         <CasesPage />
       ) : route.name === "case" ? (

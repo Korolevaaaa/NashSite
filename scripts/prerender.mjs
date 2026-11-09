@@ -21,24 +21,29 @@ const CHROME =
   "C:/Program Files/Google/Chrome/Application/chrome.exe";
 const PORT = 4199;
 
-/* slugs straight from the data files (single source of truth) */
-const slugsOf = (file) =>
-  [...readFileSync(join(ROOT, file), "utf8").matchAll(/slug: "([\w-]+)"/g)].map(
-    (m) => m[1],
-  );
+/* slugs straight from the data files — scoped to a named export so arrays
+   in the same file (DIRECTIONS vs NICHES) don't bleed into each other */
+const slugsOf = (file, marker) => {
+  const src = readFileSync(join(ROOT, file), "utf8");
+  const start = src.indexOf(`export const ${marker}`);
+  const end = src.indexOf("] as const", start);
+  const block = end > start ? src.slice(start, end) : src;
+  return [...block.matchAll(/slug: "([\w-]+)"/g)].map((m) => m[1]);
+};
 
 /* "/" goes LAST: vite preview serves dist/index.html as the SPA fallback for
    every other route, so it must stay the clean vite build (no baked-in SEO
    tags) while the subpages are being rendered. */
 const routes = [
   "/blog",
-  ...slugsOf("src/data/blog.ts").map((s) => `/blog/${s}`),
+  ...slugsOf("src/data/blog.ts", "POSTS").map((s) => `/blog/${s}`),
   "/cases",
-  ...slugsOf("src/data/cases.ts").map((s) => `/case/${s}`),
+  ...slugsOf("src/data/cases.ts", "CASES").map((s) => `/case/${s}`),
   "/templates",
   "/napravlenie",
-  ...slugsOf("src/data/content.ts").map((s) => `/napravlenie/${s}`),
-  ...slugsOf("src/data/templates.ts").map((s) => `/template/${s}`),
+  ...slugsOf("src/data/content.ts", "DIRECTIONS").map((s) => `/napravlenie/${s}`),
+  ...slugsOf("src/data/content.ts", "NICHES").map((s) => `/dlya/${s}`),
+  ...slugsOf("src/data/templates.ts", "TEMPLATES").map((s) => `/template/${s}`),
   "/",
 ];
 
