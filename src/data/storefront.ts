@@ -56,6 +56,18 @@ export const SEED_ITEMS: StoreItem[] = [
     slug: "glamping-gory",
     cover: "/templates/glamping-gory/cover.jpg",
   },
+  {
+    id: "tpl-shtory",
+    name: "Умные шторы",
+    cat: "Интернет-магазины",
+    sub: "Дом и интерьер",
+    kind: "Макет",
+    price: 45000,
+    priceText: "от 45 000 ₽",
+    status: "published",
+    slug: "umnye-shtory",
+    badge: "С конфигуратором",
+  },
 ];
 
 export const DRAFT_KEY = "storefront.draft.v1";
