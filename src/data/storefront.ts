@@ -44,6 +44,17 @@ export const SEED_ITEMS: StoreItem[] = [
     slug: "baza-otdyha",
     cover: "/templates/baza-otdyha/cover.jpg",
   },
+  {
+    id: "tpl-glamping",
+    name: "Глэмпинг и турбаза",
+    cat: "Туризм и отдых",
+    sub: "Глэмпинги и эко-отели",
+    kind: "Макет",
+    price: 30000,
+    priceText: "от 30 000 ₽",
+    status: "published",
+    slug: "glamping-gory",
+  },
 ];
 
 export const DRAFT_KEY = "storefront.draft.v1";
