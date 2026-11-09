@@ -79,22 +79,24 @@ export default function TemplatePage({ slug }: { slug: string }) {
   return (
     <main className="px-[var(--page-gutter)] pb-[clamp(80px,12vh,140px)] pt-[calc(var(--header-h,110px)+56px)]">
       <div className="mx-auto max-w-[var(--content-max)]">
-        <a
-          href="#templates"
-          className="font-mono text-[11px] uppercase tracking-[0.1em] text-[var(--z-muted)] no-underline hover:text-[var(--z-action)]"
-        >
-          ← Готовые макеты
-        </a>
+        <div className="tpl-head">
+          <a
+            href="#templates"
+            className="font-mono text-[11px] uppercase tracking-[0.1em] text-[var(--z-muted)] no-underline hover:text-[var(--z-action)]"
+          >
+            ← Готовые макеты
+          </a>
 
-        <p className="mt-10 font-mono text-[11px] font-semibold uppercase tracking-[0.12em] text-[var(--z-action)]">
-          Готовый макет · {t.category}
-        </p>
-        <h1 className="mt-4 max-w-[22ch] font-body text-[clamp(30px,4.2vw,54px)] font-medium leading-[1.08] tracking-[-0.04em] text-[var(--z-ink)]">
-          {t.title}
-        </h1>
-        <p className="mt-6 max-w-[56ch] text-[16px] leading-[1.65] text-[var(--z-muted)]">
-          {t.description}
-        </p>
+          <p className="mt-10 font-mono text-[11px] font-semibold uppercase tracking-[0.12em] text-[var(--z-action)]">
+            Готовый макет · {t.category}
+          </p>
+          <h1 className="mx-auto mt-4 max-w-[26ch] font-body text-[clamp(30px,4.2vw,54px)] font-medium leading-[1.08] tracking-[-0.04em] text-[var(--z-ink)]">
+            {t.title}
+          </h1>
+          <p className="mx-auto mt-6 max-w-[60ch] text-[16px] leading-[1.65] text-[var(--z-muted)]">
+            {t.description}
+          </p>
+        </div>
 
         <button
           type="button"
