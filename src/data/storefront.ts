@@ -69,6 +69,18 @@ export const SEED_ITEMS: StoreItem[] = [
     badge: "С конфигуратором",
     cover: "/templates/umnye-shtory/cover.jpg",
   },
+  {
+    id: "tpl-sfera",
+    name: "Дом-сфера у леса",
+    cat: "Туризм и отдых",
+    sub: "Глэмпинги и эко-отели",
+    kind: "Макет",
+    price: 50000,
+    priceText: "от 50 000 ₽",
+    status: "published",
+    slug: "sfera-dom",
+    badge: "Кино-лендинг",
+  },
 ];
 
 export const DRAFT_KEY = "storefront.draft.v1";
