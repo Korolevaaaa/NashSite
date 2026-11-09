@@ -23,15 +23,17 @@ import TemplatePage from "../components/pages/TemplatePage";
 import { CASES } from "../data/cases";
 import { POSTS } from "../data/blog";
 import { TEMPLATES } from "../data/templates";
+import { DIRECTIONS } from "../data/content";
 
-// tiny hash router:
-//   #/admin                → owner storefront tool
-//   #/napravlenie/<slug>   → direction landing page
-//   #/cases                → all case studies
-//   #/case/<slug>          → single case page
-//   #/blog                 → post feed
-//   #/blog/<slug>          → single article
-//   #<anchor>              → main one-pager section
+// path router (SEO-indexable real URLs; legacy #/x hashes redirect):
+//   /admin                 → owner storefront tool
+//   /napravlenie/<slug>    → direction landing page
+//   /cases                 → all case studies
+//   /case/<slug>           → single case page
+//   /blog                  → post feed
+//   /blog/<slug>           → single article
+//   /template/<slug>       → storefront product page
+//   /#<anchor>             → main one-pager section
 type Route =
   | { name: "main"; anchor: string | null }
   | { name: "admin" }
@@ -43,25 +45,35 @@ type Route =
   | { name: "template"; slug: string };
 
 function routeOf(): Route {
+  const p = window.location.pathname;
   const h = window.location.hash;
-  if (h === "#/admin") return { name: "admin" };
-  if (h === "#/cases") return { name: "cases" };
-  if (h === "#/blog") return { name: "blog" };
-  let m = h.match(/^#\/case\/([\w-]+)/);
+  // legacy: /#/blog/x → /blog/x (stарые ссылки и закладки)
+  if (p === "/" && h.startsWith("#/")) {
+    history.replaceState(null, "", h.slice(1));
+    return routeOf();
+  }
+  if (p === "/admin") return { name: "admin" };
+  if (p === "/cases") return { name: "cases" };
+  if (p === "/blog") return { name: "blog" };
+  let m = p.match(/^\/case\/([\w-]+)/);
   if (m) return { name: "case", slug: m[1] };
-  m = h.match(/^#\/blog\/([\w-]+)/);
+  m = p.match(/^\/blog\/([\w-]+)/);
   if (m) return { name: "post", slug: m[1] };
-  m = h.match(/^#\/napravlenie\/([\w-]+)/);
+  m = p.match(/^\/napravlenie\/([\w-]+)/);
   if (m) return { name: "direction", slug: m[1] };
-  m = h.match(/^#\/template\/([\w-]+)/);
+  m = p.match(/^\/template\/([\w-]+)/);
   if (m) return { name: "template", slug: m[1] };
-  return { name: "main", anchor: h.length > 1 && !h.startsWith("#/") ? h : null };
+  return { name: "main", anchor: h.length > 1 ? h : null };
 }
 
 const BASE_TITLE = "ZETRONIX — сайты и цифровые продукты для бизнеса";
 
 function titleOf(r: Route): string {
   switch (r.name) {
+    case "direction": {
+      const d = DIRECTIONS.find((x) => x.slug === r.slug);
+      return d ? `${d.title} — разработка от ZETRONIX` : "Направление — ZETRONIX";
+    }
     case "cases":
       return "Кейсы — ZETRONIX";
     case "case": {
@@ -87,9 +99,49 @@ export default function App() {
   const [route, setRoute] = useState(routeOf);
 
   useEffect(() => {
-    const onHash = () => setRoute(routeOf());
-    window.addEventListener("hashchange", onHash);
-    return () => window.removeEventListener("hashchange", onHash);
+    const onNav = () => setRoute(routeOf());
+    window.addEventListener("popstate", onNav);
+    window.addEventListener("hashchange", onNav);
+
+    // SPA-переходы: внутренние "/" ссылки без перезагрузки,
+    // одиночные "#x" — плавный скролл по текущей странице
+    const onClick = (e: MouseEvent) => {
+      if (
+        e.defaultPrevented ||
+        e.button !== 0 ||
+        e.metaKey ||
+        e.ctrlKey ||
+        e.shiftKey ||
+        e.altKey
+      )
+        return;
+      const a = (e.target as Element | null)?.closest?.("a");
+      if (!a) return;
+      const href = a.getAttribute("href");
+      if (
+        !href ||
+        a.target === "_blank" ||
+        a.hasAttribute("download") ||
+        /^(mailto:|tel:|https?:|javascript:)/i.test(href)
+      )
+        return;
+      e.preventDefault();
+      if (href.startsWith("#")) {
+        if (href.length > 1)
+          document
+            .querySelector(href)
+            ?.scrollIntoView({ behavior: "smooth" });
+        return;
+      }
+      history.pushState(null, "", href);
+      onNav();
+    };
+    document.addEventListener("click", onClick);
+    return () => {
+      window.removeEventListener("popstate", onNav);
+      window.removeEventListener("hashchange", onNav);
+      document.removeEventListener("click", onClick);
+    };
   }, []);
 
   useEffect(() => {

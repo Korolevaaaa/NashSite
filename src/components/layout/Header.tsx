@@ -14,7 +14,7 @@ export default function Header() {
   return (
     <header className={`site-header${solid ? " is-solid" : ""}`}>
       <nav className="site-header__inner" aria-label="Основная навигация">
-        <a className="site-logo" href="#top">
+        <a className="site-logo" href="/#top">
           ZETRONIX<span>.RU</span>
         </a>
 
@@ -26,7 +26,7 @@ export default function Header() {
           ))}
         </div>
 
-        <a className="site-header__cta" href="#contacts">
+        <a className="site-header__cta" href="/#contacts">
           Обсудить проект
           <span aria-hidden="true">→</span>
         </a>

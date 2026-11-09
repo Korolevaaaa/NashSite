@@ -74,6 +74,7 @@ export const DIRECTIONS = [
       ],
       cta: "Обсудить магазин",
     },
+    related: { templates: ["dostavka-sushi", "umnye-shtory"], cases: ["yaruska"] },
   },
   {
     slug: "korporativnye-sayty",
@@ -95,6 +96,7 @@ export const DIRECTIONS = [
       ],
       cta: "Обсудить сайт",
     },
+    related: { cases: ["karat-titan", "sapchenko"] },
   },
   {
     slug: "landingi",
@@ -116,6 +118,7 @@ export const DIRECTIONS = [
       ],
       cta: "Обсудить лендинг",
     },
+    related: { templates: ["kroshka-kartoshka", "smash-burgery", "restoran", "sfera-dom"], cases: ["graffiti-zerkalo"] },
   },
   {
     slug: "veb-servisy",
@@ -140,6 +143,7 @@ export const DIRECTIONS = [
       ],
       cta: "Обсудить сервис",
     },
+    related: { cases: ["graffiti-zerkalo", "koosmo", "zetronixdocs"] },
   },
   {
     slug: "boty",
@@ -161,6 +165,7 @@ export const DIRECTIONS = [
       ],
       cta: "Обсудить бота",
     },
+    related: { cases: ["hawaii22", "graffiti-zerkalo"] },
   },
   {
     slug: "prilozheniya",
@@ -182,6 +187,7 @@ export const DIRECTIONS = [
       ],
       cta: "Обсудить приложение",
     },
+    related: { cases: ["zetronixdocs", "koosmo"] },
   },
   {
     slug: "bronirovanie",
@@ -203,6 +209,7 @@ export const DIRECTIONS = [
       ],
       cta: "Обсудить бронирование",
     },
+    related: { templates: ["baza-otdyha", "glamping-gory", "sfera-dom"], cases: ["hawaii22", "karat-titan"] },
   },
 ] as const;
 
@@ -266,10 +273,10 @@ export const FAQ = [
 ] as const;
 
 export const NAV_LINKS = [
-  { href: "#services", label: "Услуги" },
-  { href: "#cases", label: "Кейсы" },
-  { href: "#/blog", label: "Блог" },
-  { href: "#contacts", label: "Контакты" },
+  { href: "/#services", label: "Услуги" },
+  { href: "/#cases", label: "Кейсы" },
+  { href: "/blog", label: "Блог" },
+  { href: "/#contacts", label: "Контакты" },
 ] as const;
 
 export const TICKER_ITEMS =

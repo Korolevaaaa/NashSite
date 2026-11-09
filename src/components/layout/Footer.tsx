@@ -20,11 +20,11 @@ export default function Footer() {
           <p className="zt-meta uppercase tracking-[0.14em]">Разделы</p>
           <ul className="mt-4 space-y-1">
             {[
-              ["#services", "Услуги"],
-              ["#cases", "Кейсы"],
-              ["#/blog", "Блог"],
-              ["#process", "Как мы работаем"],
-              ["#faq", "Вопросы"],
+              ["/#services", "Услуги"],
+              ["/#cases", "Кейсы"],
+              ["/blog", "Блог"],
+              ["/#process", "Как мы работаем"],
+              ["/#faq", "Вопросы"],
             ].map(([href, label]) => (
               <li key={href}>
                 <a className={linkCls} href={href}>
@@ -40,7 +40,7 @@ export default function Footer() {
           <ul className="mt-4 space-y-1">
             {DIRECTIONS.map((d) => (
               <li key={d.slug}>
-                <a className={linkCls} href={`#/napravlenie/${d.slug}`}>
+                <a className={linkCls} href={`/napravlenie/${d.slug}`}>
                   {d.title}
                 </a>
               </li>
@@ -52,7 +52,7 @@ export default function Footer() {
           <p className="zt-meta uppercase tracking-[0.14em]">Связь</p>
           <ul className="mt-4 space-y-1">
             <li>
-              <a className={linkCls} href="#contacts">
+              <a className={linkCls} href="/#contacts">
                 Обсудить проект
               </a>
             </li>

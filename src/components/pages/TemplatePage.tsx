@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { TEMPLATES } from "../../data/templates";
 import { CONTACT_EMAIL } from "../../data/content";
+import { useSeo } from "../../hooks/useSeo";
 
 const priceFmt = new Intl.NumberFormat("ru-RU", {
   style: "currency",
@@ -14,6 +15,14 @@ export default function TemplatePage({ slug }: { slug: string }) {
   const mailSubject = encodeURIComponent(`Хочу купить макет: ${t?.name ?? slug}`);
   const demoSubject = encodeURIComponent(`Хочу показ макета: ${t?.name ?? slug}`);
   const [zoom, setZoom] = useState<{ src: string; alt: string } | null>(null);
+
+  useSeo({
+    description: t?.description ?? "",
+    path: t ? `/template/${t.slug}` : "/",
+    title: t?.seoTitle,
+    image: t?.hero,
+    type: "product",
+  });
 
   useEffect(() => {
     if (!zoom) return;
@@ -68,7 +77,7 @@ export default function TemplatePage({ slug }: { slug: string }) {
       <main className="px-[var(--page-gutter)] py-[160px]">
         <div className="mx-auto max-w-[var(--content-max)]">
           <p className="text-[var(--z-muted)]">Макет не найден.</p>
-          <a className="btn mt-6" href="#templates">
+          <a className="btn mt-6" href="/#templates">
             ← Все макеты
           </a>
         </div>
@@ -80,7 +89,7 @@ export default function TemplatePage({ slug }: { slug: string }) {
     <main className="px-[var(--page-gutter)] pb-[clamp(80px,12vh,140px)] pt-[calc(var(--header-h,110px)+56px)]">
       <div className="mx-auto max-w-[var(--content-max)]">
         <a
-          href="#templates"
+          href="/#templates"
           className="font-mono text-[11px] uppercase tracking-[0.1em] text-[var(--z-muted)] no-underline hover:text-[var(--z-action)]"
         >
           ← Готовые макеты

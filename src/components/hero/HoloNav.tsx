@@ -25,7 +25,7 @@ const HoloNav = forwardRef<HTMLElement>(function HoloNav(_, ref) {
             </li>
           ))}
         </ul>
-        <a className="holo-cta" href="#contacts">
+        <a className="holo-cta" href="/#contacts">
           Обсудить проект
         </a>
       </div>

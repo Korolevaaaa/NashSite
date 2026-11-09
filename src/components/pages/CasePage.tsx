@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState, type CSSProperties } from "react";
 import { CASES, type CaseStoryStep } from "../../data/cases";
 import { CONTACT_EMAIL } from "../../data/content";
+import { useSeo } from "../../hooks/useSeo";
 import { CaseMotion } from "../ui/case-motion";
 
 /** Case detail page — #/case/<slug>
@@ -19,6 +20,14 @@ export default function CasePage({ slug }: { slug: string }) {
   const [storyInView, setStoryInView] = useState(false);
   const [zoom, setZoom] = useState<{ src: string; alt: string } | null>(null);
   const stepsRef = useRef<HTMLDivElement>(null);
+
+  useSeo({
+    description: c?.teaser ?? c?.title ?? "",
+    path: c ? `/case/${c.slug}` : "/cases",
+    title: c ? `${c.title || c.name} — кейс ZETRONIX` : undefined,
+    image: c?.cover,
+    type: "article",
+  });
 
   useEffect(() => {
     if (!zoom) return;
@@ -160,7 +169,7 @@ export default function CasePage({ slug }: { slug: string }) {
       <main className="px-[var(--page-gutter)] py-[160px]">
         <div className="mx-auto max-w-[var(--content-max)]">
           <p className="text-[var(--z-muted)]">Кейс не найден.</p>
-          <a className="btn mt-6" href="#/cases">
+          <a className="btn mt-6" href="/cases">
             ← Все кейсы
           </a>
         </div>
@@ -172,7 +181,7 @@ export default function CasePage({ slug }: { slug: string }) {
     <main className="px-[var(--page-gutter)] pb-[clamp(80px,12vh,140px)] pt-[calc(var(--header-h,110px)+56px)]">
       <div className="mx-auto max-w-[var(--content-max)]">
         <a
-          href="#/cases"
+          href="/cases"
           className="font-mono text-[11px] uppercase tracking-[0.1em] text-[var(--z-muted)] no-underline hover:text-[var(--z-action)]"
         >
           ← Все кейсы
@@ -297,7 +306,7 @@ export default function CasePage({ slug }: { slug: string }) {
           </a>
           {next && next.slug !== c.slug && (
             <a
-              href={`#/case/${next.slug}`}
+              href={`/case/${next.slug}`}
               className="text-[14px] font-medium text-[var(--z-muted)] no-underline hover:text-[var(--z-ink)]"
             >
               Следующий кейс: {next.name} →
@@ -310,7 +319,7 @@ export default function CasePage({ slug }: { slug: string }) {
             <div className="case-related__head">
               <h2 className="case-step__head">Ещё проекты</h2>
               <a
-                href="#/cases"
+                href="/cases"
                 className="text-[14px] font-medium text-[var(--z-muted)] no-underline hover:text-[var(--z-ink)]"
               >
                 Все кейсы →
@@ -319,7 +328,7 @@ export default function CasePage({ slug }: { slug: string }) {
             <ul className="pf-grid">
               {related.map((x) => (
                 <li key={x.slug}>
-                  <a className="pf-card cs-card" href={`#/case/${x.slug}`}>
+                  <a className="pf-card cs-card" href={`/case/${x.slug}`}>
                     <span className="pf-card__cover">
                       {x.cover ? (
                         <img src={x.cover} alt="" loading="lazy" />

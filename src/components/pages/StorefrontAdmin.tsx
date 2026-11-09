@@ -192,7 +192,7 @@ export default function StorefrontAdmin() {
             >
               Экспорт JSON
             </button>
-            <a className="sf-btn sf-btn--ghost" href="#top">
+            <a className="sf-btn sf-btn--ghost" href="/#top">
               ← На сайт
             </a>
           </div>

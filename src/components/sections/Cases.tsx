@@ -79,7 +79,7 @@ export default function Cases() {
           <ul className="pf-grid">
             {shown.map((c) => (
               <li key={c.slug}>
-                <a className="pf-card cs-card" href={`#/case/${c.slug}`}>
+                <a className="pf-card cs-card" href={`/case/${c.slug}`}>
                   <span className="pf-card__cover">
                     {c.cover ? (
                       <img src={c.cover} alt="" loading="lazy" />
@@ -108,7 +108,7 @@ export default function Cases() {
         )}
 
         <div className="cs-more">
-          <a className="btn" href="#/cases">
+          <a className="btn" href="/cases">
             <span>Смотреть все кейсы</span>
             <i className="btn-arrow">→</i>
           </a>

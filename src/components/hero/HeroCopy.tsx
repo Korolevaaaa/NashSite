@@ -21,12 +21,12 @@ export default function HeroCopy() {
       </div>
 
       <div className="hero-actions">
-        <a className="hero-primary" href="#contacts">
+        <a className="hero-primary" href="/#contacts">
           Обсудить проект
           <span aria-hidden="true">→</span>
         </a>
 
-        <a className="hero-secondary" href="#cases">
+        <a className="hero-secondary" href="/#cases">
           Смотреть примеры
           <span aria-hidden="true">→</span>
         </a>

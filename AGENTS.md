@@ -41,3 +41,18 @@ Helper scripts: `scripts/cover.mjs` (programmatic fallback),
 - `file://` images fail inside puppeteer `setContent` → embed as base64 data URI.
 - Bash: `$(` in `node -e` strings gets eaten → write scripts to files.
 - Check `git status` before edits (IDE buffer overwrites happened before).
+
+## SEO architecture (Nov 2026)
+- Path routing, NOT hash: routeOf() reads location.pathname; legacy `/#/x`
+  URLs are replaceState-redirected to `/x`. Internal links: pages `/blog/x`,
+  sections `/#anchor`. Global click interceptor in App.tsx does pushState +
+  popstate — no full reloads.
+- `npm run build` also runs `scripts/prerender.mjs`: vite preview + headless
+  Chrome → writes rendered HTML (meta/OG/JSON-LD included) to
+  `dist/<route>/index.html` for ALL routes → real indexable pages on any
+  static host, no server fallback needed. Also emits sitemap.xml + robots.txt.
+  SITE_URL env overrides the default https://zetronix.ru.
+- Per-page SEO via `src/hooks/useSeo.ts` (description/OG/canonical/JSON-LD,
+  restores defaults on unmount). Used by every page component.
+- Direction pages (`/napravlenie/<slug>`) carry `related:` in
+  content.ts → templates + cases rendered on the page.

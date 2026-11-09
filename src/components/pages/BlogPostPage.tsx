@@ -1,6 +1,7 @@
-import { useEffect, useMemo } from "react";
+import { useMemo } from "react";
 import { POSTS, type BlogBlock } from "../../data/blog";
 import { CONTACT_EMAIL } from "../../data/content";
+import { useSeo } from "../../hooks/useSeo";
 import PriceLadder from "../blog/PriceLadder";
 import HiddenCosts from "../blog/HiddenCosts";
 import CostQuiz from "../blog/CostQuiz";
@@ -156,124 +157,85 @@ export default function BlogPostPage({ slug }: { slug: string }) {
     [post],
   );
 
-  /* SEO: meta description + OG + JSON-LD (Article, Breadcrumb, FAQ). */
-  useEffect(() => {
-    if (!post) return;
-
-    const metas: { el: HTMLMetaElement; prev: string | null }[] = [];
-    const setMeta = (attr: string, key: string, content: string) => {
-      let el = document.head.querySelector<HTMLMetaElement>(
-        `meta[${attr}="${key}"]`,
-      );
-      let prev: string | null = null;
-      if (!el) {
-        el = document.createElement("meta");
-        el.setAttribute(attr, key);
-        document.head.appendChild(el);
-      } else {
-        prev = el.getAttribute("content");
-      }
-      el.setAttribute("content", content);
-      metas.push({ el, prev });
-    };
-
-    const url = `${location.origin}${location.pathname}#/blog/${post.slug}`;
-    const coverAbs = post.cover
-      ? `${location.origin}${post.cover}`
-      : undefined;
-
-    setMeta("name", "description", post.excerpt);
-    setMeta("property", "og:title", post.title);
-    setMeta("property", "og:description", post.excerpt);
-    setMeta("property", "og:type", "article");
-    setMeta("property", "og:url", url);
-    if (coverAbs) setMeta("property", "og:image", coverAbs);
-    setMeta("name", "twitter:card", "summary_large_image");
-
-    const mk = (id: string, data: object) => {
-      const el = document.createElement("script");
-      el.type = "application/ld+json";
-      el.id = id;
-      el.textContent = JSON.stringify(data);
-      document.head.appendChild(el);
-      return el;
-    };
-
-    const lds = [
-      mk("ld-article", {
-        "@context": "https://schema.org",
-        "@type": "Article",
-        headline: post.title,
-        description: post.excerpt,
-        datePublished: post.date,
-        dateModified: post.date,
-        image: coverAbs,
-        author: { "@type": "Organization", name: "ZETRONIX" },
-        publisher: {
-          "@type": "Organization",
-          name: "ZETRONIX",
-          logo: {
-            "@type": "ImageObject",
-            url: `${location.origin}/favicon.svg`,
-          },
-        },
-        mainEntityOfPage: { "@type": "WebPage", "@id": url },
-      }),
-      mk("ld-breadcrumb", {
-        "@context": "https://schema.org",
-        "@type": "BreadcrumbList",
-        itemListElement: [
+  /* SEO: meta description + OG + canonical + JSON-LD (Article, Breadcrumb, FAQ). */
+  const url = post ? `${location.origin}/blog/${post.slug}` : "";
+  const faq = post ? faqItems(post) : [];
+  useSeo({
+    description: post?.excerpt ?? "",
+    path: post ? `/blog/${post.slug}` : "/blog",
+    title: post?.title,
+    image: post?.cover,
+    type: "article",
+    jsonLd: post
+      ? [
           {
-            "@type": "ListItem",
-            position: 1,
-            name: "Главная",
-            item: `${location.origin}${location.pathname}`,
+            "@context": "https://schema.org",
+            "@type": "Article",
+            headline: post.title,
+            description: post.excerpt,
+            datePublished: post.date,
+            dateModified: post.date,
+            image: post.cover
+              ? `${location.origin}${post.cover}`
+              : undefined,
+            author: { "@type": "Organization", name: "ZETRONIX" },
+            publisher: {
+              "@type": "Organization",
+              name: "ZETRONIX",
+              logo: {
+                "@type": "ImageObject",
+                url: `${location.origin}/favicon.svg`,
+              },
+            },
+            mainEntityOfPage: { "@type": "WebPage", "@id": url },
           },
           {
-            "@type": "ListItem",
-            position: 2,
-            name: "Блог",
-            item: `${location.origin}${location.pathname}#/blog`,
+            "@context": "https://schema.org",
+            "@type": "BreadcrumbList",
+            itemListElement: [
+              {
+                "@type": "ListItem",
+                position: 1,
+                name: "Главная",
+                item: `${location.origin}/`,
+              },
+              {
+                "@type": "ListItem",
+                position: 2,
+                name: "Блог",
+                item: `${location.origin}/blog`,
+              },
+              {
+                "@type": "ListItem",
+                position: 3,
+                name: post.title,
+                item: url,
+              },
+            ],
           },
-          {
-            "@type": "ListItem",
-            position: 3,
-            name: post.title,
-            item: url,
-          },
-        ],
-      }),
-    ];
-
-    const faq = faqItems(post);
-    if (faq.length) {
-      lds.push(
-        mk("ld-faq", {
-          "@context": "https://schema.org",
-          "@type": "FAQPage",
-          mainEntity: faq.map((f) => ({
-            "@type": "Question",
-            name: f.q,
-            acceptedAnswer: { "@type": "Answer", text: f.a },
-          })),
-        }),
-      );
-    }
-
-    return () => {
-      lds.forEach((el) => el.remove());
-      metas.forEach(({ el, prev }) =>
-        prev === null ? el.remove() : el.setAttribute("content", prev),
-      );
-    };
-  }, [post]);
+          ...(faq.length
+            ? [
+                {
+                  "@context": "https://schema.org",
+                  "@type": "FAQPage",
+                  mainEntity: faq.map((f) => ({
+                    "@type": "Question",
+                    name: f.q,
+                    acceptedAnswer: { "@type": "Answer", text: f.a },
+                  })),
+                },
+              ]
+            : []),
+        ]
+      : undefined,
+  });
 
   if (!post) {
     return (
       <main className="px-[var(--page-gutter)] py-[160px]">
         <div className="mx-auto max-w-[var(--content-max)]">
           <p className="text-[var(--z-muted)]">Статья не найдена.</p>
-          <a className="btn mt-6" href="#/blog">
+          <a className="btn mt-6" href="/blog">
             ← Все статьи
           </a>
         </div>
@@ -285,7 +247,7 @@ export default function BlogPostPage({ slug }: { slug: string }) {
     <main className="px-[var(--page-gutter)] pb-[clamp(80px,12vh,140px)] pt-[calc(var(--header-h,110px)+56px)]">
       <article className="mx-auto max-w-[720px]">
         <nav aria-label="Хлебные крошки" className="post-crumbs">
-          <a href="#/blog">← Все статьи</a>
+          <a href="/blog">← Все статьи</a>
         </nav>
 
         <p className="mt-10 font-mono text-[11px] font-semibold uppercase tracking-[0.12em] text-[var(--z-action)]">

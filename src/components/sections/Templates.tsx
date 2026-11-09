@@ -140,7 +140,7 @@ export default function Templates() {
   );
 }
 
-function TemplateCard({ item }: { item: StoreItem }) {
+export function TemplateCard({ item }: { item: StoreItem }) {
   const cta = item.kind === "Макет" ? "Купить" : "Заказать";
   const subject = encodeURIComponent(
     item.kind === "Макет"
@@ -148,7 +148,7 @@ function TemplateCard({ item }: { item: StoreItem }) {
       : `Хочу заказать: ${item.name}`,
   );
 
-  const href = item.slug ? `#/template/${item.slug}` : null;
+  const href = item.slug ? `/template/${item.slug}` : null;
 
   return (
     <li className="sf-card">
@@ -193,7 +193,7 @@ function TemplateCard({ item }: { item: StoreItem }) {
             className="sf-card__cta"
             href={
               item.slug
-                ? `#/template/${item.slug}`
+                ? `/template/${item.slug}`
                 : `mailto:${CONTACT_EMAIL}?subject=${subject}`
             }
           >

@@ -1,17 +1,82 @@
 import { CONTACT_EMAIL, DIRECTIONS } from "../../data/content";
+import { CASES } from "../../data/cases";
+import { publishedItems } from "../../data/storefront";
+import { TemplateCard } from "../sections/Templates";
+import { useSeo } from "../../hooks/useSeo";
 
 /**
- * SEO/Direct landing for a single business direction.
- * Routed by hash: #/napravlenie/<slug>
+ * SEO landing for a single business direction: /napravlenie/<slug>.
+ * Each direction gets unique meta + Service/Breadcrumb JSON-LD +
+ * related storefront templates and case studies.
  */
 export default function DirectionPage({ slug }: { slug: string }) {
   const d = DIRECTIONS.find((x) => x.slug === slug);
+
+  const lowPrice = d
+    ? Number(d.price.replace(/[^\d]/g, "")) || undefined
+    : undefined;
+
+  useSeo({
+    description: d?.page.lead ?? "",
+    path: d ? `/napravlenie/${d.slug}` : "/",
+    title: d ? `${d.title} — разработка от ZETRONIX` : undefined,
+    jsonLd: d
+      ? [
+          {
+            "@context": "https://schema.org",
+            "@type": "Service",
+            name: `${d.title} — ZETRONIX`,
+            description: d.page.lead,
+            provider: {
+              "@type": "Organization",
+              name: "ZETRONIX",
+              url: location.origin,
+            },
+            ...(lowPrice
+              ? {
+                  offers: {
+                    "@type": "Offer",
+                    price: lowPrice,
+                    priceCurrency: "RUB",
+                    availability: "https://schema.org/InStock",
+                  },
+                }
+              : {}),
+          },
+          {
+            "@context": "https://schema.org",
+            "@type": "BreadcrumbList",
+            itemListElement: [
+              {
+                "@type": "ListItem",
+                position: 1,
+                name: "Главная",
+                item: `${location.origin}/`,
+              },
+              {
+                "@type": "ListItem",
+                position: 2,
+                name: "Направления",
+                item: `${location.origin}/#services`,
+              },
+              {
+                "@type": "ListItem",
+                position: 3,
+                name: d.title,
+                item: `${location.origin}/napravlenie/${d.slug}`,
+              },
+            ],
+          },
+        ]
+      : undefined,
+  });
+
   if (!d) {
     return (
       <main className="px-[var(--page-gutter)] py-[160px]">
         <div className="mx-auto max-w-[var(--content-max)]">
           <p className="text-[var(--z-muted)]">Направление не найдено.</p>
-          <a className="btn mt-6" href="#">
+          <a className="btn mt-6" href="/">
             ← На главную
           </a>
         </div>
@@ -19,11 +84,21 @@ export default function DirectionPage({ slug }: { slug: string }) {
     );
   }
 
+  const rel = d.related as unknown as
+    | { templates?: string[]; cases?: string[] }
+    | undefined;
+  const relTemplates = (rel?.templates ?? [])
+    .map((s) => publishedItems().find((i) => i.slug === s))
+    .filter(Boolean);
+  const relCases = (rel?.cases ?? [])
+    .map((s) => CASES.find((c) => c.slug === s))
+    .filter(Boolean);
+
   return (
     <main className="px-[var(--page-gutter)] pb-[clamp(80px,12vh,140px)] pt-[calc(var(--header-h,110px)+56px)]">
       <div className="mx-auto max-w-[var(--content-max)]">
         <a
-          href="#top"
+          href="/#services"
           className="font-mono text-[11px] uppercase tracking-[0.1em] text-[var(--z-muted)] no-underline hover:text-[var(--z-action)]"
         >
           ← Все направления
@@ -79,13 +154,79 @@ export default function DirectionPage({ slug }: { slug: string }) {
           </ul>
         </div>
 
+        {relTemplates.length > 0 && (
+          <div className="mt-16 border-t border-line pt-10">
+            <div className="flex flex-wrap items-baseline justify-between gap-4">
+              <h2 className="font-body text-[clamp(20px,2.4vw,28px)] font-semibold tracking-[-0.02em] text-[var(--z-ink)]">
+                Готовые макеты по этому направлению
+              </h2>
+              <a
+                href="/#templates"
+                className="text-[13px] font-medium text-[var(--z-action)] no-underline hover:underline"
+              >
+                Вся витрина →
+              </a>
+            </div>
+            <ul className="sf-grid mt-8">
+              {relTemplates.map((item) => (
+                <TemplateCard key={item!.id} item={item!} />
+              ))}
+            </ul>
+          </div>
+        )}
+
+        {relCases.length > 0 && (
+          <div className="mt-16 border-t border-line pt-10">
+            <div className="flex flex-wrap items-baseline justify-between gap-4">
+              <h2 className="font-body text-[clamp(20px,2.4vw,28px)] font-semibold tracking-[-0.02em] text-[var(--z-ink)]">
+                Кейсы по этому направлению
+              </h2>
+              <a
+                href="/cases"
+                className="text-[13px] font-medium text-[var(--z-action)] no-underline hover:underline"
+              >
+                Все кейсы →
+              </a>
+            </div>
+            <ul className="pf-grid mt-8">
+              {relCases.map((c) => (
+                <li key={c!.slug}>
+                  <a className="pf-card cs-card" href={`/case/${c!.slug}`}>
+                    <span className="pf-card__cover">
+                      {c!.cover ? (
+                        <img src={c!.cover} alt="" loading="lazy" />
+                      ) : (
+                        <span className="pf-card__mark latn-display" aria-hidden="true">
+                          {c!.name}
+                        </span>
+                      )}
+                      <span className="pf-card__tint" aria-hidden="true" />
+                      <span className="cs-card__tags" aria-hidden="true">
+                        <span className="cs-card__tag">{c!.type}</span>
+                        <span className="cs-card__tag cs-card__tag--dim">{c!.industry}</span>
+                      </span>
+                    </span>
+                    <span className="pf-card__meta">
+                      <span className="pf-card__cat">
+                        {c!.industry} · {c!.year}
+                      </span>
+                      <span className="pf-card__title latn-display">{c!.name}</span>
+                      {c!.teaser && <span className="cs-card__teaser">{c!.teaser}</span>}
+                    </span>
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+
         <div className="mt-16 flex flex-wrap items-center gap-4 border-t border-line pt-10">
           <a className="btn btn--big" href={`mailto:${CONTACT_EMAIL}?subject=${encodeURIComponent(d.title)}`}>
             <span>{d.page.cta}</span>
             <i className="btn-arrow">↗</i>
           </a>
           <a
-            href="#top"
+            href="/#cases"
             className="text-[14px] font-medium text-[var(--z-muted)] no-underline hover:text-[var(--z-ink)]"
           >
             Сначала посмотреть работы

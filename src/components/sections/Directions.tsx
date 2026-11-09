@@ -22,7 +22,7 @@ export default function Directions() {
           {DIRECTIONS.map((d) => (
             <li key={d.slug} className="dir-cell">
               <a
-                href={`#/napravlenie/${d.slug}`}
+                href={`/napravlenie/${d.slug}`}
                 className="dir-cell__link"
                 aria-label={`${d.title} — открыть страницу`}
               >

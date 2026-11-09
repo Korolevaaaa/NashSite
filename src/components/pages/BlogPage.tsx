@@ -1,13 +1,33 @@
 import { POSTS } from "../../data/blog";
+import { useSeo } from "../../hooks/useSeo";
 
 export default function BlogPage() {
   const posts = [...POSTS].sort((a, b) => b.date.localeCompare(a.date));
+
+  useSeo({
+    description:
+      "Блог ZETRONIX: честные разборы цен на сайты, выбор технологий и реальные кейсы студии — пишем для владельцев бизнеса, а не для программистов.",
+    path: "/blog",
+    title: "Блог — ZETRONIX",
+    jsonLd: {
+      "@context": "https://schema.org",
+      "@type": "Blog",
+      name: "Блог ZETRONIX",
+      url: `${location.origin}/blog`,
+      blogPost: posts.map((p) => ({
+        "@type": "BlogPosting",
+        headline: p.title,
+        url: `${location.origin}/blog/${p.slug}`,
+        datePublished: p.date,
+      })),
+    },
+  });
 
   return (
     <main className="px-[var(--page-gutter)] pb-[clamp(80px,12vh,140px)] pt-[calc(var(--header-h,110px)+56px)]">
       <div className="mx-auto max-w-[760px]">
         <a
-          href="#top"
+          href="/#top"
           className="font-mono text-[11px] uppercase tracking-[0.1em] text-[var(--z-muted)] no-underline hover:text-[var(--z-action)]"
         >
           ← На главную
@@ -29,7 +49,7 @@ export default function BlogPage() {
               <li key={p.slug}>
                 <a
                   className={`blog-item ${p.cover ? "blog-item--cover" : ""}`}
-                  href={`#/blog/${p.slug}`}
+                  href={`/blog/${p.slug}`}
                 >
                   {p.cover && (
                     <span className="blog-item__cover">

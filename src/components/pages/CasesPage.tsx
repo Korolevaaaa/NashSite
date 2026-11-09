@@ -1,6 +1,7 @@
 import { useMemo, useState } from "react";
 import { CASES, CASE_INDUSTRIES, CASE_TYPES } from "../../data/cases";
 import { CONTACT_EMAIL } from "../../data/content";
+import { useSeo } from "../../hooks/useSeo";
 
 type Sort = "new" | "old" | "name";
 
@@ -17,6 +18,19 @@ export default function CasesPage() {
   const [type, setType] = useState<string | null>(null);
   const [industry, setIndustry] = useState<string | null>(null);
   const [sort, setSort] = useState<Sort>("new");
+
+  useSeo({
+    description:
+      "Кейсы ZETRONIX: интернет-магазины, корпоративные сайты, веб-сервисы и приложения — реальные проекты с результатами и скриншотами.",
+    path: "/cases",
+    title: "Кейсы — ZETRONIX",
+    jsonLd: {
+      "@context": "https://schema.org",
+      "@type": "CollectionPage",
+      name: "Кейсы ZETRONIX",
+      url: `${location.origin}/cases`,
+    },
+  });
 
   const items = useMemo(() => {
     const needle = q.trim().toLowerCase();
@@ -43,7 +57,7 @@ export default function CasesPage() {
     <main className="px-[var(--page-gutter)] pb-[clamp(80px,12vh,140px)] pt-[calc(var(--header-h,110px)+56px)]">
       <div className="mx-auto max-w-[var(--content-max)]">
         <a
-          href="#top"
+          href="/#top"
           className="font-mono text-[11px] uppercase tracking-[0.1em] text-[var(--z-muted)] no-underline hover:text-[var(--z-action)]"
         >
           ← На главную
@@ -138,7 +152,7 @@ export default function CasesPage() {
           <ul className="pf-grid csp-grid">
             {items.map((c) => (
               <li key={c.slug}>
-                <a className="pf-card cs-card" href={`#/case/${c.slug}`}>
+                <a className="pf-card cs-card" href={`/case/${c.slug}`}>
                   <span className="pf-card__cover">
                     {c.cover ? (
                       <img src={c.cover} alt="" loading="lazy" />
