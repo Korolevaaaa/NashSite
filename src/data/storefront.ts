@@ -80,6 +80,7 @@ export const SEED_ITEMS: StoreItem[] = [
     status: "published",
     slug: "sfera-dom",
     badge: "Кино-лендинг",
+    cover: "/templates/sfera-dom/cover.jpg",
   },
 ];
 
