@@ -1,7 +1,8 @@
 /* Blog posts model. Each entry renders at #/blog/<slug>.
    Body is a flat list of blocks — write plain Russian, no markup needed.
    Inline links inside "p"/"list" text: [текст](#templates).
-   Covers live in /public/blog/<slug>/cover.jpg (wide, ~16:9).
+   Covers live in /public/blog/<slug>/cover.jpg — wide strip 21:9;
+   keep text/subject in the central band (top/bottom ~15% may crop).
    Inline shots: /public/blog/<slug>/<name>.jpg
    "viz" blocks insert interactive widgets (see components/blog/). */
 

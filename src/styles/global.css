@@ -3130,10 +3130,20 @@ a.cs-card:focus-visible {
     border-color 0.25s ease,
     box-shadow 0.25s ease;
 }
-@media (min-width: 640px) {
-  .blog-item--cover {
-    grid-template-columns: 1fr 160px;
-    align-items: center;
+.blog-item--cover {
+  padding: 0;
+  overflow: hidden;
+}
+.blog-item--cover .blog-item__body {
+  padding: 18px 22px 20px;
+}
+@media (max-width: 640px) {
+  .blog-item--cover .blog-item__body {
+    padding: 14px 16px 16px;
+  }
+  .blog-item--cover .blog-item__excerpt {
+    -webkit-line-clamp: 1;
+    line-clamp: 1;
   }
 }
 @media (hover: hover) {
@@ -3147,15 +3157,10 @@ a.cs-card:focus-visible {
   outline-offset: 3px;
 }
 .blog-item__cover {
-  aspect-ratio: 16 / 10;
-  border-radius: 8px;
+  display: block;
+  aspect-ratio: 21 / 9;
   overflow: hidden;
   background: rgba(0, 201, 212, 0.08);
-}
-@media (max-width: 639px) {
-  .blog-item__cover {
-    order: -1;
-  }
 }
 .blog-item__cover img {
   width: 100%;

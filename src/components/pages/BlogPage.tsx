@@ -31,6 +31,11 @@ export default function BlogPage() {
                   className={`blog-item ${p.cover ? "blog-item--cover" : ""}`}
                   href={`#/blog/${p.slug}`}
                 >
+                  {p.cover && (
+                    <span className="blog-item__cover">
+                      <img src={p.cover} alt="" loading="lazy" />
+                    </span>
+                  )}
                   <span className="blog-item__body">
                     <span className="blog-item__meta">
                       <time dateTime={p.date}>
@@ -50,11 +55,6 @@ export default function BlogPage() {
                     <span className="blog-item__excerpt">{p.excerpt}</span>
                     <span className="blog-item__more">Читать →</span>
                   </span>
-                  {p.cover && (
-                    <span className="blog-item__cover">
-                      <img src={p.cover} alt="" loading="lazy" />
-                    </span>
-                  )}
                 </a>
               </li>
             ))}
