@@ -96,13 +96,15 @@ function titleOf(r: Route): string {
       return "Кейсы — ZETRONIX";
     case "case": {
       const c = CASES.find((x) => x.slug === r.slug);
-      return c ? `${c.title || c.name} — кейс ZETRONIX` : "Кейс — ZETRONIX";
+      return c
+        ? (c.seoTitle ?? `${c.title || c.name} — кейс ZETRONIX`)
+        : "Кейс — ZETRONIX";
     }
     case "blog":
       return "Блог — ZETRONIX";
     case "post": {
       const p = POSTS.find((x) => x.slug === r.slug);
-      return p ? `${p.title} — ZETRONIX` : "Статья — ZETRONIX";
+      return p ? (p.seoTitle ?? `${p.title} — ZETRONIX`) : "Статья — ZETRONIX";
     }
     case "template": {
       const t = TEMPLATES.find((x) => x.slug === r.slug);

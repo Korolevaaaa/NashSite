@@ -61,6 +61,8 @@ export interface CaseStudy {
   slug: string; // latin, used in #/case/<slug>
   name: string; // short display name, e.g. NEOBANK
   title: string; // human headline for the case page
+  seoTitle?: string; // document.title (≤60 chars); falls back to "<title> — кейс ZETRONIX"
+  seoDescription?: string; // meta description (~150 chars); falls back to teaser
   client?: string;
   type: (typeof CASE_TYPES)[number];
   industry: string; // one of CASE_INDUSTRIES (or free string)
@@ -79,6 +81,9 @@ export const CASES: CaseStudy[] = [
     slug: "graffiti-zerkalo",
     name: "RAMCY",
     title: "Сайт для художника с ИИ-ботом и заявками в Telegram",
+    seoTitle: "Кейс: сайт художника с ИИ-ботом — RAMCY | ZETRONIX",
+    seoDescription:
+      "Сайт художника RAMCY: галерея работ, ИИ-бот и заявки в Telegram. Премиальная подача персонального бренда.",
     client: "Vitaliy RAMCY · художник-граффитист, Москва",
     type: "Веб-сервис",
     industry: "Услуги",
@@ -86,7 +91,7 @@ export const CASES: CaseStudy[] = [
     teaser:
       "Витрина граффити-зеркал, админка для портфолио и бот, который собирает смету в чате и выгрузил личку автора от одинаковых вопросов.",
     cover: "/cases/instabarter/cover.jpg",
-    hero: "/cases/instabarter/hero.png",
+    hero: "/cases/instabarter/hero.jpg",
     url: "https://graffiti-zerkalo.ru",
     metrics: [
       { value: "1 чат", label: "заявки и сметы приходят в один Telegram-диалог вместо десятков в директе" },
@@ -118,12 +123,12 @@ export const CASES: CaseStudy[] = [
       {
         heading: "Сайт-витрина с живым портфолио",
         text: "Собрали одностраничник в его собственной эстетике: чёрный фон, кислотно-оранжевый акцент, крупная рубленая типографика и бегущая строка. Работы, автор и цены на три размера видны сразу — три самых частых вопроса закрыты до того, как человек дошёл до формы. Отзывы собраны из настоящих сторис клиентов, поэтому доверие не выглядит нарисованным.",
-        shot: "/cases/instabarter/portfolio.png",
+        shot: "/cases/instabarter/portfolio.jpg",
       },
       {
         heading: "ИИ-бот вместо лички",
         text: "В углу экрана живёт помощник RAMCY. Он мгновенно отвечает на типовые вопросы о ценах, размерах и материалах, а главное — прямо в чате проводит человека по брифу: что нарисовать, какого размера, куда доставить. На выходе клиент получает ответ за секунды, а не часы ожидания в директе.",
-        shot: "/cases/instabarter/bot-open.png",
+        shot: "/cases/instabarter/bot-open.jpg",
         motion: "chat",
         chat: {
           botName: "RAMCY бот · онлайн",
@@ -137,7 +142,7 @@ export const CASES: CaseStudy[] = [
       {
         heading: "Админка и заявки в Telegram",
         text: "Заявки с сайта и от бота падают Виталию в личные сообщения Telegram — в один чат, уже собранными по пунктам. В админ-панели он сам добавляет работы в портфолио и следит за входящими, кода при этом не касается. Оплату и доставку намеренно не делали: их Виталий согласует лично, и автоматика здесь бы только мешала.",
-        shot: "/cases/instabarter/contact.png",
+        shot: "/cases/instabarter/contact.jpg",
         motion: "inbox",
         inboxItems: [
           { src: "сайт", text: "Тег · 60 см · Москва" },
@@ -148,31 +153,34 @@ export const CASES: CaseStudy[] = [
       {
         heading: "Результат",
         text: "Сайт работает тремя способами сразу. Это портфолио для соцсетей, продавец, который показывает работы и цены круглосуточно, и фильтр перед личными сообщениями. В директ теперь приходят готовые сметы, а не вопросы — Виталий тратит время на эскизы и зеркала, а не на копипаст одинаковых ответов. SEO настроено с первого дня, поэтому сайт приводит и тех, кто никогда не видел посты.",
-        shot: "/cases/instabarter/reviews.png",
+        shot: "/cases/instabarter/reviews.jpg",
         motion: "bars",
         barLabels: { old: "было — вопросы в директе", new: "стало — готовые сметы" },
       },
     ],
     gallery: [
-      "/cases/instabarter/about.png",
-      "/cases/instabarter/hero-narrow.png",
-      "/cases/instabarter/services.png",
-      "/cases/instabarter/reviews.png",
-      "/cases/instabarter/contact.png",
+      "/cases/instabarter/about.jpg",
+      "/cases/instabarter/hero-narrow.jpg",
+      "/cases/instabarter/services.jpg",
+      "/cases/instabarter/reviews.jpg",
+      "/cases/instabarter/contact.jpg",
     ],
   },
   {
     slug: "yaruska",
     name: "YARUSKA",
     title: "Интернет-магазин свечей ручной работы с оплатой ЮKassa и доставкой СДЭК",
+    seoTitle: "YARUSKA — магазин свечей с оплатой и доставкой | кейс",
+    seoDescription:
+      "Интернет-магазин свечей ручной работы YARUSKA: каталог коллекций, оплата ЮKassa и доставка СДЭК.",
     client: "Яруска · мастерская авторских свечей",
     type: "Интернет-магазин",
     industry: "Ритейл",
     year: 2026,
     teaser:
       "Магазин свечей-шкатулок: каталог с выбором аромата, оплата ЮKassa, доставка СДЭК до пункта выдачи, личный кабинет покупателя и заказы в Telegram владельца.",
-    cover: "/cases/yaruska/cover.png",
-    hero: "/cases/yaruska/hero.png",
+    cover: "/cases/yaruska/cover.jpg",
+    hero: "/cases/yaruska/hero.jpg",
     url: "https://yaruska.ru",
     metrics: [
       { value: "1 заказ", label: "аромат, доставка СДЭК до ПВЗ и оплата ЮKassa — в одном чек-ауте, без переписки" },
@@ -204,7 +212,7 @@ export const CASES: CaseStudy[] = [
       {
         heading: "Каталог в эстетике бренда",
         text: "Собрали интернет-магазин в том же тёплом, «ручном» характере: кремовый фон, шрифтовая роскошь, крупная фотография. В каталоге — поиск по названию и аромату, категории и избранное; на карточке сразу цена и кнопка в корзину. Клиент выбирает свечу и аромат самостоятельно, как в обычном магазине — без сообщений «а что есть в наличии».",
-        shot: "/cases/yaruska/catalog.png",
+        shot: "/cases/yaruska/catalog.jpg",
       },
       {
         heading: "Заказ без переписки",
@@ -231,31 +239,34 @@ export const CASES: CaseStudy[] = [
       {
         heading: "Результат",
         text: "Магазин закрыл всю цепочку, которая раньше держалась на переписке: каталог показывает ассортимент, чек-аут собирает заказ с доставкой, ЮKassa принимает оплату, Telegram доставляет заявку владельцу, а личный кабинет отвечает на вопросы о статусе. Владелец тратит время на воск и гипс, а не на копипаст одинаковых ответов.",
-        shot: "/cases/yaruska/popular.png",
+        shot: "/cases/yaruska/popular.jpg",
         motion: "bars",
         barLabels: { old: "было — переписка по каждому заказу", new: "стало — заказ оформляется сам" },
       },
     ],
     gallery: [
       "/cases/yaruska/fragrances.png",
-      "/cases/yaruska/product.png",
+      "/cases/yaruska/product.jpg",
       "/cases/yaruska/delivery-page.png",
       "/cases/yaruska/checkout.png",
-      "/cases/yaruska/delivery.png",
+      "/cases/yaruska/delivery.jpg",
     ],
   },
   {
     slug: "hawaii22",
     name: "ГАВАЙИ22",
     title: "Сайт базы отдыха с бронированием домиков, Telegram-ботом для команды и SEO по Бийску",
+    seoTitle: "ГАВАЙИ22 — сайт базы отдыха с бронью | кейс ZETRONIX",
+    seoDescription:
+      "Сайт базы отдыха ГАВАЙИ22: бронирование домиков, Telegram-бот для команды и SEO по Бийску.",
     client: "Гавайи22 · база отдыха, Верх-Катунское, Алтайский край",
     type: "Веб-сервис",
     industry: "Услуги",
     year: 2026,
     teaser:
       "База отдыха под Бийском: домики с живым календарём занятости, заявки в общий чат команды, бот для подтверждения броней и админка для фото, домов и услуг.",
-    cover: "/cases/hawaii22/cover.png",
-    hero: "/cases/hawaii22/hero.png",
+    cover: "/cases/hawaii22/cover.jpg",
+    hero: "/cases/hawaii22/hero.jpg",
     url: "https://hawaii22.ru",
     metrics: [
       { value: "~15", label: "заявок из поиска Google за первые дни после запуска — SEO настроено по Бийску" },
@@ -287,12 +298,12 @@ export const CASES: CaseStudy[] = [
       {
         heading: "Бронь в два клика",
         text: "Карточка домика открывается с фотографиями, списком удобств и живым календарём: занятые даты зачёркнуты, свободные выбираются в два клика. Цена за ночь видна до нажатия на кнопку — гость бронирует даты сам, вопросы «а свободно ли на выходные» отпадают сами.",
-        shot: "/cases/hawaii22/booking.png",
+        shot: "/cases/hawaii22/booking.jpg",
       },
       {
         heading: "Заявка всей команде в Telegram",
         text: "После бронирования заявка падает в общий чат Telegram со всеми сотрудниками базы — домик, даты, гости и контакт уже собраны по пунктам. Первый свободный связывается с клиентом и согласовывает предоплату за бронь. Никто не мониторит почту и не пересылает скриншоты — заявка видна всей смене сразу.",
-        shot: "/cases/hawaii22/houses.png",
+        shot: "/cases/hawaii22/houses.jpg",
         motion: "inbox",
         inboxItems: [
           { src: "сайт", text: "Домик у воды · 12–14 нояб · 4 гостя" },
@@ -320,10 +331,10 @@ export const CASES: CaseStudy[] = [
       },
     ],
     gallery: [
-      "/cases/hawaii22/houses.png",
-      "/cases/hawaii22/house-modal.png",
+      "/cases/hawaii22/houses.jpg",
+      "/cases/hawaii22/house-modal.jpg",
       "/cases/hawaii22/services.png",
-      "/cases/hawaii22/map.png",
+      "/cases/hawaii22/map.jpg",
       "/cases/hawaii22/contacts.png",
     ],
   },
@@ -331,6 +342,9 @@ export const CASES: CaseStudy[] = [
     slug: "koosmo",
     name: "KOOSMO",
     title: "Онлайн-платформа оздоровительного центра: видеокурсы, собственные прямые эфиры и запись к специалистам",
+    seoTitle: "KOOSMO — платформа с видеокурсами и эфирами | кейс",
+    seoDescription:
+      "Онлайн-платформа оздоровительного центра KOOSMO: видеокурсы, собственные прямые эфиры и запись к специалистам.",
     client: "Koosmo · оздоровительный центр гармонии тела и души",
     type: "Веб-сервис",
     industry: "Медицина",
@@ -338,7 +352,7 @@ export const CASES: CaseStudy[] = [
     teaser:
       "Больше тридцати страниц: витрина, магазин видеокурсов самомассажа, собственный блок прямых эфиров, видео-приёмы психолога и массажиста по расписанию, личный кабинет и админка.",
     cover: "/cases/koosmo/cover.jpg",
-    hero: "/cases/koosmo/hero.png",
+    hero: "/cases/koosmo/hero.jpg",
     url: "https://koosmo.ru",
     metrics: [
       { value: "30+", label: "страниц: витрина, магазин, курсы, эфиры, расписание, личный кабинет и админ-панель" },
@@ -370,7 +384,7 @@ export const CASES: CaseStudy[] = [
       {
         heading: "Витрина, которая продаёт спокойствие",
         text: "Главная собрана в тёплой спокойной эстетике центра: философия гармонии, сетка услуг и отзывы. Сразу видно всё, что можно купить или забронировать онлайн: диагностику, анализы, видеокурсы, прямые трансляции, тибетские чаши и приём психолога. Из любого блока — переход к расписанию или оплате.",
-        shot: "/cases/koosmo/services.png",
+        shot: "/cases/koosmo/services.jpg",
       },
       {
         heading: "Курсы, магазин и оплата",
@@ -416,7 +430,7 @@ export const CASES: CaseStudy[] = [
       },
     ],
     gallery: [
-      "/cases/koosmo/about.png",
+      "/cases/koosmo/about.jpg",
       "/cases/koosmo/login.png",
       "/cases/koosmo/stream-new.png",
       "/cases/koosmo/admin.png",
@@ -426,6 +440,9 @@ export const CASES: CaseStudy[] = [
     slug: "karat-titan",
     name: "KARAT",
     title: "Сайт стоматологии в Тобольске: запись к врачу по живому расписанию и SEO под город",
+    seoTitle: "КАРАТ — сайт стоматологии с записью по расписанию | кейс",
+    seoDescription:
+      "Сайт стоматологии КАРАТ в Тобольске: запись к врачу по живому расписанию, услуги, врачи и SEO под город.",
     client: "KARAT TITAN · стоматология, Тобольск · 2 филиала",
     type: "Корп. сайт",
     industry: "Медицина",
@@ -433,7 +450,7 @@ export const CASES: CaseStudy[] = [
     teaser:
       "Два филиала, семь врачей со своими прайсами, запись в семь шагов с занятым временем на виду, заявки в CRM на ресепшен выбранного филиала и админка для цен, услуг и расписания.",
     hero: "/cases/karat-titan/hero.png",
-    cover: "/cases/karat-titan/cover.png",
+    cover: "/cases/karat-titan/cover.jpg",
     url: "https://karat-titan.ru",
     metrics: [
       { value: "2 филиала", label: "7а и 15-й мкр (детская) — врач и слот выбираются под конкретный филиал" },
@@ -500,14 +517,17 @@ export const CASES: CaseStudy[] = [
     slug: "sapchenko",
     name: "SAPCHENKO",
     title: "Сайт агентства интернет-маркетинга на 100+ страниц — каждая услуга со своими кейсами и командой",
+    seoTitle: "SAPCHENKO — сайт агентства на 100+ страниц | кейс",
+    seoDescription:
+      "Сайт агентства интернет-маркетинга SAPCHENKO: 100+ страниц, у каждой услуги — свои кейсы, команда и посадочные под SEO.",
     client: "Sapchenko Studio · агентство интернет-маркетинга полного цикла",
     type: "Корп. сайт",
     industry: "Услуги",
     year: 2026,
     teaser:
       "Тёмный, анимированный сайт-витрина на WordPress: восемь направлений услуг, у каждой свои подстраницы, кейсы с живыми цифрами и команда направления — всё заточено под SEO-раскрутку.",
-    cover: "/cases/sapchenko/cover.png",
-    hero: "/cases/sapchenko/hero.png",
+    cover: "/cases/sapchenko/cover.jpg",
+    hero: "/cases/sapchenko/hero.jpg",
     url: "https://sapchenko.studio",
     metrics: [
       { value: "100+", label: "страниц в индексе: каждая услуга — со своей подстраницей, кейсами и командой" },
@@ -538,17 +558,17 @@ export const CASES: CaseStudy[] = [
       {
         heading: "Структура под поиск",
         text: "Каждое направление — полноценная посадочная: «Настройка Яндекс Директа под ключ», «Продвижение на Авито» и так далее, у каждой свои цифры-преимущества, состав услуги по пунктам, вопросы и ответы и даже отдельная команда направления. Это и есть SEO-архитектура: сотня страниц закрывает сотню разных поисковых запросов, а не одна страница «мы всё умеем».",
-        shot: "/cases/sapchenko/service.png",
+        shot: "/cases/sapchenko/service.jpg",
       },
       {
         heading: "Кейсы с живыми цифрами",
         text: "Результаты показаны как в маркетинге и принято — цифрами: «286 контактов для завода прицепов», статистика по просмотрам и конверсиям, отдельные страницы кейсов по направлениям. Клиент видит не «мы хорошо работаем», а таблицу с показателями — это работает сильнее любого рекламного текста.",
-        shot: "/cases/sapchenko/cases-avito.png",
+        shot: "/cases/sapchenko/cases-avito.jpg",
       },
       {
         heading: "Команда, блог и воронка",
         text: "Экспертность дожимают люди и контент: команда с ролями по направлениям, блог со статьями про Авито и привлечение клиентов, отзывы и вопросы-ответы. Заявка собирается через формы «Обсудим задачу» и «Заказать звонок» — путь клиента полностью внутри сайта: страница услуги → кейс с цифрами → заявка.",
-        shot: "/cases/sapchenko/team.png",
+        shot: "/cases/sapchenko/team.jpg",
         motion: "order",
         order: [
           { b: "Страница", t: "услуга + кейс с цифрами" },
@@ -565,15 +585,18 @@ export const CASES: CaseStudy[] = [
       },
     ],
     gallery: [
-      "/cases/sapchenko/avito-services.png",
-      "/cases/sapchenko/blog.png",
-      "/cases/sapchenko/contact.png",
+      "/cases/sapchenko/avito-services.jpg",
+      "/cases/sapchenko/blog.jpg",
+      "/cases/sapchenko/contact.jpg",
     ],
   },
   {
     slug: "zetronixdocs",
     name: "ZETRONIXDOCS",
     title: "Десктоп-программа с ИИ: сканы и PDF сами превращаются в документы 1С и Excel",
+    seoTitle: "ZetronixDocs — ИИ-программа для документов 1С | кейс",
+    seoDescription:
+      "Десктоп-программа с ИИ: сканы и PDF сами превращаются в документы 1С и Excel. Лицензии, админка, учёт расхода ИИ.",
     client: "ZetronixDocs · собственный продукт · документооборот для бухгалтерий",
     type: "Приложение",
     industry: "Технологии",
@@ -581,7 +604,7 @@ export const CASES: CaseStudy[] = [
     teaser:
       "Программа для Windows: загружаешь фото, скан, PDF или Word счёта, акта или накладной — ИИ вытаскивает реквизиты и таблицу и отправляет их в 1С или Excel. Продаётся по лицензионным ключам, расход на ИИ виден по каждому клиенту.",
     hero: "/cases/zetronixdocs/main.png",
-    cover: "/cases/zetronixdocs/cover.png",
+    cover: "/cases/zetronixdocs/cover.jpg",
     url: "https://github.com/kudinov13/ZetronixDocs",
     metrics: [
       { value: "8 типов", label: "документов со своими схемами: УПД, счета-фактуры, акты, накладные, сверки, договоры" },

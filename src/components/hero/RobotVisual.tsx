@@ -56,7 +56,7 @@ export default function RobotVisual({ progressRef, pointerRef, beamRef }: Props)
     <div className={`robot-visual${live ? " is-live" : ""}`}>
       <img
         className="robot-fallback"
-        src="/assets/robot/robot-fallback.png"
+        src="/assets/robot/robot-fallback.webp"
         alt="Робот-ассистент ZETRONIX — белый парящий андроид с бирюзовой оптикой"
         draggable={false}
       />

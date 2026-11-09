@@ -164,9 +164,9 @@ export default function BlogPostPage({ slug }: { slug: string }) {
   const url = post ? `${location.origin}/blog/${post.slug}` : "";
   const faq = post ? faqItems(post) : [];
   useSeo({
-    description: post?.excerpt ?? "",
+    description: post?.seoDescription ?? post?.excerpt ?? "",
     path: post ? `/blog/${post.slug}` : "/blog",
-    title: post?.title,
+    title: post?.seoTitle ?? post?.title,
     image: post?.cover,
     type: "article",
     jsonLd: post

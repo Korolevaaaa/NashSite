@@ -33,7 +33,7 @@ export const TEMPLATES: TemplateProduct[] = [
     title:
       "Готовый сайт доставки еды: суши, роллы, пицца и чуду — с корзиной и составами блюд",
     seoTitle:
-      "Купить готовый сайт доставки суши и роллов — макет с корзиной, меню и составами блюд | ZETRONIX",
+      "Купить готовый сайт доставки суши и роллов | ZETRONIX",
     seoDescription:
       "Готовый сайт доставки еды с корзиной, меню по категориям и админкой. Подставим бренд и город — запуск за 1–2 недели, от 40 000 ₽.",
     description:
@@ -42,10 +42,10 @@ export const TEMPLATES: TemplateProduct[] = [
     priceNote: "стартовая цена макета — итог зависит от объёма адаптации",
     category: "Интернет-магазины",
     animated: true,
-    hero: "/templates/dostavka-sushi/hero.png",
+    hero: "/templates/dostavka-sushi/hero.jpg",
     shots: [
       {
-        src: "/templates/dostavka-sushi/menu.png",
+        src: "/templates/dostavka-sushi/menu.jpg",
         label: "Меню: категории, поиск, цены и бейджи «ХИТ»",
       },
       {
@@ -53,11 +53,11 @@ export const TEMPLATES: TemplateProduct[] = [
         label: "Корзина и оформление заказа",
       },
       {
-        src: "/templates/dostavka-sushi/how.png",
+        src: "/templates/dostavka-sushi/how.jpg",
         label: "Блок «Как заказать» в три шага",
       },
       {
-        src: "/templates/dostavka-sushi/delivery.png",
+        src: "/templates/dostavka-sushi/delivery.jpg",
         label: "Доставка, самовывоз и оплата",
       },
       {
@@ -176,7 +176,7 @@ export const TEMPLATES: TemplateProduct[] = [
     title:
       "Готовый сайт базы отдыха, глэмпинга или загородного отеля — с заявкой на бронь и картой",
     seoTitle:
-      "Купить готовый сайт базы отдыха и глэмпинга — макет с бронированием, галереей и картой | ZETRONIX",
+      "Купить готовый сайт базы отдыха и глэмпинга | ZETRONIX",
     seoDescription:
       "Готовый сайт базы отдыха: заявка на бронь, галерея, карта проезда. Адаптируем под ваш комплекс за 1–2 недели, от 25 000 ₽.",
     description:
@@ -184,14 +184,14 @@ export const TEMPLATES: TemplateProduct[] = [
     price: 25000,
     priceNote: "стартовая цена макета — итог зависит от объёма адаптации",
     category: "Туризм и отдых",
-    hero: "/templates/baza-otdyha/hero.png",
+    hero: "/templates/baza-otdyha/hero.jpg",
     shots: [
       {
-        src: "/templates/baza-otdyha/houses.png",
+        src: "/templates/baza-otdyha/houses.jpg",
         label: "Размещение: домики с фото и кнопкой «Подробнее»",
       },
       {
-        src: "/templates/baza-otdyha/impressions.png",
+        src: "/templates/baza-otdyha/impressions.jpg",
         label: "Впечатления: что гостю даёт отдых здесь",
       },
       {
@@ -199,7 +199,7 @@ export const TEMPLATES: TemplateProduct[] = [
         label: "История места — блок, который продаёт атмосферу",
       },
       {
-        src: "/templates/baza-otdyha/booking.png",
+        src: "/templates/baza-otdyha/booking.jpg",
         label: "Форма заявки: имя, телефон, даты и гости",
       },
       {
@@ -319,7 +319,7 @@ export const TEMPLATES: TemplateProduct[] = [
     title:
       "Готовый сайт глэмпинга, турбазы или эко-отеля — с формой брони и редакционной подачей",
     seoTitle:
-      "Купить готовый сайт глэмпинга и турбазы — макет с формой брони, галереей и проживанием | ZETRONIX",
+      "Купить готовый сайт глэмпинга и турбазы | ZETRONIX",
     seoDescription:
       "Готовый сайт глэмпинга и турбазы: форма брони, проживание, впечатления. Быстрый запуск с вашим брендом, от 25 000 ₽.",
     description:
@@ -327,18 +327,18 @@ export const TEMPLATES: TemplateProduct[] = [
     price: 25000,
     priceNote: "стартовая цена макета — итог зависит от объёма адаптации",
     category: "Туризм и отдых",
-    hero: "/templates/glamping-gory/hero.png",
+    hero: "/templates/glamping-gory/hero.jpg",
     shots: [
       {
-        src: "/templates/glamping-gory/stay.png",
+        src: "/templates/glamping-gory/stay.jpg",
         label: "Проживание: аилы, дома и палатки с интерьерами",
       },
       {
-        src: "/templates/glamping-gory/gallery.png",
+        src: "/templates/glamping-gory/gallery.jpg",
         label: "Атмосферная галерея с реальными фото",
       },
       {
-        src: "/templates/glamping-gory/lightbox.png",
+        src: "/templates/glamping-gory/lightbox.jpg",
         label: "Фото открываются на весь экран, листаются стрелками",
       },
       {
@@ -350,7 +350,7 @@ export const TEMPLATES: TemplateProduct[] = [
         label: "Форма брони с проверкой телефона и дат",
       },
       {
-        src: "/templates/glamping-gory/location.png",
+        src: "/templates/glamping-gory/location.jpg",
         label: "Блок «как добраться» с кнопкой маршрута",
       },
     ],
@@ -466,7 +466,7 @@ export const TEMPLATES: TemplateProduct[] = [
     title:
       "Готовый сайт штор, жалюзи и умного дома — с конфигуратором «примерь к своему интерьеру»",
     seoTitle:
-      "Купить готовый сайт штор и жалюзи с конфигуратором — макет с каталогом и корзиной | ZETRONIX",
+      "Купить готовый сайт штор и жалюзи с конфигуратором | ZETRONIX",
     seoDescription:
       "Готовый сайт штор с конфигуратором «примерь к интерьеру», каталогом и корзиной. Адаптируем под ваш ассортимент, от 45 000 ₽.",
     description:
@@ -474,18 +474,18 @@ export const TEMPLATES: TemplateProduct[] = [
     price: 45000,
     priceNote: "стартовая цена макета — итог зависит от объёма адаптации",
     category: "Интернет-магазины",
-    hero: "/templates/umnye-shtory/hero.png",
+    hero: "/templates/umnye-shtory/hero.jpg",
     shots: [
       {
-        src: "/templates/umnye-shtory/config.png",
+        src: "/templates/umnye-shtory/config.jpg",
         label: "Конфигуратор: шторы, стены, привод и тюль — в реальном времени",
       },
       {
-        src: "/templates/umnye-shtory/config-open.png",
+        src: "/templates/umnye-shtory/config-open.jpg",
         label: "«Привод» открыл шторы — покупатель видит оба состояния",
       },
       {
-        src: "/templates/umnye-shtory/catalog.png",
+        src: "/templates/umnye-shtory/catalog.jpg",
         label: "Каталог: 6 коллекций, фильтры по типу и материалу",
       },
       {
@@ -604,7 +604,7 @@ export const TEMPLATES: TemplateProduct[] = [
     title:
       "Готовый сайт дома-глэмпинга уровня кино — с видео-историей, которая листается прокруткой",
     seoTitle:
-      "Купить кинематографичный сайт глэмпинга и дома-сферы — макет с видео-туром и бронью | ZETRONIX",
+      "Купить кино-сайт глэмпинга и дома-сферы | ZETRONIX",
     seoDescription:
       "Кинематографичный сайт дома-сферы: видео-история со скроллом, тур по дому, бронь. Вау-эффект для глэмпинга, от 35 000 ₽.",
     description:
@@ -613,18 +613,18 @@ export const TEMPLATES: TemplateProduct[] = [
     priceNote: "стартовая цена макета — итог зависит от объёма адаптации",
     category: "Туризм и отдых",
     animated: true,
-    hero: "/templates/sfera-dom/hero.png",
+    hero: "/templates/sfera-dom/hero.jpg",
     shots: [
       {
-        src: "/templates/sfera-dom/scene-bedroom.png",
+        src: "/templates/sfera-dom/scene-bedroom.jpg",
         label: "Видео-тур: сцена «Спальня» из пяти — листается прокруткой",
       },
       {
-        src: "/templates/sfera-dom/houses.png",
+        src: "/templates/sfera-dom/houses.jpg",
         label: "Карусель домов: 5 объектов с ценами и вместимостью",
       },
       {
-        src: "/templates/sfera-dom/ritual.png",
+        src: "/templates/sfera-dom/ritual.jpg",
         label: "«Северный ритуал»: сауна и чан с тарифами",
       },
       {
@@ -744,7 +744,7 @@ export const TEMPLATES: TemplateProduct[] = [
     title:
       "Готовый сайт кафе, стритфуда или точки быстрого питания — с меню и атмосферой «крафтовой еды»",
     seoTitle:
-      "Купить готовый сайт кафе и стритфуда — макет с меню, аппетитным первым экраном и заказом | ZETRONIX",
+      "Купить готовый сайт кафе и стритфуда | ZETRONIX",
     seoDescription:
       "Готовый сайт кафе и стритфуда: аппетитный первый экран, меню с ценами, кнопка заказа. Запуск за неделю, от 20 000 ₽.",
     description:
@@ -752,14 +752,14 @@ export const TEMPLATES: TemplateProduct[] = [
     price: 20000,
     priceNote: "стартовая цена макета — итог зависит от объёма адаптации",
     category: "Еда и доставка",
-    hero: "/templates/kroshka-kartoshka/hero.png",
+    hero: "/templates/kroshka-kartoshka/hero.jpg",
     shots: [
       {
         src: "/templates/kroshka-kartoshka/menu.png",
         label: "Витрина меню: десять позиций с названиями и фото",
       },
       {
-        src: "/templates/kroshka-kartoshka/about.png",
+        src: "/templates/kroshka-kartoshka/about.jpg",
         label: "«Наша идея» — блок, который продаёт атмосферу места",
       },
       {
@@ -882,7 +882,7 @@ export const TEMPLATES: TemplateProduct[] = [
     title:
       "Готовый сайт бургерной, смэш-баров и фастфуда — с видео на первом экране и меню с ценами",
     seoTitle:
-      "Купить готовый сайт бургерной и фастфуда — макет с видео-хиро, меню и заказом | ZETRONIX",
+      "Купить готовый сайт бургерной и фастфуда | ZETRONIX",
     seoDescription:
       "Готовый сайт бургерной с видео на первом экране, меню с ценами и заказом. Яркий фастфуд-макет под ваш бренд, от 25 000 ₽.",
     description:
@@ -891,14 +891,14 @@ export const TEMPLATES: TemplateProduct[] = [
     priceNote: "стартовая цена макета — итог зависит от объёма адаптации",
     category: "Еда и доставка",
     animated: true,
-    hero: "/templates/smash-burgery/hero.png",
+    hero: "/templates/smash-burgery/hero.jpg",
     shots: [
       {
-        src: "/templates/smash-burgery/menu.png",
+        src: "/templates/smash-burgery/menu.jpg",
         label: "Меню: бургеры, соусы и фри с ценами и фото",
       },
       {
-        src: "/templates/smash-burgery/about.png",
+        src: "/templates/smash-burgery/about.jpg",
         label: "«О нас» с полароидными снимками и иллюстрацией",
       },
       {
@@ -1026,7 +1026,7 @@ export const TEMPLATES: TemplateProduct[] = [
     title:
       "Готовый сайт ресторана, кафе или гастробара — с видео на первом экране, меню и акциями",
     seoTitle:
-      "Купить готовый сайт ресторана и кафе — макет с видео-хиро, меню, акциями и бронью столика | ZETRONIX",
+      "Купить готовый сайт ресторана и кафе | ZETRONIX",
     seoDescription:
       "Готовый сайт ресторана: видео-хиро, меню, акции, бронь столика. Премиальная подача под ваш бренд, от 25 000 ₽.",
     description:
@@ -1035,22 +1035,22 @@ export const TEMPLATES: TemplateProduct[] = [
     priceNote: "стартовая цена макета — итог зависит от объёма адаптации",
     category: "Еда и доставка",
     animated: true,
-    hero: "/templates/restoran/hero.png",
+    hero: "/templates/restoran/hero.jpg",
     shots: [
       {
-        src: "/templates/restoran/promo.png",
+        src: "/templates/restoran/promo.jpg",
         label: "Слайдер акций: пицца в подарок, второй бургер -20%, сеты",
       },
       {
-        src: "/templates/restoran/menu.png",
+        src: "/templates/restoran/menu.jpg",
         label: "Меню: 15 позиций, фильтр по категориям, вес и цены",
       },
       {
-        src: "/templates/restoran/about.png",
+        src: "/templates/restoran/about.jpg",
         label: "«О нас» с интерьером и фишками заведения",
       },
       {
-        src: "/templates/restoran/contacts.png",
+        src: "/templates/restoran/contacts.jpg",
         label: "Карточка контактов и «забронировать столик»",
       },
     ],

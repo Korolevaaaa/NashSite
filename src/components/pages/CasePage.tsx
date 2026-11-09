@@ -22,9 +22,11 @@ export default function CasePage({ slug }: { slug: string }) {
   const stepsRef = useRef<HTMLDivElement>(null);
 
   useSeo({
-    description: c?.teaser ?? c?.title ?? "",
+    description: c?.seoDescription ?? c?.teaser ?? c?.title ?? "",
     path: c ? `/case/${c.slug}` : "/cases",
-    title: c ? `${c.title || c.name} — кейс ZETRONIX` : undefined,
+    title: c
+      ? (c.seoTitle ?? `${c.title || c.name} — кейс ZETRONIX`)
+      : undefined,
     image: c?.cover,
     type: "article",
   });
