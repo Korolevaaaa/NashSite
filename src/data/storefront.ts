@@ -94,6 +94,19 @@ export const SEED_ITEMS: StoreItem[] = [
     slug: "kroshka-kartoshka",
     cover: "/templates/kroshka-kartoshka/cover.jpg",
   },
+  {
+    id: "tpl-smash",
+    name: "Смэш-бургерная",
+    cat: "Еда и доставка",
+    sub: "Бургерные и фастфуд",
+    kind: "Макет",
+    price: 20000,
+    priceText: "от 20 000 ₽",
+    status: "published",
+    slug: "smash-burgery",
+    badge: "Видео-хиро",
+    cover: "/templates/smash-burgery/cover.jpg",
+  },
 ];
 
 export const DRAFT_KEY = "storefront.draft.v1";
