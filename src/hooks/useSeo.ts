@@ -65,7 +65,12 @@ export function useSeo({
     }
     canonical.setAttribute("href", url);
 
-    // JSON-LD
+    // JSON-LD — wipe any baked-in scripts from the prerendered file first
+    // (vite preview serves dist/index.html as SPA fallback, so its serialized
+    // ld-auto scripts would otherwise linger on every page)
+    document.head
+      .querySelectorAll("script.ld-auto")
+      .forEach((el) => el.remove());
     const lds: HTMLScriptElement[] = [];
     const ldList = jsonLd ? (Array.isArray(jsonLd) ? jsonLd : [jsonLd]) : [];
     ldList.forEach((data, i) => {

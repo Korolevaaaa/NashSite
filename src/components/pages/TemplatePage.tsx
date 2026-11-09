@@ -17,7 +17,7 @@ export default function TemplatePage({ slug }: { slug: string }) {
   const [zoom, setZoom] = useState<{ src: string; alt: string } | null>(null);
 
   useSeo({
-    description: t?.description ?? "",
+    description: t?.seoDescription ?? t?.description ?? "",
     path: t ? `/template/${t.slug}` : "/",
     title: t?.seoTitle,
     image: t?.hero,
@@ -77,7 +77,7 @@ export default function TemplatePage({ slug }: { slug: string }) {
       <main className="px-[var(--page-gutter)] py-[160px]">
         <div className="mx-auto max-w-[var(--content-max)]">
           <p className="text-[var(--z-muted)]">Макет не найден.</p>
-          <a className="btn mt-6" href="/#templates">
+          <a className="btn mt-6" href="/templates">
             ← Все макеты
           </a>
         </div>
@@ -89,7 +89,7 @@ export default function TemplatePage({ slug }: { slug: string }) {
     <main className="px-[var(--page-gutter)] pb-[clamp(80px,12vh,140px)] pt-[calc(var(--header-h,110px)+56px)]">
       <div className="mx-auto max-w-[var(--content-max)]">
         <a
-          href="/#templates"
+          href="/templates"
           className="font-mono text-[11px] uppercase tracking-[0.1em] text-[var(--z-muted)] no-underline hover:text-[var(--z-action)]"
         >
           ← Готовые макеты

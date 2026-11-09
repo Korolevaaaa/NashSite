@@ -1,6 +1,6 @@
 /* Blog posts model. Each entry renders at #/blog/<slug>.
    Body is a flat list of blocks — write plain Russian, no markup needed.
-   Inline links inside "p"/"list" text: [текст](/#templates).
+   Inline links inside "p"/"list" text: [текст](/templates).
    Covers live in /public/blog/<slug>/cover.jpg — wide ~16:10.
    coverHook = short text rendered as a live HTML overlay on the cover
    (scales on mobile, accessible — never bake text into the image).
@@ -174,13 +174,13 @@ export const POSTS: BlogPost[] = [
       },
       {
         type: "p",
-        text: "Когда это правильно: типовая бизнес-задача — сайт ресторана, доставки, базы отдыха, салона, услуги. У нас такие макеты лежат в [витрине готовых решений](/#templates): от 20 000 ₽ за лендинг до 45 000 ₽ за магазин с конфигуратором — с вашим брендом, контентом и помощью с запуском на домене.",
+        text: "Когда это правильно: типовая бизнес-задача — сайт ресторана, доставки, базы отдыха, салона, услуги. У нас такие макеты лежат в [витрине готовых решений](/templates): от 20 000 ₽ за лендинг до 45 000 ₽ за магазин с конфигуратором — с вашим брендом, контентом и помощью с запуском на домене.",
       },
       {
         type: "cta",
         title: "Посмотреть готовые макеты",
         text: "8 рабочих сайтов для еды, отдыха и торговли — каждый можно открыть и потрогать прямо сейчас.",
-        href: "/#templates",
+        href: "/templates",
         label: "Открыть витрину",
       },
       {
@@ -287,7 +287,7 @@ export const POSTS: BlogPost[] = [
         type: "cta",
         title: "Смотреть готовые макеты от 20 000 ₽",
         text: "Ресторан, доставка суши, база отдыха, глэмпинг, бургерная, магазин штор — каждый макет открывается прямо в браузере. Выберите свой — адаптируем под бренд за неделю.",
-        href: "/#templates",
+        href: "/templates",
         label: "Открыть витрину макетов",
       },
     ],

@@ -20,10 +20,10 @@ export default function Footer() {
           <p className="zt-meta uppercase tracking-[0.14em]">Разделы</p>
           <ul className="mt-4 space-y-1">
             {[
-              ["/#services", "Услуги"],
-              ["/#cases", "Кейсы"],
+              ["/napravlenie", "Услуги"],
+              ["/cases", "Кейсы"],
+              ["/templates", "Готовые макеты"],
               ["/blog", "Блог"],
-              ["/#process", "Как мы работаем"],
               ["/#faq", "Вопросы"],
             ].map(([href, label]) => (
               <li key={href}>

@@ -16,6 +16,26 @@ const priceFmt = new Intl.NumberFormat("ru-RU", {
 
 export default function Templates() {
   const { ref, inView } = useInView<HTMLElement>();
+
+  return (
+    <section
+      id="templates"
+      ref={ref}
+      className={`reveal zt-sec px-[var(--page-gutter)] ${inView ? "is-in" : ""}`}
+    >
+      <div className="mx-auto max-w-[var(--content-max)]">
+        <SectionHead
+          title="Готовые макеты"
+          sub="Проверенные дизайны, которые адаптируем под ваш бизнес за одну-две недели — быстрее и дешевле проекта с нуля."
+        />
+        <StorefrontGrid />
+      </div>
+    </section>
+  );
+}
+
+/* Витрина без заголовка секции — используется и на главной, и на /templates */
+export function StorefrontGrid() {
   const [items] = useState(publishedItems);
   const [cat, setCat] = useState("all");
   const [sub, setSub] = useState("all");
@@ -48,18 +68,8 @@ export default function Templates() {
   }, [items, cat, sub, q]);
 
   return (
-    <section
-      id="templates"
-      ref={ref}
-      className={`reveal zt-sec px-[var(--page-gutter)] ${inView ? "is-in" : ""}`}
-    >
-      <div className="mx-auto max-w-[var(--content-max)]">
-        <SectionHead
-          title="Готовые макеты"
-          sub="Проверенные дизайны, которые адаптируем под ваш бизнес за одну-две недели — быстрее и дешевле проекта с нуля."
-        />
-
-        <div className="sf-filters">
+    <>
+      <div className="sf-filters">
           <input
             className="sf-search"
             type="search"
@@ -135,8 +145,7 @@ export default function Templates() {
             , подберём под задачу.
           </p>
         )}
-      </div>
-    </section>
+    </>
   );
 }
 

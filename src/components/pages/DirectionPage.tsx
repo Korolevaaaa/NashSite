@@ -57,7 +57,7 @@ export default function DirectionPage({ slug }: { slug: string }) {
                 "@type": "ListItem",
                 position: 2,
                 name: "Направления",
-                item: `${location.origin}/#services`,
+                item: `${location.origin}/napravlenie`,
               },
               {
                 "@type": "ListItem",
@@ -111,7 +111,7 @@ export default function DirectionPage({ slug }: { slug: string }) {
     <main className="px-[var(--page-gutter)] pb-[clamp(80px,12vh,140px)] pt-[calc(var(--header-h,110px)+56px)]">
       <div className="mx-auto max-w-[var(--content-max)]">
         <a
-          href="/#services"
+          href="/napravlenie"
           className="font-mono text-[11px] uppercase tracking-[0.1em] text-[var(--z-muted)] no-underline hover:text-[var(--z-action)]"
         >
           ← Все направления
@@ -267,7 +267,7 @@ export default function DirectionPage({ slug }: { slug: string }) {
                 Готовые макеты по этому направлению
               </h2>
               <a
-                href="/#templates"
+                href="/templates"
                 className="text-[13px] font-medium text-[var(--z-action)] no-underline hover:underline"
               >
                 Вся витрина →

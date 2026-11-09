@@ -15,11 +15,14 @@ import Faq from "../components/sections/Faq";
 import Contacts from "../components/sections/Contacts";
 import DirectionPage from "../components/pages/DirectionPage";
 import StorefrontAdmin from "../components/pages/StorefrontAdmin";
+import HomeSeo from "../components/HomeSeo";
 import CasesPage from "../components/pages/CasesPage";
 import CasePage from "../components/pages/CasePage";
 import BlogPage from "../components/pages/BlogPage";
 import BlogPostPage from "../components/pages/BlogPostPage";
 import TemplatePage from "../components/pages/TemplatePage";
+import TemplatesPage from "../components/pages/TemplatesPage";
+import NapravleniePage from "../components/pages/NapravleniePage";
 import { CASES } from "../data/cases";
 import { POSTS } from "../data/blog";
 import { TEMPLATES } from "../data/templates";
@@ -38,11 +41,13 @@ type Route =
   | { name: "main"; anchor: string | null }
   | { name: "admin" }
   | { name: "direction"; slug: string }
+  | { name: "directions" }
   | { name: "cases" }
   | { name: "case"; slug: string }
   | { name: "blog" }
   | { name: "post"; slug: string }
-  | { name: "template"; slug: string };
+  | { name: "template"; slug: string }
+  | { name: "templates" };
 
 function routeOf(): Route {
   const p = window.location.pathname;
@@ -55,6 +60,8 @@ function routeOf(): Route {
   if (p === "/admin") return { name: "admin" };
   if (p === "/cases") return { name: "cases" };
   if (p === "/blog") return { name: "blog" };
+  if (p === "/templates") return { name: "templates" };
+  if (p === "/napravlenie") return { name: "directions" };
   let m = p.match(/^\/case\/([\w-]+)/);
   if (m) return { name: "case", slug: m[1] };
   m = p.match(/^\/blog\/([\w-]+)/);
@@ -74,6 +81,10 @@ function titleOf(r: Route): string {
       const d = DIRECTIONS.find((x) => x.slug === r.slug);
       return d ? `${d.title} — разработка от ZETRONIX` : "Направление — ZETRONIX";
     }
+    case "directions":
+      return "Направления разработки — цены и примеры | ZETRONIX";
+    case "templates":
+      return "Готовые сайты и макеты — купить от 20 000 ₽ | ZETRONIX";
     case "cases":
       return "Кейсы — ZETRONIX";
     case "case": {
@@ -175,8 +186,13 @@ export default function App() {
         <BlogPostPage key={route.slug} slug={route.slug} />
       ) : route.name === "template" ? (
         <TemplatePage key={route.slug} slug={route.slug} />
+      ) : route.name === "templates" ? (
+        <TemplatesPage />
+      ) : route.name === "directions" ? (
+        <NapravleniePage />
       ) : (
         <main>
+          <HomeSeo />
           <HeroScene />
           <Services />
           <Directions />

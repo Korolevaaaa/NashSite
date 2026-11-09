@@ -27,14 +27,19 @@ const slugsOf = (file) =>
     (m) => m[1],
   );
 
+/* "/" goes LAST: vite preview serves dist/index.html as the SPA fallback for
+   every other route, so it must stay the clean vite build (no baked-in SEO
+   tags) while the subpages are being rendered. */
 const routes = [
-  "/",
   "/blog",
   ...slugsOf("src/data/blog.ts").map((s) => `/blog/${s}`),
   "/cases",
   ...slugsOf("src/data/cases.ts").map((s) => `/case/${s}`),
+  "/templates",
+  "/napravlenie",
   ...slugsOf("src/data/content.ts").map((s) => `/napravlenie/${s}`),
   ...slugsOf("src/data/templates.ts").map((s) => `/template/${s}`),
+  "/",
 ];
 
 const outFile = (route) =>
