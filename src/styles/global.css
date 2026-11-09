@@ -3491,3 +3491,21 @@ a.sf-card__media {
   font-size: 13px;
   color: var(--z-muted);
 }
+
+.tpl-zoom {
+  display: block;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: none;
+  cursor: zoom-in;
+  text-align: left;
+}
+.tpl-zoom img {
+  cursor: zoom-in;
+}
+button.case-hero {
+  font: inherit;
+  color: inherit;
+}

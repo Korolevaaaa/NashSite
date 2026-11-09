@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { TEMPLATES } from "../../data/templates";
 import { CONTACT_EMAIL } from "../../data/content";
 
@@ -12,6 +12,20 @@ const priceFmt = new Intl.NumberFormat("ru-RU", {
 export default function TemplatePage({ slug }: { slug: string }) {
   const t = TEMPLATES.find((x) => x.slug === slug);
   const mailSubject = encodeURIComponent(`Хочу купить макет: ${t?.name ?? slug}`);
+  const [zoom, setZoom] = useState<{ src: string; alt: string } | null>(null);
+
+  useEffect(() => {
+    if (!zoom) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setZoom(null);
+    };
+    document.addEventListener("keydown", onKey);
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.removeEventListener("keydown", onKey);
+      document.body.style.overflow = "";
+    };
+  }, [zoom]);
 
   useEffect(() => {
     if (!t) return;
@@ -81,12 +95,17 @@ export default function TemplatePage({ slug }: { slug: string }) {
           {t.description}
         </p>
 
-        <figure className="case-hero">
+        <button
+          type="button"
+          className="case-hero tpl-zoom"
+          aria-label={`Увеличить скриншот: ${t.name}`}
+          onClick={() => setZoom({ src: t.hero, alt: `Скриншот макета «${t.name}»` })}
+        >
           <span className="case-hero__chrome" aria-hidden="true">
             <i /><i /><i />
           </span>
           <img src={t.hero} alt={`Скриншот макета «${t.name}»`} />
-        </figure>
+        </button>
 
         <div className="tpl-layout">
           <div className="tpl-main">
@@ -107,7 +126,14 @@ export default function TemplatePage({ slug }: { slug: string }) {
               <div className="tpl-shots">
                 {t.shots.map((s) => (
                   <figure key={s.src} className="tpl-shot">
-                    <img src={s.src} alt={s.label} loading="lazy" />
+                    <button
+                      type="button"
+                      className="tpl-zoom"
+                      aria-label={`Увеличить скриншот: ${s.label}`}
+                      onClick={() => setZoom({ src: s.src, alt: s.label })}
+                    >
+                      <img src={s.src} alt={s.label} loading="lazy" />
+                    </button>
                     <figcaption>{s.label}</figcaption>
                   </figure>
                 ))}
@@ -172,6 +198,26 @@ export default function TemplatePage({ slug }: { slug: string }) {
           </aside>
         </div>
       </div>
+
+      {zoom && (
+        <div
+          className="case-lightbox"
+          role="dialog"
+          aria-modal="true"
+          aria-label={zoom.alt}
+          onClick={() => setZoom(null)}
+        >
+          <button
+            type="button"
+            className="case-lightbox__close"
+            aria-label="Закрыть"
+            onClick={() => setZoom(null)}
+          >
+            ×
+          </button>
+          <img src={zoom.src} alt={zoom.alt} onClick={(e) => e.stopPropagation()} />
+        </div>
+      )}
     </main>
   );
 }
