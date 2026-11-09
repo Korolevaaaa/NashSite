@@ -3564,12 +3564,3 @@ button.case-hero {
 .tpl-buy__demo:hover {
   text-decoration: underline;
 }
-
-.tpl-head {
-  text-align: center;
-}
-.tpl-demo {
-  max-width: 960px;
-  margin-left: auto;
-  margin-right: auto;
-}
