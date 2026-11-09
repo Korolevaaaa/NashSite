@@ -162,6 +162,7 @@ function TemplateCard({ item }: { item: StoreItem }) {
             </span>
           )}
           <span className="sf-card__badge">{item.kind}</span>
+          {item.badge && <span className="sf-card__badge sf-card__badge--alt">{item.badge}</span>}
         </a>
       ) : (
         <div className="sf-card__media">
@@ -173,6 +174,7 @@ function TemplateCard({ item }: { item: StoreItem }) {
             </span>
           )}
           <span className="sf-card__badge">{item.kind}</span>
+          {item.badge && <span className="sf-card__badge sf-card__badge--alt">{item.badge}</span>}
         </div>
       )}
       <div className="sf-card__body">

@@ -15,6 +15,7 @@ export interface TemplateProduct {
   price: number; // RUB, shown as «от {price}»
   priceNote?: string;
   category: string; // matches StoreItem.cat
+  animated?: boolean; // shows «анимированный макет» note + demo-request CTA
   hero: string; // big screenshot on top
   shots: TemplateShot[]; // labeled gallery
   features: { t: string; d: string }[]; // what the layout does
@@ -37,6 +38,7 @@ export const TEMPLATES: TemplateProduct[] = [
     price: 40000,
     priceNote: "стартовая цена макета — итог зависит от объёма адаптации",
     category: "Интернет-магазины",
+    animated: true,
     hero: "/templates/dostavka-sushi/hero.png",
     shots: [
       {

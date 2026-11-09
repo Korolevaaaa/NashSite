@@ -12,6 +12,7 @@ const priceFmt = new Intl.NumberFormat("ru-RU", {
 export default function TemplatePage({ slug }: { slug: string }) {
   const t = TEMPLATES.find((x) => x.slug === slug);
   const mailSubject = encodeURIComponent(`Хочу купить макет: ${t?.name ?? slug}`);
+  const demoSubject = encodeURIComponent(`Хочу показ макета: ${t?.name ?? slug}`);
   const [zoom, setZoom] = useState<{ src: string; alt: string } | null>(null);
 
   useEffect(() => {
@@ -107,6 +108,18 @@ export default function TemplatePage({ slug }: { slug: string }) {
           <img src={t.hero} alt={`Скриншот макета «${t.name}»`} />
         </button>
 
+        {t.animated && (
+          <div className="tpl-demo">
+            <p>
+              <strong>Макет анимированный</strong> — на статичных скринах не
+              передать движение. Оставьте заявку — вышлем видео-показ макета в работе.
+            </p>
+            <a href={`mailto:${CONTACT_EMAIL}?subject=${demoSubject}`}>
+              Запросить показ →
+            </a>
+          </div>
+        )}
+
         <div className="tpl-layout">
           <div className="tpl-main">
             <section aria-label="Что внутри">
@@ -189,6 +202,14 @@ export default function TemplatePage({ slug }: { slug: string }) {
                 <span>Купить макет</span>
                 <i className="btn-arrow">↗</i>
               </a>
+              {t.animated && (
+                <a
+                  className="tpl-buy__demo"
+                  href={`mailto:${CONTACT_EMAIL}?subject=${demoSubject}`}
+                >
+                  Хочу показ анимации макета
+                </a>
+              )}
               <ul className="tpl-buy__list">
                 {t.includes.map((i) => (
                   <li key={i}>{i}</li>

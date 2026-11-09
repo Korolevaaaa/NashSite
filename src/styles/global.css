@@ -3509,3 +3509,58 @@ button.case-hero {
   font: inherit;
   color: inherit;
 }
+
+.sf-card__badge--alt {
+  left: auto;
+  right: 10px;
+  border-color: rgba(0, 107, 112, 0.4);
+  color: var(--z-action);
+}
+.tpl-demo {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-top: 22px;
+  padding: 14px 18px;
+  border: 1px dashed rgba(0, 107, 112, 0.4);
+  border-radius: var(--r-card);
+  background: rgba(0, 201, 212, 0.05);
+}
+.tpl-demo p {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.55;
+  color: var(--z-ink);
+}
+.tpl-demo p strong {
+  font-weight: 600;
+}
+.tpl-demo a {
+  flex-shrink: 0;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--z-action);
+  text-decoration: none;
+  border-bottom: 1px solid rgba(0, 107, 112, 0.35);
+}
+.tpl-demo a:hover {
+  border-bottom-color: var(--z-action);
+}
+@media (max-width: 560px) {
+  .tpl-demo {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}
+.tpl-buy__demo {
+  display: block;
+  margin-top: 10px;
+  text-align: center;
+  font-size: 13px;
+  color: var(--z-action);
+  text-decoration: none;
+}
+.tpl-buy__demo:hover {
+  text-decoration: underline;
+}

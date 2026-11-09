@@ -11,6 +11,7 @@ export interface StoreItem {
   kind: string; // "Макет" → «Купить», anything else → «Заказать»
   price: number;
   priceText?: string; // override display, e.g. "от 40 000 ₽"
+  badge?: string; // extra chip on the card, e.g. "Анимированный"
   status: "published" | "draft";
   cover?: string;
   slug?: string; // → #/template/<slug> detail page
@@ -28,6 +29,7 @@ export const SEED_ITEMS: StoreItem[] = [
     priceText: "от 40 000 ₽",
     status: "published",
     slug: "dostavka-sushi",
+    badge: "Анимированный",
     cover: "/templates/dostavka-sushi/cover.jpg",
   },
   {
