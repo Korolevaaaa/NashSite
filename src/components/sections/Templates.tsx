@@ -148,27 +148,44 @@ function TemplateCard({ item }: { item: StoreItem }) {
       : `Хочу заказать: ${item.name}`,
   );
 
+  const href = item.slug ? `#/template/${item.slug}` : null;
+
   return (
     <li className="sf-card">
-      <div className="sf-card__media">
-        {item.cover ? (
-          <img src={item.cover} alt="" loading="lazy" />
-        ) : (
-          <span className="sf-card__placeholder" aria-hidden="true">
-            {item.name}
-          </span>
-        )}
-        <span className="sf-card__badge">{item.kind}</span>
-      </div>
+      {href ? (
+        <a className="sf-card__media" href={href}>
+          {item.cover ? (
+            <img src={item.cover} alt="" loading="lazy" />
+          ) : (
+            <span className="sf-card__placeholder" aria-hidden="true">
+              {item.name}
+            </span>
+          )}
+          <span className="sf-card__badge">{item.kind}</span>
+        </a>
+      ) : (
+        <div className="sf-card__media">
+          {item.cover ? (
+            <img src={item.cover} alt="" loading="lazy" />
+          ) : (
+            <span className="sf-card__placeholder" aria-hidden="true">
+              {item.name}
+            </span>
+          )}
+          <span className="sf-card__badge">{item.kind}</span>
+        </div>
+      )}
       <div className="sf-card__body">
         <p className="sf-card__meta">
           {item.cat}
           {item.sub ? ` / ${item.sub}` : ""}
         </p>
-        <h3 className="sf-card__title">{item.name}</h3>
+        <h3 className="sf-card__title">
+          {href ? <a href={href}>{item.name}</a> : item.name}
+        </h3>
         <div className="sf-card__row">
           <strong className="sf-card__price">
-            {priceFmt.format(item.price)}
+            {item.priceText ?? priceFmt.format(item.price)}
           </strong>
           <a
             className="sf-card__cta"

@@ -3463,3 +3463,31 @@ a.cs-card:focus-visible {
   background: var(--z-action);
   opacity: 0.75;
 }
+
+a.sf-card__media {
+  display: block;
+  text-decoration: none;
+}
+.sf-card__title a {
+  color: inherit;
+  text-decoration: none;
+}
+@media (hover: hover) {
+  .sf-card__title a:hover {
+    color: var(--z-action);
+  }
+}
+
+.tpl-features--upsell .tpl-feature {
+  border-style: dashed;
+}
+.tpl-features--upsell .tpl-feature__t::before {
+  content: "+ ";
+  color: var(--z-action);
+  font-weight: 600;
+}
+.tpl-upsell-note {
+  margin: 16px 0 0;
+  font-size: 13px;
+  color: var(--z-muted);
+}

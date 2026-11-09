@@ -114,6 +114,21 @@ export default function TemplatePage({ slug }: { slug: string }) {
               </div>
             </section>
 
+            <section aria-label="Можно подключить дополнительно">
+              <h2 className="tpl-h2">Можно подключить дополнительно</h2>
+              <ul className="tpl-features tpl-features--upsell">
+                {t.upsells.map((f) => (
+                  <li key={f.t} className="tpl-feature">
+                    <h3 className="tpl-feature__t">{f.t}</h3>
+                    <p className="tpl-feature__d">{f.d}</p>
+                  </li>
+                ))}
+              </ul>
+              <p className="tpl-upsell-note">
+                Стоимость доработок считаем отдельно — после короткого обсуждения задачи.
+              </p>
+            </section>
+
             <section aria-label="Кому подходит">
               <h2 className="tpl-h2">Кому подходит</h2>
               <ul className="tpl-fit">
@@ -139,7 +154,7 @@ export default function TemplatePage({ slug }: { slug: string }) {
           <aside className="tpl-aside">
             <div className="tpl-buy">
               <p className="tpl-buy__label">Готовый макет</p>
-              <p className="tpl-buy__price">{priceFmt.format(t.price)}</p>
+              <p className="tpl-buy__price">от {priceFmt.format(t.price)}</p>
               {t.priceNote && <p className="tpl-buy__note">{t.priceNote}</p>}
               <a
                 className="btn tpl-buy__cta"

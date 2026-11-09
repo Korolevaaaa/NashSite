@@ -10,6 +10,7 @@ export interface StoreItem {
   sub: string;
   kind: string; // "Макет" → «Купить», anything else → «Заказать»
   price: number;
+  priceText?: string; // override display, e.g. "от 40 000 ₽"
   status: "published" | "draft";
   cover?: string;
   slug?: string; // → #/template/<slug> detail page
@@ -23,7 +24,8 @@ export const SEED_ITEMS: StoreItem[] = [
     cat: "Интернет-магазины",
     sub: "Еда и доставка",
     kind: "Макет",
-    price: 45000,
+    price: 40000,
+    priceText: "от 40 000 ₽",
     status: "published",
     slug: "dostavka-sushi",
     cover: "/templates/dostavka-sushi/cover.jpg",
