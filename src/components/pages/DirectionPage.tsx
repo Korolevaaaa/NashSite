@@ -104,54 +104,104 @@ export default function DirectionPage({ slug }: { slug: string }) {
           ← Все направления
         </a>
 
-        <p className="mt-10 font-mono text-[11px] font-semibold uppercase tracking-[0.12em] text-[var(--z-action)]">
-          Направление ZETRONIX
-        </p>
-        <h1 className="mt-4 font-body text-[clamp(34px,4.6vw,62px)] font-medium leading-[1.05] tracking-[-0.045em] text-[var(--z-ink)]">
-          {d.title}
-        </h1>
-        <p className="mt-6 max-w-[52ch] text-[16px] leading-[1.65] text-[var(--z-muted)]">
-          {d.page.lead}
-        </p>
-
-        <div className="mt-14 grid gap-y-8 border-t border-line pt-10 md:grid-cols-2 md:gap-x-10">
-          <h2 className="font-body text-[13px] font-semibold uppercase tracking-[0.12em] text-[var(--z-muted)]">
-            Стоимость
-          </h2>
+        <div className="mt-10 grid gap-10 lg:grid-cols-[1fr_360px] lg:gap-14">
+          {/* заголовок */}
           <div>
-            <ul className="space-y-3">
-              {d.tiers.map((t) => (
-                <li
-                  key={t.name}
-                  className="flex items-baseline justify-between gap-6 border-b border-line pb-3 text-[15px]"
-                >
-                  <span className="text-[var(--z-ink)]">{t.name}</span>
-                  <span className="shrink-0 font-mono text-[13px] tracking-[0.04em] text-[var(--z-action)]">
-                    {t.price}
+            <p className="font-mono text-[11px] font-semibold uppercase tracking-[0.12em] text-[var(--z-action)]">
+              Направление ZETRONIX
+            </p>
+            <h1 className="mt-4 font-body text-[clamp(34px,4.6vw,62px)] font-medium leading-[1.05] tracking-[-0.045em] text-[var(--z-ink)]">
+              {d.title}
+            </h1>
+            <p className="mt-6 max-w-[52ch] text-[16px] leading-[1.65] text-[var(--z-muted)]">
+              {d.page.lead}
+            </p>
+
+            <ul className="mt-7 flex flex-wrap gap-2">
+              {["Разовая оплата", "Смета фиксируется до старта", "Сайт остаётся вашим"].map(
+                (t) => (
+                  <li
+                    key={t}
+                    className="rounded-full border border-line bg-white/60 px-4 py-2 text-[12.5px] font-medium text-[var(--z-ink)]"
+                  >
+                    <span className="mr-1.5 text-[var(--z-action)]">✓</span>
+                    {t}
+                  </li>
+                ),
+              )}
+            </ul>
+          </div>
+
+          {/* липкая цена: на десктопе — справа на всю высоту, на мобиле — сразу после чипов */}
+          <aside className="lg:col-start-2 lg:row-start-1 lg:row-span-2 lg:sticky lg:top-[calc(var(--header-h,110px)+24px)] lg:self-start">
+            <div className="rounded-[var(--r-card)] border border-line bg-white/70 p-6 shadow-[0_18px_40px_-24px_rgba(13,17,23,0.18)]">
+              <p className="font-body text-[13px] font-semibold uppercase tracking-[0.12em] text-[var(--z-muted)]">
+                Стоимость
+              </p>
+              <ul className="mt-4 space-y-3">
+                {d.tiers.map((t) => (
+                  <li
+                    key={t.name}
+                    className="flex items-baseline justify-between gap-4 border-b border-line pb-3 text-[14px]"
+                  >
+                    <span className="text-[var(--z-ink)]">{t.name}</span>
+                    <span className="shrink-0 font-mono text-[12.5px] tracking-[0.03em] text-[var(--z-action)]">
+                      {t.price}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+              <a
+                className="btn mt-5 w-full justify-center"
+                href={`mailto:${CONTACT_EMAIL}?subject=${encodeURIComponent(d.title)}`}
+              >
+                <span>{d.page.cta}</span>
+                <i className="btn-arrow">↗</i>
+              </a>
+              <p className="mt-4 text-[12.5px] leading-[1.55] text-[var(--z-muted)]">
+                Точная смета — после короткого брифа, фиксируется до старта. Платите один раз — сайт ваш навсегда.
+              </p>
+            </div>
+          </aside>
+
+          {/* состав + шаги */}
+          <div>
+            <h2 className="font-body text-[13px] font-semibold uppercase tracking-[0.12em] text-[var(--z-muted)]">
+              Что входит
+            </h2>
+            <ul className="mt-5 space-y-4">
+              {d.page.tasks.map((t) => (
+                <li key={t} className="flex gap-3 text-[15px] leading-[1.6] text-[var(--z-ink)]">
+                  <span aria-hidden="true" className="mt-[3px] text-[var(--z-action)]">
+                    →
                   </span>
+                  {t}
                 </li>
               ))}
             </ul>
-            <p className="mt-4 text-[13px] leading-[1.6] text-[var(--z-muted)]">
-              Точная смета — после короткого брифа, фиксируется до старта.
-            </p>
-          </div>
-        </div>
 
-        <div className="mt-14 grid gap-y-8 border-t border-line pt-10 md:grid-cols-2 md:gap-x-10">
-          <h2 className="font-body text-[13px] font-semibold uppercase tracking-[0.12em] text-[var(--z-muted)]">
-            Что входит
-          </h2>
-          <ul className="space-y-4">
-            {d.page.tasks.map((t) => (
-              <li key={t} className="flex gap-3 text-[15px] leading-[1.6] text-[var(--z-ink)]">
-                <span aria-hidden="true" className="mt-[3px] text-[var(--z-action)]">
-                  →
-                </span>
-                {t}
-              </li>
-            ))}
-          </ul>
+            <h2 className="mt-12 font-body text-[13px] font-semibold uppercase tracking-[0.12em] text-[var(--z-muted)]">
+              Как стартуем
+            </h2>
+            <ol className="mt-5 grid gap-3 sm:grid-cols-3">
+              {[
+                ["01", "Короткий бриф", "15 минут созвона или переписки — цели, объём, референсы."],
+                ["02", "Смета и план", "Фиксируем состав и цену до старта — без сюрпризов в середине."],
+                ["03", "Запуск", "Публикуем на вашем домене, подключаем заявки и аналитику."],
+              ].map(([n, t, txt]) => (
+                <li
+                  key={n}
+                  className="rounded-[var(--r-card)] border border-line bg-white/50 p-5"
+                >
+                  <span className="font-mono text-[11px] font-semibold tracking-[0.1em] text-[var(--z-action)]">
+                    {n}
+                  </span>
+                  <p className="mt-2 text-[14.5px] font-semibold text-[var(--z-ink)]">{t}</p>
+                  <p className="mt-1.5 text-[13px] leading-[1.55] text-[var(--z-muted)]">{txt}</p>
+                </li>
+              ))}
+            </ol>
+          </div>
         </div>
 
         {relTemplates.length > 0 && (
