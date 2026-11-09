@@ -67,6 +67,7 @@ export const SEED_ITEMS: StoreItem[] = [
     status: "published",
     slug: "umnye-shtory",
     badge: "С конфигуратором",
+    cover: "/templates/umnye-shtory/cover.jpg",
   },
 ];
 
