@@ -32,6 +32,17 @@ export const SEED_ITEMS: StoreItem[] = [
     badge: "Анимированный",
     cover: "/templates/dostavka-sushi/cover.jpg",
   },
+  {
+    id: "tpl-camp",
+    name: "База отдыха",
+    cat: "Туризм и отдых",
+    sub: "Базы отдыха и глэмпинги",
+    kind: "Макет",
+    price: 25000,
+    priceText: "от 25 000 ₽",
+    status: "published",
+    slug: "baza-otdyha",
+  },
 ];
 
 export const DRAFT_KEY = "storefront.draft.v1";
