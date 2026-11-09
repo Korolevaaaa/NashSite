@@ -26,7 +26,7 @@ export const SEED_ITEMS: StoreItem[] = [
     price: 45000,
     status: "published",
     slug: "dostavka-sushi",
-    cover: "/templates/dostavka-sushi/hero.png",
+    cover: "/templates/dostavka-sushi/cover.jpg",
   },
   {
     id: "tpl-shop-goods",
