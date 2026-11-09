@@ -6,19 +6,22 @@ import PriceLadder from "../blog/PriceLadder";
 import HiddenCosts from "../blog/HiddenCosts";
 import CostQuiz from "../blog/CostQuiz";
 
-/* Inline [text](#/href) links inside plain body text. */
+/* Inline [text](/href) links and **bold** inside plain body text. */
 function RichText({ text }: { text: string }) {
-  const parts = text.split(/(\[[^\]]+\]\([^)]+\))/g);
+  const parts = text.split(/(\[[^\]]+\]\([^)]+\)|\*\*[^*]+\*\*)/g);
   return (
     <>
       {parts.map((part, i) => {
-        const m = part.match(/^\[([^\]]+)\]\(([^)]+)\)$/);
-        if (!m) return part;
-        return (
-          <a key={i} href={m[2]} className="post-link">
-            {m[1]}
-          </a>
-        );
+        const link = part.match(/^\[([^\]]+)\]\(([^)]+)\)$/);
+        if (link)
+          return (
+            <a key={i} href={link[2]} className="post-link">
+              {link[1]}
+            </a>
+          );
+        const bold = part.match(/^\*\*([^*]+)\*\*$/);
+        if (bold) return <strong key={i}>{bold[1]}</strong>;
+        return part;
       })}
     </>
   );
