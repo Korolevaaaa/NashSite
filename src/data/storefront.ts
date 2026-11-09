@@ -54,6 +54,7 @@ export const SEED_ITEMS: StoreItem[] = [
     priceText: "от 30 000 ₽",
     status: "published",
     slug: "glamping-gory",
+    cover: "/templates/glamping-gory/cover.jpg",
   },
 ];
 
