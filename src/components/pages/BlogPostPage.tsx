@@ -309,6 +309,11 @@ export default function BlogPostPage({ slug }: { slug: string }) {
         {post.cover && (
           <figure className="post-fig post-fig--hero">
             <img src={post.cover} alt={post.title} />
+            {post.coverHook && (
+              <figcaption className="post-fig__hook">
+                {post.coverHook}
+              </figcaption>
+            )}
           </figure>
         )}
 

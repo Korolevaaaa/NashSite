@@ -1,8 +1,9 @@
 /* Blog posts model. Each entry renders at #/blog/<slug>.
    Body is a flat list of blocks — write plain Russian, no markup needed.
    Inline links inside "p"/"list" text: [текст](#templates).
-   Covers live in /public/blog/<slug>/cover.jpg — wide strip 21:9;
-   keep text/subject in the central band (top/bottom ~15% may crop).
+   Covers live in /public/blog/<slug>/cover.jpg — wide ~16:10.
+   coverHook = short text rendered as a live HTML overlay on the cover
+   (scales on mobile, accessible — never bake text into the image).
    Inline shots: /public/blog/<slug>/<name>.jpg
    "viz" blocks insert interactive widgets (see components/blog/). */
 
@@ -24,6 +25,7 @@ export interface BlogPost {
   date: string; // ISO, e.g. "2026-11-20"
   tags: string[];
   cover?: string;
+  coverHook?: string; // короткая фраза поверх обложки (живой текст)
   author?: { name: string; role: string; photo?: string };
   body: BlogBlock[];
 }
@@ -37,6 +39,7 @@ export const POSTS: BlogPost[] = [
       "Четыре способа получить сайт — от шаблона за 5 000 ₽ до студии за 150 000 ₽. Раскладываем реальные цены, скрытые расходы и точку, где цена перестаёт быть главным вопросом.",
     date: "2026-11-09",
     tags: ["Цены", "Для бизнеса"],
+    coverHook: "От 3 000 ₽ до полумиллиона",
     author: {
       name: "ZETRONIX",
       role: "студия сайтов и цифровых продуктов",

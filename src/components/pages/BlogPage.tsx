@@ -34,6 +34,9 @@ export default function BlogPage() {
                   {p.cover && (
                     <span className="blog-item__cover">
                       <img src={p.cover} alt="" loading="lazy" />
+                      {p.coverHook && (
+                        <span className="blog-item__hook">{p.coverHook}</span>
+                      )}
                     </span>
                   )}
                   <span className="blog-item__body">
