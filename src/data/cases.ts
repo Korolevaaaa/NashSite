@@ -432,6 +432,7 @@ export const CASES: CaseStudy[] = [
     year: 2026,
     teaser:
       "Тёмный, анимированный сайт-витрина на WordPress: восемь направлений услуг, у каждой свои подстраницы, кейсы с живыми цифрами и команда направления — всё заточено под SEO-раскрутку.",
+    cover: "/cases/sapchenko/cover.png",
     hero: "/cases/sapchenko/hero.png",
     url: "https://sapchenko.studio",
     metrics: [
