@@ -12,6 +12,7 @@ export interface StoreItem {
   price: number;
   status: "published" | "draft";
   cover?: string;
+  slug?: string; // → #/template/<slug> detail page
   updatedAt?: string;
 }
 
@@ -24,6 +25,8 @@ export const SEED_ITEMS: StoreItem[] = [
     kind: "Макет",
     price: 45000,
     status: "published",
+    slug: "dostavka-sushi",
+    cover: "/templates/dostavka-sushi/hero.png",
   },
   {
     id: "tpl-shop-goods",

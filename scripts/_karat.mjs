@@ -1,0 +1,11 @@
+import puppeteer from "puppeteer-core";
+const b = await puppeteer.launch({ executablePath: "C:/Program Files/Google/Chrome/Application/chrome.exe" });
+const pg = await b.newPage();
+await pg.setViewport({ width: 1440, height: 900 });
+await pg.goto("http://localhost:5174/", { waitUntil: "networkidle2", timeout: 30000 });
+await new Promise((r) => setTimeout(r, 2500));
+console.log("title:", await pg.title());
+await pg.screenshot({ path: "shots/karat-hero.jpg" });
+const links = await pg.evaluate(() => [...document.querySelectorAll("a[href]")].map(a => a.getAttribute("href")).filter(h => h && h.startsWith("/")).slice(0, 40));
+console.log(JSON.stringify([...new Set(links)]));
+await b.close();

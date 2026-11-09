@@ -172,7 +172,11 @@ function TemplateCard({ item }: { item: StoreItem }) {
           </strong>
           <a
             className="sf-card__cta"
-            href={`mailto:${CONTACT_EMAIL}?subject=${subject}`}
+            href={
+              item.slug
+                ? `#/template/${item.slug}`
+                : `mailto:${CONTACT_EMAIL}?subject=${subject}`
+            }
           >
             {cta}
           </a>

@@ -19,8 +19,10 @@ import CasesPage from "../components/pages/CasesPage";
 import CasePage from "../components/pages/CasePage";
 import BlogPage from "../components/pages/BlogPage";
 import BlogPostPage from "../components/pages/BlogPostPage";
+import TemplatePage from "../components/pages/TemplatePage";
 import { CASES } from "../data/cases";
 import { POSTS } from "../data/blog";
+import { TEMPLATES } from "../data/templates";
 
 // tiny hash router:
 //   #/admin                → owner storefront tool
@@ -37,7 +39,8 @@ type Route =
   | { name: "cases" }
   | { name: "case"; slug: string }
   | { name: "blog" }
-  | { name: "post"; slug: string };
+  | { name: "post"; slug: string }
+  | { name: "template"; slug: string };
 
 function routeOf(): Route {
   const h = window.location.hash;
@@ -50,6 +53,8 @@ function routeOf(): Route {
   if (m) return { name: "post", slug: m[1] };
   m = h.match(/^#\/napravlenie\/([\w-]+)/);
   if (m) return { name: "direction", slug: m[1] };
+  m = h.match(/^#\/template\/([\w-]+)/);
+  if (m) return { name: "template", slug: m[1] };
   return { name: "main", anchor: h.length > 1 && !h.startsWith("#/") ? h : null };
 }
 
@@ -68,6 +73,10 @@ function titleOf(r: Route): string {
     case "post": {
       const p = POSTS.find((x) => x.slug === r.slug);
       return p ? `${p.title} — ZETRONIX` : "Статья — ZETRONIX";
+    }
+    case "template": {
+      const t = TEMPLATES.find((x) => x.slug === r.slug);
+      return t ? t.seoTitle : "Готовый макет — ZETRONIX";
     }
     default:
       return BASE_TITLE;
@@ -112,6 +121,8 @@ export default function App() {
         <BlogPage />
       ) : route.name === "post" ? (
         <BlogPostPage key={route.slug} slug={route.slug} />
+      ) : route.name === "template" ? (
+        <TemplatePage key={route.slug} slug={route.slug} />
       ) : (
         <main>
           <HeroScene />
