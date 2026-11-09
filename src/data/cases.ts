@@ -581,6 +581,7 @@ export const CASES: CaseStudy[] = [
     teaser:
       "Программа для Windows: загружаешь фото, скан, PDF или Word счёта, акта или накладной — ИИ вытаскивает реквизиты и таблицу и отправляет их в 1С или Excel. Продаётся по лицензионным ключам, расход на ИИ виден по каждому клиенту.",
     hero: "/cases/zetronixdocs/main.png",
+    cover: "/cases/zetronixdocs/cover.png",
     url: "https://github.com/kudinov13/ZetronixDocs",
     metrics: [
       { value: "8 типов", label: "документов со своими схемами: УПД, счета-фактуры, акты, накладные, сверки, договоры" },
