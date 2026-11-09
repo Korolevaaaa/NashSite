@@ -433,6 +433,7 @@ export const CASES: CaseStudy[] = [
     teaser:
       "Два филиала, семь врачей со своими прайсами, запись в семь шагов с занятым временем на виду, заявки в CRM на ресепшен выбранного филиала и админка для цен, услуг и расписания.",
     hero: "/cases/karat-titan/hero.png",
+    cover: "/cases/karat-titan/cover.png",
     url: "https://karat-titan.ru",
     metrics: [
       { value: "2 филиала", label: "7а и 15-й мкр (детская) — врач и слот выбираются под конкретный филиал" },
