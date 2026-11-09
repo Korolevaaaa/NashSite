@@ -5,7 +5,7 @@ export default function BlogPage() {
 
   return (
     <main className="px-[var(--page-gutter)] pb-[clamp(80px,12vh,140px)] pt-[calc(var(--header-h,110px)+56px)]">
-      <div className="mx-auto max-w-[var(--content-max)]">
+      <div className="mx-auto max-w-[760px]">
         <a
           href="#top"
           className="font-mono text-[11px] uppercase tracking-[0.1em] text-[var(--z-muted)] no-underline hover:text-[var(--z-action)]"
@@ -27,12 +27,10 @@ export default function BlogPage() {
           <ul className="blog-list">
             {posts.map((p) => (
               <li key={p.slug}>
-                <a className="blog-item" href={`#/blog/${p.slug}`}>
-                  {p.cover && (
-                    <span className="blog-item__cover">
-                      <img src={p.cover} alt="" loading="lazy" />
-                    </span>
-                  )}
+                <a
+                  className={`blog-item ${p.cover ? "blog-item--cover" : ""}`}
+                  href={`#/blog/${p.slug}`}
+                >
                   <span className="blog-item__body">
                     <span className="blog-item__meta">
                       <time dateTime={p.date}>
@@ -52,6 +50,11 @@ export default function BlogPage() {
                     <span className="blog-item__excerpt">{p.excerpt}</span>
                     <span className="blog-item__more">Читать →</span>
                   </span>
+                  {p.cover && (
+                    <span className="blog-item__cover">
+                      <img src={p.cover} alt="" loading="lazy" />
+                    </span>
+                  )}
                 </a>
               </li>
             ))}
