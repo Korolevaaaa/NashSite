@@ -67,6 +67,19 @@ export default function DirectionPage({ slug }: { slug: string }) {
               },
             ],
           },
+          ...(d.page.faq?.length
+            ? [
+                {
+                  "@context": "https://schema.org",
+                  "@type": "FAQPage",
+                  mainEntity: d.page.faq.map((f) => ({
+                    "@type": "Question",
+                    name: f.q,
+                    acceptedAnswer: { "@type": "Answer", text: f.a },
+                  })),
+                },
+              ]
+            : []),
         ]
       : undefined,
   });
@@ -161,6 +174,12 @@ export default function DirectionPage({ slug }: { slug: string }) {
               <p className="mt-4 text-[12.5px] leading-[1.55] text-[var(--z-muted)]">
                 Точная смета — после короткого брифа, фиксируется до старта. Платите один раз — сайт ваш навсегда.
               </p>
+              <a
+                href="/blog/skolko-stoit-sayt"
+                className="mt-4 block text-[12.5px] font-medium text-[var(--z-action)] no-underline hover:underline"
+              >
+                Как складываются цены на сайты в 2026 →
+              </a>
             </div>
           </aside>
 
@@ -179,6 +198,24 @@ export default function DirectionPage({ slug }: { slug: string }) {
                 </li>
               ))}
             </ul>
+
+            {d.page.fit?.length ? (
+              <>
+                <h2 className="mt-12 font-body text-[13px] font-semibold uppercase tracking-[0.12em] text-[var(--z-muted)]">
+                  Кому подходит
+                </h2>
+                <ul className="mt-5 flex flex-wrap gap-2">
+                  {d.page.fit.map((t) => (
+                    <li
+                      key={t}
+                      className="rounded-full border border-line bg-white/50 px-4 py-2 text-[13px] font-medium text-[var(--z-ink)]"
+                    >
+                      {t}
+                    </li>
+                  ))}
+                </ul>
+              </>
+            ) : null}
 
             <h2 className="mt-12 font-body text-[13px] font-semibold uppercase tracking-[0.12em] text-[var(--z-muted)]">
               Как стартуем
@@ -201,6 +238,25 @@ export default function DirectionPage({ slug }: { slug: string }) {
                 </li>
               ))}
             </ol>
+
+            {d.page.faq?.length ? (
+              <>
+                <h2 className="mt-12 font-body text-[13px] font-semibold uppercase tracking-[0.12em] text-[var(--z-muted)]">
+                  Частые вопросы
+                </h2>
+                <div className="post-faq mt-5">
+                  {d.page.faq.map((f) => (
+                    <details key={f.q} className="post-faq__item">
+                      <summary>
+                        {f.q}
+                        <i aria-hidden="true">+</i>
+                      </summary>
+                      <p>{f.a}</p>
+                    </details>
+                  ))}
+                </div>
+              </>
+            ) : null}
           </div>
         </div>
 
