@@ -1,5 +1,6 @@
 import { TEAM_ROLES } from "../../data/content";
 import { PARTNERS, initialsOf } from "../../data/partners";
+import { TEAM } from "../../data/team";
 import { useInView } from "../../hooks/useInView";
 import SectionHead from "./SectionHead";
 
@@ -33,6 +34,32 @@ export default function Team() {
         <p className="zt-meta mt-8 max-w-[46ch]">
           Знакомим лично на первом созвоне — с теми, кто будет делать ваш проект.
         </p>
+
+        <ul className="mt-12 grid grid-cols-[repeat(auto-fill,minmax(220px,270px))] gap-6">
+          {TEAM.map((m) => (
+            <li
+              key={m.slug}
+              className="overflow-hidden rounded-2xl border border-[var(--z-line)] bg-white"
+            >
+              <img
+                src={m.photo}
+                alt={m.alt}
+                width={800}
+                height={1000}
+                loading="lazy"
+                className="aspect-[4/5] w-full object-cover"
+              />
+              <div className="px-5 py-4">
+                <h3 className="text-[16px] font-semibold text-[var(--z-ink)]">
+                  {m.name}
+                </h3>
+                <p className="mt-1 text-[12px] leading-relaxed text-[var(--z-ink)]/55">
+                  {m.roles.join(" · ")}
+                </p>
+              </div>
+            </li>
+          ))}
+        </ul>
 
         {PARTNERS.length > 0 && (
           <ul className="mt-10 flex flex-wrap gap-4">

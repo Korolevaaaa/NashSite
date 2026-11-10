@@ -1,4 +1,5 @@
 import { useSeo } from "../hooks/useSeo";
+import { TEAM } from "../data/team";
 
 /** SEO-слой главной: canonical, OG и JSON-LD организации. */
 export default function HomeSeo() {
@@ -26,6 +27,14 @@ export default function HomeSeo() {
         url: "https://zetronix.ru",
         inLanguage: "ru",
       },
+      ...TEAM.map((m) => ({
+        "@context": "https://schema.org",
+        "@type": "Person",
+        name: m.name,
+        image: `https://zetronix.ru${m.photo}`,
+        jobTitle: m.roles.join(", "),
+        worksFor: { "@type": "Organization", name: "ZETRONIX" },
+      })),
     ],
   });
   return null;
