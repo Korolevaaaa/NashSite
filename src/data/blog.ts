@@ -308,7 +308,7 @@ export const POSTS: BlogPost[] = [
       "От лендинга за 20 000 ₽ до доставки с корзиной за 40 000 ₽: разбираем реальные цены на сайт ресторана, что должно быть внутри и как перестать платить агрегаторам 20–35% с каждого заказа.",
     date: "2026-11-09",
     tags: ["Цены", "Рестораны"],
-    cover: "/templates/restoran/cover.jpg",
+    cover: "/blog/skolko-stoit-sayt-restorana/cover.jpg",
     coverHook: "Сайт ресторана: от 20 000 ₽",
     author: {
       name: "ZETRONIX",
@@ -435,7 +435,7 @@ export const POSTS: BlogPost[] = [
       "От лендинга объекта за 25 000 ₽ до системы с оплатой за 150 000 ₽: реальные цены на сайт глэмпинга, обязательный функционал и как забирать брони напрямую, минуя TravelLine и Ostrovok.",
     date: "2026-11-10",
     tags: ["Цены", "Туризм"],
-    cover: "/templates/glamping-gory/cover.jpg",
+    cover: "/blog/skolko-stoit-sayt-glampinga/cover.jpg",
     coverHook: "Сайт глэмпинга: от 25 000 ₽",
     author: {
       name: "ZETRONIX",
@@ -535,7 +535,7 @@ export const POSTS: BlogPost[] = [
       "От каталога за 40 000 ₽ до магазина с конфигуратором за 150 000 ₽: честные цены на разработку интернет-магазина, когда маркетплейсы не спасают и что влияет на смету.",
     date: "2026-11-11",
     tags: ["Цены", "Магазины"],
-    cover: "/templates/umnye-shtory/cover.jpg",
+    cover: "/blog/skolko-stoit-internet-magazin/cover.jpg",
     coverHook: "Магазин: от 40 000 ₽",
     author: {
       name: "ZETRONIX",
@@ -640,6 +640,7 @@ export const POSTS: BlogPost[] = [
       "От лендинга услуги за 20 000 ₽ до многостраничника компании за 100 000 ₽: цены на сайты для салонов, мастеров и подряда, что должно быть внутри и почему соцсетей недостаточно.",
     date: "2026-11-12",
     tags: ["Цены", "Услуги"],
+    cover: "/blog/skolko-stoit-sayt-dlya-uslug/cover.jpg",
     coverHook: "Сайт услуг: от 20 000 ₽",
     author: {
       name: "ZETRONIX",
@@ -743,7 +744,7 @@ export const POSTS: BlogPost[] = [
       "От лендинга услуги клиники за 25 000 ₽ до портала с кабинетами за 250 000 ₽: цены на медсайты, обязательный функционал и как пациенты выбирают клинику по сайту.",
     date: "2026-11-13",
     tags: ["Цены", "Медицина"],
-    cover: "/cases/karat-titan/cover.jpg",
+    cover: "/blog/skolko-stoit-sayt-kliniki/cover.jpg",
     coverHook: "Сайт клиники: от 25 000 ₽",
     author: {
       name: "ZETRONIX",
@@ -849,7 +850,7 @@ export const POSTS: BlogPost[] = [
       "От лендинга продукта за 30 000 ₽ до платформы за 550 000 ₽: честные цены на разработку веб-сервиса, что входит в MVP и как проверить гипотезу за 6–8 недель без лишних затрат.",
     date: "2026-11-14",
     tags: ["Цены", "IT и стартапы"],
-    cover: "/cases/koosmo/cover.jpg",
+    cover: "/blog/skolko-stoit-mvp-veb-servisa/cover.jpg",
     coverHook: "MVP: от 250 000 ₽",
     author: {
       name: "ZETRONIX",
@@ -954,6 +955,7 @@ export const POSTS: BlogPost[] = [
       "Матрица решений: когда готовый макет за 20 000 ₽ лучше кастома за 150 000 ₽, а когда кастом обязателен. Реальные цены, сроки и проверочный список для вашего случая.",
     date: "2026-11-15",
     tags: ["Цены", "Для бизнеса"],
+    cover: "/blog/gotovyj-maket-ili-razrabotka/cover.jpg",
     author: {
       name: "ZETRONIX",
       role: "студия сайтов и цифровых продуктов",
