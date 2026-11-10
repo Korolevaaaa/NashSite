@@ -14,16 +14,7 @@ export interface Partner {
   password: string;
 }
 
-export const PARTNERS: Partner[] = [
-  {
-    ref: "dmitry",
-    name: "Дмитрий Нарикаев",
-    role: "Партнёр по продажам",
-    promo: "ZETRO-D",
-    login: "dmitry",
-    password: "zt-partner-2026",
-  },
-];
+export const PARTNERS: Partner[] = [];
 
 export const partnerOf = (ref?: string | null): Partner | null =>
   ref ? (PARTNERS.find((p) => p.ref === ref) ?? null) : null;
