@@ -67,6 +67,14 @@ export default function Footer() {
 
       <div className="mx-auto mt-14 flex max-w-[var(--content-max)] flex-wrap items-baseline justify-between gap-x-10 gap-y-3 border-t border-line pt-6">
         <span className="zt-meta">© 2026 ZETRONIX.RU</span>
+        <nav aria-label="Документы" className="flex gap-6">
+          <a className="text-[12px] hover:text-[var(--z-ink)]" href="/privacy">
+            Политика конфиденциальности
+          </a>
+          <a className="text-[12px] hover:text-[var(--z-ink)]" href="/oferta">
+            Оферта
+          </a>
+        </nav>
       </div>
     </footer>
   );

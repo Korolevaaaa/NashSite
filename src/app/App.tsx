@@ -24,8 +24,10 @@ import TemplatePage from "../components/pages/TemplatePage";
 import TemplatesPage from "../components/pages/TemplatesPage";
 import NapravleniePage from "../components/pages/NapravleniePage";
 import PartnerPage from "../components/pages/PartnerPage";
+import { PrivacyPage, OfferPage } from "../components/pages/LegalPage";
+import LeadModal from "../components/LeadModal";
 import PartnerBadge from "../components/PartnerBadge";
-import { activePartner, captureRef, tagMailto } from "../utils/refSource";
+import { activePartner, captureRef } from "../utils/refSource";
 import { CASES } from "../data/cases";
 import { POSTS } from "../data/blog";
 import { TEMPLATES } from "../data/templates";
@@ -44,6 +46,8 @@ type Route =
   | { name: "main"; anchor: string | null }
   | { name: "admin" }
   | { name: "partner" }
+  | { name: "privacy" }
+  | { name: "oferta" }
   | { name: "direction"; slug: string }
   | { name: "directions" }
   | { name: "niche"; slug: string }
@@ -64,6 +68,8 @@ function routeOf(): Route {
   }
   if (p === "/admin") return { name: "admin" };
   if (p === "/partner") return { name: "partner" };
+  if (p === "/privacy") return { name: "privacy" };
+  if (p === "/oferta") return { name: "oferta" };
   if (p === "/cases") return { name: "cases" };
   if (p === "/blog") return { name: "blog" };
   if (p === "/templates") return { name: "templates" };
@@ -109,6 +115,10 @@ function titleOf(r: Route): string {
       return "Блог — ZETRONIX";
     case "partner":
       return "Кабинет партнёра — ZETRONIX";
+    case "privacy":
+      return "Политика конфиденциальности — ZETRONIX";
+    case "oferta":
+      return "Публичная оферта — ZETRONIX";
     case "post": {
       const p = POSTS.find((x) => x.slug === r.slug);
       return p ? (p.seoTitle ?? `${p.title} — ZETRONIX`) : "Статья — ZETRONIX";
@@ -128,6 +138,8 @@ export default function App() {
     captureRef();
     return activePartner();
   });
+  const [leadOpen, setLeadOpen] = useState(false);
+  const [leadContext, setLeadContext] = useState("Обсудить проект");
 
   useEffect(() => {
     const onNav = () => setRoute(routeOf());
@@ -150,13 +162,12 @@ export default function App() {
       if (!a) return;
       const href = a.getAttribute("href");
       if (!href || a.target === "_blank" || a.hasAttribute("download")) return;
-      // mailto при активной ref-метке — помечаем источник заявки
+      // mailto-CTA → лид-форма (источник прикрепляется автоматически)
       if (/^mailto:/i.test(href)) {
-        const p = activePartner();
-        if (p) {
-          e.preventDefault();
-          location.href = tagMailto(href, p);
-        }
+        e.preventDefault();
+        const label = a.textContent?.trim() ?? "";
+        setLeadContext(label && !label.includes("@") ? label : "Обсудить проект");
+        setLeadOpen(true);
         return;
       }
       if (/^(tel:|https?:|javascript:)/i.test(href)) return;
@@ -200,6 +211,10 @@ export default function App() {
         <StorefrontAdmin />
       ) : route.name === "partner" ? (
         <PartnerPage />
+      ) : route.name === "privacy" ? (
+        <PrivacyPage />
+      ) : route.name === "oferta" ? (
+        <OfferPage />
       ) : route.name === "direction" ? (
         <DirectionPage slug={route.slug} />
       ) : route.name === "niche" ? (
@@ -238,6 +253,11 @@ export default function App() {
       {partner && route.name !== "admin" && route.name !== "partner" && (
         <PartnerBadge partner={partner} />
       )}
+      <LeadModal
+        open={leadOpen}
+        onClose={() => setLeadOpen(false)}
+        context={leadContext}
+      />
     </>
   );
 }

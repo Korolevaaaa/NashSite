@@ -35,6 +35,8 @@ const slugsOf = (file, marker) => {
    every other route, so it must stay the clean vite build (no baked-in SEO
    tags) while the subpages are being rendered. */
 const routes = [
+  "/privacy",
+  "/oferta",
   "/blog",
   ...slugsOf("src/data/blog.ts", "POSTS").map((s) => `/blog/${s}`),
   "/cases",
