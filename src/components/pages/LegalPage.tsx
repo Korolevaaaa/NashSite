@@ -99,7 +99,11 @@ export function OfferPage() {
       <H>Реквизиты</H>
       <P>
         {LEGAL.entityName}, ИНН {LEGAL.inn}, {LEGAL.city}
-        {LEGAL.address ? `, ${LEGAL.address}` : ""}. Почта:{" "}
+        {LEGAL.address ? `, ${LEGAL.address}` : ""}. Тел.:{" "}
+        <a className="underline" href={`tel:${LEGAL.phone.replace(/[^\d+]/g, "")}`}>
+          {LEGAL.phone}
+        </a>
+        . Почта:{" "}
         <a className="underline" href={`mailto:${LEGAL.privacyEmail}`}>
           {LEGAL.privacyEmail}
         </a>

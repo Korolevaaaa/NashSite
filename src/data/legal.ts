@@ -6,11 +6,12 @@ export const LEGAL = {
     | "self-employed"
     | "ip"
     | "ooo", // самозанятый / ИП / ООО
-  entityName: "ФИО / Название — заполнить", // TODO: реквизиты владельца
-  inn: "—", // TODO: ИНН
+  entityName: "Королева Валерия Евгеньевна",
+  inn: "540860780515",
   city: "Новосибирск",
-  address: "", // TODO: юридический/почтовый адрес
+  address: "", // домашний адрес не публикуем — город + почта достаточно
   privacyEmail: "noreply@zetronix.ru",
+  phone: "+7 (953) 873-49-73",
   siteName: "ZETRONIX",
   siteUrl: "https://zetronix.ru",
 };
