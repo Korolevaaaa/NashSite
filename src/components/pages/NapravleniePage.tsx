@@ -89,7 +89,7 @@ export default function NapravleniePage() {
         <p className="mt-3 max-w-[56ch] text-[15px] leading-[1.6] text-[var(--z-muted)]">
           Если вам удобнее искать по своей нише — здесь собраны макеты и кейсы под конкретный бизнес.
         </p>
-        <ul className="dir-grid mt-8">
+        <ul className="dir-grid dir-grid--uniform mt-8">
           {NICHES.map((n) => (
             <li key={n.slug} className="dir-cell">
               <a

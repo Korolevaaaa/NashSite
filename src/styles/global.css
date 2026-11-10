@@ -1283,6 +1283,10 @@ section[id] {
   .dir-cell:nth-child(5) {
     grid-column: span 4;
   }
+  /* равномерная сетка 3×n — для списков не под мозаику на 7 */
+  .dir-grid--uniform .dir-cell {
+    grid-column: span 4;
+  }
 }
 .dir-cell__link {
   display: flex;

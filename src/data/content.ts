@@ -732,8 +732,9 @@ export const NICHES = [
 ] as const;
 
 export const NAV_LINKS = [
-  { href: "/#services", label: "Услуги" },
-  { href: "/#cases", label: "Кейсы" },
+  { href: "/napravlenie", label: "Услуги" },
+  { href: "/templates", label: "Макеты" },
+  { href: "/cases", label: "Кейсы" },
   { href: "/blog", label: "Блог" },
   { href: "/#contacts", label: "Контакты" },
 ] as const;
