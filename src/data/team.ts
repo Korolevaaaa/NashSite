@@ -16,4 +16,11 @@ export const TEAM: TeamMember[] = [
     photo: "/team/georgiy-drozdov.webp",
     alt: "Георгий Дроздов — веб-дизайнер и creative developer студии ZETRONIX",
   },
+  {
+    slug: "asylzhan-akhunzhanov",
+    name: "Асылжан Ахунджанов",
+    roles: ["Full-stack разработчик"],
+    photo: "/team/asylzhan-akhunzhanov.webp",
+    alt: "Асылжан Ахунджанов — full-stack разработчик студии ZETRONIX",
+  },
 ];
