@@ -12,9 +12,9 @@ export const TEAM: TeamMember[] = [
   {
     slug: "georgiy-drozdov",
     name: "Георгий Дроздов",
-    roles: ["Веб-дизайнер", "Motion-дизайнер", "Creative developer"],
+    roles: ["Веб-дизайнер", "Motion-дизайнер", "Frontend-разработчик", "Creative developer"],
     photo: "/team/georgiy-drozdov.webp",
-    alt: "Георгий Дроздов — веб-дизайнер и creative developer студии ZETRONIX",
+    alt: "Георгий Дроздов — веб-дизайнер и frontend-разработчик студии ZETRONIX",
   },
   {
     slug: "asylzhan-akhunzhanov",
