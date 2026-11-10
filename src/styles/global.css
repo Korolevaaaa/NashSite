@@ -598,10 +598,10 @@ body {
 }
 .holo-hint {
   font-family: var(--font-body);
-  font-size: 12px;
-  font-weight: 400;
+  font-size: 13.5px;
+  font-weight: 450;
   letter-spacing: 0;
-  color: var(--color-ink-faint);
+  color: rgba(21, 27, 32, 0.68);
 }
 .holo-link:hover {
   background: rgba(0, 201, 212, 0.12);
