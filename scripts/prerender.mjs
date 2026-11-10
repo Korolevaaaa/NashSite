@@ -63,6 +63,7 @@ ${routes
 const robots = `User-agent: *
 Allow: /
 Disallow: /admin
+Disallow: /partner
 
 Sitemap: ${SITE}/sitemap.xml
 `;

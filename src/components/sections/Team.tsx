@@ -1,4 +1,5 @@
 import { TEAM_ROLES } from "../../data/content";
+import { PARTNERS, initialsOf } from "../../data/partners";
 import { useInView } from "../../hooks/useInView";
 import SectionHead from "./SectionHead";
 
@@ -32,6 +33,40 @@ export default function Team() {
         <p className="zt-meta mt-8 max-w-[46ch]">
           Знакомим лично на первом созвоне — с теми, кто будет делать ваш проект.
         </p>
+
+        {PARTNERS.length > 0 && (
+          <ul className="mt-10 flex flex-wrap gap-4">
+            {PARTNERS.map((p) => (
+              <li
+                key={p.ref}
+                className="flex items-center gap-3 rounded-2xl border border-[var(--z-line)] bg-white px-4 py-3"
+              >
+                {p.photo ? (
+                  <img
+                    src={p.photo}
+                    alt={p.name}
+                    className="h-10 w-10 rounded-full object-cover"
+                  />
+                ) : (
+                  <span
+                    aria-hidden="true"
+                    className="grid h-10 w-10 place-items-center rounded-full bg-[var(--z-ink)] text-[12px] font-semibold text-white"
+                  >
+                    {initialsOf(p.name)}
+                  </span>
+                )}
+                <span>
+                  <span className="block text-[14px] font-medium text-[var(--z-ink)]">
+                    {p.name}
+                  </span>
+                  <span className="block text-[11px] text-[var(--z-ink)]/55">
+                    {p.role}
+                  </span>
+                </span>
+              </li>
+            ))}
+          </ul>
+        )}
       </div>
     </section>
   );

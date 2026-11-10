@@ -23,6 +23,9 @@ import BlogPostPage from "../components/pages/BlogPostPage";
 import TemplatePage from "../components/pages/TemplatePage";
 import TemplatesPage from "../components/pages/TemplatesPage";
 import NapravleniePage from "../components/pages/NapravleniePage";
+import PartnerPage from "../components/pages/PartnerPage";
+import PartnerBadge from "../components/PartnerBadge";
+import { activePartner, captureRef, tagMailto } from "../utils/refSource";
 import { CASES } from "../data/cases";
 import { POSTS } from "../data/blog";
 import { TEMPLATES } from "../data/templates";
@@ -40,6 +43,7 @@ import { DIRECTIONS, NICHES } from "../data/content";
 type Route =
   | { name: "main"; anchor: string | null }
   | { name: "admin" }
+  | { name: "partner" }
   | { name: "direction"; slug: string }
   | { name: "directions" }
   | { name: "niche"; slug: string }
@@ -59,6 +63,7 @@ function routeOf(): Route {
     return routeOf();
   }
   if (p === "/admin") return { name: "admin" };
+  if (p === "/partner") return { name: "partner" };
   if (p === "/cases") return { name: "cases" };
   if (p === "/blog") return { name: "blog" };
   if (p === "/templates") return { name: "templates" };
@@ -102,6 +107,8 @@ function titleOf(r: Route): string {
     }
     case "blog":
       return "Блог — ZETRONIX";
+    case "partner":
+      return "Кабинет партнёра — ZETRONIX";
     case "post": {
       const p = POSTS.find((x) => x.slug === r.slug);
       return p ? (p.seoTitle ?? `${p.title} — ZETRONIX`) : "Статья — ZETRONIX";
@@ -117,6 +124,10 @@ function titleOf(r: Route): string {
 
 export default function App() {
   const [route, setRoute] = useState(routeOf);
+  const [partner] = useState(() => {
+    captureRef();
+    return activePartner();
+  });
 
   useEffect(() => {
     const onNav = () => setRoute(routeOf());
@@ -138,13 +149,17 @@ export default function App() {
       const a = (e.target as Element | null)?.closest?.("a");
       if (!a) return;
       const href = a.getAttribute("href");
-      if (
-        !href ||
-        a.target === "_blank" ||
-        a.hasAttribute("download") ||
-        /^(mailto:|tel:|https?:|javascript:)/i.test(href)
-      )
+      if (!href || a.target === "_blank" || a.hasAttribute("download")) return;
+      // mailto при активной ref-метке — помечаем источник заявки
+      if (/^mailto:/i.test(href)) {
+        const p = activePartner();
+        if (p) {
+          e.preventDefault();
+          location.href = tagMailto(href, p);
+        }
         return;
+      }
+      if (/^(tel:|https?:|javascript:)/i.test(href)) return;
       e.preventDefault();
       if (href.startsWith("#")) {
         if (href.length > 1)
@@ -183,6 +198,8 @@ export default function App() {
       <Header />
       {route.name === "admin" ? (
         <StorefrontAdmin />
+      ) : route.name === "partner" ? (
+        <PartnerPage />
       ) : route.name === "direction" ? (
         <DirectionPage slug={route.slug} />
       ) : route.name === "niche" ? (
@@ -218,6 +235,9 @@ export default function App() {
         </main>
       )}
       <Footer />
+      {partner && route.name !== "admin" && route.name !== "partner" && (
+        <PartnerBadge partner={partner} />
+      )}
     </>
   );
 }
