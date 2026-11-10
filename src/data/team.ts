@@ -23,4 +23,11 @@ export const TEAM: TeamMember[] = [
     photo: "/team/asylzhan-akhunzhanov.webp",
     alt: "Асылжан Ахунджанов — full-stack разработчик студии ZETRONIX",
   },
+  {
+    slug: "ivan-zyryanov",
+    name: "Иван Зырянов",
+    roles: ["Backend-разработчик"],
+    photo: "/team/ivan-zyryanov.webp",
+    alt: "Иван Зырянов — backend-разработчик студии ZETRONIX",
+  },
 ];
