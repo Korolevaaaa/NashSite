@@ -10,6 +10,13 @@ export interface TeamMember {
 
 export const TEAM: TeamMember[] = [
   {
+    slug: "mikhail-kudinov",
+    name: "Михаил Кудинов",
+    roles: ["Тимлид"],
+    photo: "/team/mikhail-kudinov.webp",
+    alt: "Михаил Кудинов — тимлид студии ZETRONIX",
+  },
+  {
     slug: "georgiy-drozdov",
     name: "Георгий Дроздов",
     roles: ["Веб-дизайнер", "Motion-дизайнер", "Frontend-разработчик", "Creative developer"],
