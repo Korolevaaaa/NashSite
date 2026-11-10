@@ -732,11 +732,46 @@ export const NICHES = [
 ] as const;
 
 export const NAV_LINKS = [
-  { href: "/napravlenie", label: "Услуги" },
-  { href: "/templates", label: "Макеты" },
-  { href: "/cases", label: "Кейсы" },
-  { href: "/blog", label: "Блог" },
-  { href: "/#contacts", label: "Контакты" },
+  {
+    href: "/napravlenie",
+    label: "Услуги и цены",
+    hint: "что делаем и сколько стоит",
+    children: DIRECTIONS.map((d) => ({
+      href: `/napravlenie/${d.slug}`,
+      label: d.title,
+      meta: d.price,
+    })),
+  },
+  {
+    href: "/napravlenie#otrasli",
+    label: "Отрасли",
+    hint: "сайт под ваш бизнес",
+    children: NICHES.map((n) => ({
+      href: `/dlya/${n.slug}`,
+      label: n.title,
+      meta: n.price,
+    })),
+  },
+  {
+    href: "/templates",
+    label: "Готовые сайты",
+    hint: "запуск за 1–2 недели",
+  },
+  {
+    href: "/cases",
+    label: "Кейсы",
+    hint: "наши работы",
+  },
+  {
+    href: "/blog",
+    label: "Блог",
+    hint: "цены и разборы",
+  },
+  {
+    href: "/#contacts",
+    label: "Контакты",
+    hint: "обсудить проект",
+  },
 ] as const;
 
 export const TICKER_ITEMS =

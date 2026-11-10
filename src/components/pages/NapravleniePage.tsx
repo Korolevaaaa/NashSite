@@ -83,38 +83,40 @@ export default function NapravleniePage() {
           ))}
         </ul>
 
-        <h2 className="mt-16 font-body text-[clamp(20px,2.4vw,28px)] font-semibold tracking-[-0.02em] text-[var(--z-ink)]">
-          По отрасли — для кого делаем
-        </h2>
-        <p className="mt-3 max-w-[56ch] text-[15px] leading-[1.6] text-[var(--z-muted)]">
-          Если вам удобнее искать по своей нише — здесь собраны макеты и кейсы под конкретный бизнес.
-        </p>
-        <ul className="dir-grid dir-grid--uniform mt-8">
-          {NICHES.map((n) => (
-            <li key={n.slug} className="dir-cell">
-              <a
-                href={`/dlya/${n.slug}`}
-                className="dir-cell__link"
-                aria-label={`${n.title} — открыть страницу`}
-              >
-                <h3 className="dir-cell__title">{n.title}</h3>
-                <p className="dir-cell__text">{n.text}</p>
-                <span className="dir-cell__foot">
-                  <span className="price">{n.price}</span>
-                  <span className="dir-cell__arrow" aria-hidden="true">
-                    <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
-                      <path
-                        d="M3 13L13 3M13 3H6M13 3v7"
-                        stroke="currentColor"
-                        strokeWidth="1.5"
-                      />
-                    </svg>
+        <section id="otrasli">
+          <h2 className="mt-16 font-body text-[clamp(20px,2.4vw,28px)] font-semibold tracking-[-0.02em] text-[var(--z-ink)]">
+            По отрасли — для кого делаем
+          </h2>
+          <p className="mt-3 max-w-[56ch] text-[15px] leading-[1.6] text-[var(--z-muted)]">
+            Если вам удобнее искать по своей нише — здесь собраны макеты и кейсы под конкретный бизнес.
+          </p>
+          <ul className="dir-grid dir-grid--uniform mt-8">
+            {NICHES.map((n) => (
+              <li key={n.slug} className="dir-cell">
+                <a
+                  href={`/dlya/${n.slug}`}
+                  className="dir-cell__link"
+                  aria-label={`${n.title} — открыть страницу`}
+                >
+                  <h3 className="dir-cell__title">{n.title}</h3>
+                  <p className="dir-cell__text">{n.text}</p>
+                  <span className="dir-cell__foot">
+                    <span className="price">{n.price}</span>
+                    <span className="dir-cell__arrow" aria-hidden="true">
+                      <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
+                        <path
+                          d="M3 13L13 3M13 3H6M13 3v7"
+                          stroke="currentColor"
+                          strokeWidth="1.5"
+                        />
+                      </svg>
+                    </span>
                   </span>
-                </span>
-              </a>
-            </li>
-          ))}
-        </ul>
+                </a>
+              </li>
+            ))}
+          </ul>
+        </section>
       </div>
     </main>
   );

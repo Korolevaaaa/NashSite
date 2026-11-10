@@ -193,7 +193,17 @@ export default function App() {
   useEffect(() => {
     document.title = titleOf(route);
     if (route.name !== "main") {
-      window.scrollTo(0, 0);
+      // in-page anchors on subpages (/napravlenie#otrasli) scroll to target
+      const h = window.location.hash;
+      if (h.length > 1) {
+        requestAnimationFrame(() => {
+          document
+            .querySelector(h)
+            ?.scrollIntoView({ behavior: "smooth" });
+        });
+      } else {
+        window.scrollTo(0, 0);
+      }
     } else if (route.anchor) {
       // coming back from a subpage to a section anchor
       const anchor = route.anchor;
