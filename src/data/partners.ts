@@ -18,7 +18,7 @@ export const PARTNERS: Partner[] = [
   {
     ref: "dmitry",
     name: "Дмитрий Нарикаев",
-    role: "Коммерческий директор",
+    role: "Партнёр по продажам",
     promo: "ZETRO-D",
     login: "dmitry",
     password: "zt-partner-2026",
