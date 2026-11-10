@@ -1,16 +1,14 @@
 import { initialsOf, type Partner } from "../data/partners";
 import { CONTACT_EMAIL } from "../data/content";
 
-/* Плавающая карточка «ваш менеджер» — показывается посетителям,
-   пришедшим по ref-ссылке партнёра. CTA ведёт на контакты партнёра
-   (его лиды идут напрямую к нему, минуя общие каналы). */
+/* Плавающая карточка «ваш менеджер» — показывается ТОЛЬКО посетителям,
+   пришедшим по ref-ссылке партнёра. Заявка уходит на общую почту, но
+   уже с пометкой источника; для звонков здесь же показан промокод —
+   клиент называет его, и лид засчитывается партнёру. */
 export default function PartnerBadge({ partner }: { partner: Partner }) {
-  const tg = partner.telegram?.replace(/^@/, "");
-  const href = tg
-    ? `https://t.me/${tg}`
-    : partner.phone
-      ? `tel:${partner.phone.replace(/[^\d+]/g, "")}`
-      : `mailto:${partner.email ?? CONTACT_EMAIL}?subject=${encodeURIComponent(`Заявка с сайта — менеджер ${partner.name}`)}`;
+  const href = `mailto:${partner.email ?? CONTACT_EMAIL}?subject=${encodeURIComponent(
+    `Заявка с сайта — менеджер ${partner.name}`,
+  )}&body=${encodeURIComponent(`Источник: ${partner.name} (ref: ${partner.ref})\n\n`)}`;
 
   return (
     <aside
@@ -46,6 +44,12 @@ export default function PartnerBadge({ partner }: { partner: Partner }) {
       >
         Написать менеджеру
       </a>
+      {partner.promo && (
+        <p className="mt-2.5 text-center text-[11px] leading-snug text-[var(--z-ink)]/50">
+          При звонке назовите промокод{" "}
+          <b className="text-[var(--z-action)]">{partner.promo}</b>
+        </p>
+      )}
     </aside>
   );
 }
