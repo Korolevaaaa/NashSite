@@ -1,21 +1,39 @@
 import { useState } from "react";
 import { CONTACT_EMAIL, TELEGRAM_URL } from "../../data/content";
 import { useInView } from "../../hooks/useInView";
+import { submitLead } from "../../lib/leads";
 
 export default function Contacts() {
   const { ref, inView } = useInView<HTMLElement>();
-  const [brief, setBrief] = useState({ name: "", budget: "", task: "" });
-
-  const subject = encodeURIComponent("Заявка с сайта zetronix.ru");
-  const body = encodeURIComponent(
-    [
-      "Заявка с сайта",
-      `Имя: ${brief.name || "—"}`,
-      `Бюджет: ${brief.budget || "—"}`,
-      `Задача: ${brief.task || "—"}`,
-    ].join("\n"),
+  const [brief, setBrief] = useState({
+    name: "",
+    contact: "",
+    budget: "",
+    task: "",
+  });
+  const [consent, setConsent] = useState(false);
+  const [state, setState] = useState<"idle" | "sending" | "done" | "error">(
+    "idle",
   );
-  const mailHref = `mailto:${CONTACT_EMAIL}?subject=${subject}&body=${body}`;
+
+  const mailHref = `mailto:${CONTACT_EMAIL}?subject=${encodeURIComponent(
+    "Заявка с сайта zetronix.ru",
+  )}`;
+
+  const submit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!consent || state === "sending") return;
+    setState("sending");
+    const r = await submitLead({
+      name: brief.name.trim(),
+      contact: brief.contact.trim(),
+      comment: [brief.budget && `Бюджет: ${brief.budget}`, brief.task]
+        .filter(Boolean)
+        .join("\n"),
+      page: location.pathname,
+    });
+    setState(r === "error" ? "error" : "done");
+  };
 
   return (
     <section
@@ -67,16 +85,34 @@ export default function Contacts() {
         <div className="contact-brief">
           <p className="contact-brief__title">Короткий бриф</p>
           <p className="contact-brief__hint">
-            Три поля — и письмо уже наполовину написано.
+            Четыре поля — и заявка уже у нас.
           </p>
+          {state === "done" ? (
+            <p className="contact-brief__title" role="status">
+              Заявка отправлена — ответим в течение рабочего дня.
+            </p>
+          ) : (
+          <form onSubmit={submit}>
           <label className="contact-brief__field">
             <span>Имя</span>
             <input
               type="text"
+              required
               value={brief.name}
               onChange={(e) => setBrief({ ...brief, name: e.target.value })}
               placeholder="Как к вам обращаться"
               autoComplete="name"
+            />
+          </label>
+          <label className="contact-brief__field">
+            <span>Контакт</span>
+            <input
+              type="text"
+              required
+              value={brief.contact}
+              onChange={(e) => setBrief({ ...brief, contact: e.target.value })}
+              placeholder="Телефон или Telegram"
+              autoComplete="tel"
             />
           </label>
           <label className="contact-brief__field">
@@ -97,13 +133,37 @@ export default function Contacts() {
               placeholder="Что нужно сделать, в двух словах"
             />
           </label>
+          <label className="mt-1 flex cursor-pointer items-start gap-2.5 text-[12px] leading-snug text-[var(--z-ink)]/55">
+            <input
+              type="checkbox"
+              required
+              checked={consent}
+              onChange={(e) => setConsent(e.target.checked)}
+              className="mt-0.5"
+            />
+            <span>
+              Соглашаюсь с{" "}
+              <a href="/privacy" className="underline" target="_blank">
+                политикой обработки персональных данных
+              </a>
+            </span>
+          </label>
+          {state === "error" && (
+            <p className="mt-2 text-[13px] text-red-600">
+              Не отправилось — попробуйте ещё раз или напишите на почту.
+            </p>
+          )}
           <div className="contact-brief__actions">
-            <a className="btn" href={mailHref}>
-              Открыть письмо
+            <button
+              className="btn"
+              type="submit"
+              disabled={!consent || state === "sending"}
+            >
+              {state === "sending" ? "Отправляем…" : "Отправить заявку"}
               <span className="btn-arrow" aria-hidden="true">
                 →
               </span>
-            </a>
+            </button>
             {TELEGRAM_URL && (
               <a
                 className="contact-brief__tg"
@@ -115,6 +175,8 @@ export default function Contacts() {
               </a>
             )}
           </div>
+          </form>
+          )}
         </div>
       </div>
     </section>

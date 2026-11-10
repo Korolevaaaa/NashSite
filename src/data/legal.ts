@@ -8,7 +8,7 @@ export const LEGAL = {
     | "ooo", // самозанятый / ИП / ООО
   entityName: "ФИО / Название — заполнить", // TODO: реквизиты владельца
   inn: "—", // TODO: ИНН
-  city: "Барнаул",
+  city: "Новосибирск",
   address: "", // TODO: юридический/почтовый адрес
   privacyEmail: "noreply@zetronix.ru",
   siteName: "ZETRONIX",
