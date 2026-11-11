@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import Boot from "../components/Boot";
 import Header from "../components/layout/Header";
+import MobileChrome from "../components/mobile/MobileChrome";
 import Footer from "../components/layout/Footer";
 import HeroScene from "../components/hero/HeroScene";
 import Services from "../components/sections/Services";
@@ -217,6 +218,7 @@ export default function App() {
     <>
       <Boot />
       <Header />
+      {route.name !== "admin" && route.name !== "partner" && <MobileChrome />}
       {route.name === "admin" ? (
         <StorefrontAdmin />
       ) : route.name === "partner" ? (

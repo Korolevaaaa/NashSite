@@ -1,3 +1,5 @@
+import { ArrowUpRight } from "../ui/icons";
+
 const EXPERTISE = [
   { label: "Сайты", href: "#services" },
   { label: "Дизайн интерфейсов", href: "#services" },
@@ -13,22 +15,28 @@ export default function HeroCopy() {
           Открыты для новых проектов
         </p>
 
-        <h1 className="hero-title">Сайты и цифровые продукты для бизнеса</h1>
+        <h1 className="hero-title">
+          Сайты и{" "}
+          <span className="whitespace-nowrap md:whitespace-normal">цифровые продукты</span>{" "}
+          <span className="whitespace-nowrap md:whitespace-normal">для бизнеса</span>
+        </h1>
 
         <p className="hero-sub">
-          Проектируем интерфейсы, разрабатываем сайты и подключаем AI-инструменты.
+          Проектируем интерфейсы, разрабатываем сайты и подключаем{" "}
+          <span className="whitespace-nowrap">AI-инструменты</span>.
         </p>
       </div>
 
-      <div className="hero-actions">
+      <div className="hero-actions" data-hero-cta>
         <a className="hero-primary" href="/#contacts">
           Обсудить проект
-          <span aria-hidden="true">→</span>
+          <ArrowUpRight size={15} weight="bold" />
         </a>
 
         <a className="hero-secondary" href="/#cases">
-          Смотреть примеры
-          <span aria-hidden="true">→</span>
+          <span className="md:hidden">Примеры</span>
+          <span className="hidden md:inline">Смотреть примеры</span>
+          <ArrowUpRight size={15} weight="regular" />
         </a>
       </div>
 

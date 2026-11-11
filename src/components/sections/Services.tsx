@@ -1,4 +1,5 @@
 import { SERVICES } from "../../data/content";
+import { ArrowUpRight } from "../ui/icons";
 import { useInView } from "../../hooks/useInView";
 import SectionHead from "./SectionHead";
 
@@ -14,10 +15,38 @@ export default function Services() {
       <div className="mx-auto max-w-[var(--content-max)]">
         <SectionHead
           title="Услуги"
-          sub="Сайты, боты и приложения. Цена справа — стартовый пакет, точную смету считаем после брифа."
+          sub="Сайты, боты и приложения. Цены указаны за стартовый пакет. Точную смету считаем после брифа."
         />
 
-        <ul className="mt-12 border-t border-line">
+        <ul className="svc-acc mt-8 md:hidden">
+          {SERVICES.map((s, i) => (
+            <li key={s.id}>
+              <details>
+                <summary>
+                  <span className="svc-acc__n" aria-hidden="true">
+                    {String(i + 1).padStart(2, "0")}
+                  </span>
+                  <span className="svc-acc__main">
+                    <span className="svc-acc__title">{s.title}</span>
+                    <span className="svc-acc__price">{s.price}</span>
+                  </span>
+                  <span className="svc-acc__plus" aria-hidden="true">
+                    +
+                  </span>
+                </summary>
+                <div className="svc-acc__body">
+                  <p>{s.text}</p>
+                  <a href="/napravlenie" className="svc-acc__link">
+                    Подробнее
+                    <ArrowUpRight size={15} weight="regular" />
+                  </a>
+                </div>
+              </details>
+            </li>
+          ))}
+        </ul>
+
+        <ul className="mt-12 hidden border-t border-line md:block">
           {SERVICES.map((s) => (
             <li
               key={s.id}

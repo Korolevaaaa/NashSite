@@ -19,7 +19,7 @@ export default function Team() {
           sub="Шесть ролей закрывают проект целиком. С вами говорят те, кто делает работу."
         />
 
-        <p className="mt-12 max-w-[46ch] font-display text-[clamp(22px,2.4vw,32px)] font-medium leading-[1.35] tracking-[-0.005em] text-[var(--z-ink)]">
+        <p className="team-roles mt-12 max-w-[46ch] font-display text-[clamp(22px,2.4vw,32px)] font-medium leading-[1.35] tracking-[-0.005em] text-[var(--z-ink)]">
           {TEAM_ROLES.map((r, i) => (
             <span key={r}>
               {i > 0 && (
@@ -32,31 +32,37 @@ export default function Team() {
           ))}
         </p>
         <p className="zt-meta mt-8 max-w-[46ch]">
-          Знакомим лично на первом созвоне — с теми, кто будет делать ваш проект.
+          На первом созвоне знакомим с теми, кто будет делать ваш проект.
         </p>
 
         <ul className="mt-12 grid grid-cols-[repeat(auto-fill,minmax(220px,270px))] gap-6">
           {TEAM.map((m) => (
             <li
               key={m.slug}
-              className="overflow-hidden rounded-2xl border border-[var(--z-line)] bg-white"
+              className="overflow-hidden rounded-[20px] border border-[var(--z-line)] bg-white"
             >
-              <img
-                src={m.photo}
-                alt={m.alt}
-                width={800}
-                height={1000}
-                loading="lazy"
-                className="aspect-[4/5] w-full object-cover"
-              />
-              <div className="px-5 py-4">
-                <h3 className="text-[16px] font-semibold text-[var(--z-ink)]">
-                  {m.name}
-                </h3>
-                <p className="mt-1 text-[12px] leading-relaxed text-[var(--z-ink)]/55">
-                  {m.roles.join(" · ")}
-                </p>
-              </div>
+              <figure className="m-0">
+                <img
+                  src={m.photo}
+                  alt={m.alt}
+                  width={800}
+                  height={1000}
+                  loading="lazy"
+                  className="aspect-[4/5] w-full object-cover"
+                />
+                <figcaption className="px-5 py-4">
+                  <h3 className="text-[16px] font-semibold text-[var(--z-ink)]">
+                    {m.name}
+                  </h3>
+                  <p className="mt-1 text-[12px] leading-relaxed text-[var(--z-ink)]/55">
+                    {m.roles.map((r) => (
+                      <span key={r} className="team-role">
+                        {r}
+                      </span>
+                    ))}
+                  </p>
+                </figcaption>
+              </figure>
             </li>
           ))}
         </ul>
