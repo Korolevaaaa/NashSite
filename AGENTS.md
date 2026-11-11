@@ -118,3 +118,11 @@ accumA   += rib.a   * (1.0 - accumA);
 ```
 3. Never use `WEBGL_lose_context` in React cleanup (breaks under StrictMode remounts), and always output premultiplied alpha (`gl_FragColor = vec4(accumCol * k, accumA * k)`).
 
+## Production deploy (zetronix.ru)
+- Server: `root@155.212.160.35` (Ubuntu 24.04), SSH key `~/.ssh/zetronix_deploy` — no password.
+- `npm run deploy` (`scripts/deploy.mjs`): local build → commits `dist/` + `server/` + package.json/lock into the local `release` branch via plumbing (working tree untouched) → `git push deploy release`.
+- On the server, bare repo `/srv/zetronix-release.git` post-receive checks out to `/var/www/zetronix`, runs `npm ci --omit=dev`, restarts `zetronix-api` (systemd, Node on :3100, autostart enabled).
+- nginx `sites-enabled/zetronix`: serves `/var/www/zetronix/dist`, `try_files … =404` + `error_page 404 /404.html`, proxies `/api/` → `127.0.0.1:3100`. Let's Encrypt cert via certbot (auto-renew OK).
+- `server/.env` lives ONLY on the server at `/var/www/zetronix/server/.env` (untracked, survives deploys); `server/data/` for stored leads likewise.
+- There are OTHER sites on this nginx (`limit` on save.zetronix.ru, legacy `nashsite` on :8088) — don't touch them.
+
