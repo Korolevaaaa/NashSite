@@ -35,6 +35,12 @@ uniform vec2  u_mouse;     // [-1,-1] если вне секции
 
 const int N = 40;
 
+// полиномиальный smooth-min — объединяет поля ветвей без скачков градиента
+float smin2(float a, float b, float k) {
+  float h = clamp(0.5 + 0.5 * (b - a) / k, 0.0, 1.0);
+  return mix(b, a, h) - k * h * (1.0 - h);
+}
+
 // Единое ядро 3D-перекрученной шёлковой вуали:
 // sCoord — координата вдоль ленты (0..1+),
 // nCoord — поперечное отклонение от центральной оси (в долях высоты),
@@ -233,11 +239,18 @@ void main() {
     float rNorm = length(pArc);
     float nArc = (rNorm - 1.0) * rY;
 
-    // расстояния до трёх ветвей; небольшие нахлёсты у стыков — поле не рвётся
-    float dTop = x <= xTurn + 0.03 ? abs(y - spineTop) : 1e3;
-    float dBot = x <= xTurn + 0.03 ? abs(y - spineBot) : 1e3;
-    float dArc = pArc.x > -0.30 ? abs(nArc) : 1e3;
-    float dPath = min(min(dTop, dBot), dArc);
+    // расстояния до ветвей как до СЕГМЕНТОВ: за xTurn верхняя/нижняя ветви
+    // замыкаются на свои концевые точки (pT/pB), поэтому поле непрерывно
+    // по всей плоскости и лента не обрезается вертикальными срезами
+    float dxEnd = (x - xTurn) * aspect;
+    float dTop = x <= xTurn ? abs(y - spineTop)
+                            : length(vec2(dxEnd, y - yTopEnd));
+    float dBot = x <= xTurn ? abs(y - spineBot)
+                            : length(vec2(dxEnd, y - yBotEnd));
+    // дуга: вся правая половина эллипса + верхний/нижний колпачки у стыков;
+    // внутренняя левая половина эллипса исключена — лента не задваивается
+    float dArc = (pArc.x > 0.0 || abs(pArc.y) > 0.80) ? abs(nArc) : 1e3;
+    float dPath = smin2(smin2(dTop, dArc, 0.02), dBot, 0.02);
 
     // параметр вдоль пути на каждой ветви (стыки совпадают: 0.44 и 0.60)
     float sTop = x * (0.44 / xTurn);
@@ -252,14 +265,16 @@ void main() {
     float wB = e / (dBot + e);
     float sPath = (sTop * wT + sArc * wA + sBot * wB) / (wT + wA + wB);
 
-    // подписанное поле: знак берётся от ближайшей ветви; на границах Вороного
-    // знак зеркалится, но |nCoord| непрерывно — тело ленты и 40 нитей
-    // идут через стыки без видимого шва
+    // подписанное поле: знак берётся от ближайшей ветви (у сегментных концов —
+    // от ближайшей концевой точки); |nCoord| непрерывно, поэтому тело ленты
+    // и все 40 нитей проходят стыки без шва
     float sgn;
     if (dTop <= dArc && dTop <= dBot) {
-      sgn = y >= spineTop ? 1.0 : -1.0;
+      float refY = x <= xTurn ? spineTop : yTopEnd;
+      sgn = y >= refY ? 1.0 : -1.0;
     } else if (dBot <= dArc) {
-      sgn = y <= spineBot ? 1.0 : -1.0; // внешняя сторона подковы остаётся «внешней»
+      float refY = x <= xTurn ? spineBot : yBotEnd;
+      sgn = y <= refY ? 1.0 : -1.0; // внешняя сторона подковы остаётся «внешней»
     } else {
       sgn = nArc >= 0.0 ? 1.0 : -1.0;
     }
