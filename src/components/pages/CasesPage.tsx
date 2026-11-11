@@ -161,7 +161,7 @@ export default function CasesPage() {
                 <a className="pf-card cs-card" href={`/case/${c.slug}`}>
                   <span className="pf-card__cover">
                     {c.cover ? (
-                      <img src={c.cover} alt="" loading="lazy" />
+                      <img src={c.cover} alt={`${c.name}: ${c.title}`} loading="lazy" />
                     ) : (
                       <span className="pf-card__mark latn-display" aria-hidden="true">
                         {c.name}

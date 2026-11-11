@@ -169,6 +169,7 @@ export default function BlogPostPage({ slug }: { slug: string }) {
     title: post?.seoTitle ?? post?.title,
     image: post?.cover,
     type: "article",
+    robots: post ? undefined : "noindex,follow",
     jsonLd: post
       ? [
           {

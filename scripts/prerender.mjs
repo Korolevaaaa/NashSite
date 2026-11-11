@@ -109,6 +109,23 @@ async function main() {
     }
   }
 
+  // кастомная 404-страница: статик-хосты отдают dist/404.html
+  // на неизвестных путях (GitHub Pages, Netlify, nginx и т.п.)
+  try {
+    await page.goto(`http://localhost:${PORT}/404`, {
+      waitUntil: "networkidle2",
+    });
+    await new Promise((r) => setTimeout(r, 1800));
+    const html = (await page.content()).replaceAll(
+      `http://localhost:${PORT}`,
+      SITE,
+    );
+    writeFileSync(join(DIST, "404.html"), html, "utf8");
+    process.stdout.write("  prerendered /404 → 404.html\n");
+  } catch (e) {
+    process.stderr.write(`  !! /404: ${e.message}\n`);
+  }
+
   await browser.close();
   await server.close();
 

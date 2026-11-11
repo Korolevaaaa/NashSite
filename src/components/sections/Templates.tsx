@@ -178,7 +178,7 @@ export function TemplateCard({ item }: { item: StoreItem }) {
       {href ? (
         <a className="sf-card__media" href={href}>
           {item.cover ? (
-            <img src={item.cover} alt="" loading="lazy" />
+            <img src={item.cover} alt={`Макет «${item.name}»`} loading="lazy" />
           ) : (
             <span className="sf-card__placeholder" aria-hidden="true">
               {item.name}
@@ -190,7 +190,7 @@ export function TemplateCard({ item }: { item: StoreItem }) {
       ) : (
         <div className="sf-card__media">
           {item.cover ? (
-            <img src={item.cover} alt="" loading="lazy" />
+            <img src={item.cover} alt={`Макет «${item.name}»`} loading="lazy" />
           ) : (
             <span className="sf-card__placeholder" aria-hidden="true">
               {item.name}

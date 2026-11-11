@@ -10,6 +10,7 @@ export interface SeoOptions {
   title?: string; // og:title; document.title задаёт роутер
   image?: string; // og:image, относительный путь ок
   type?: string; // og:type, default "website"
+  robots?: string; // meta robots, напр. "noindex,follow" для 404-фоллбэков
   jsonLd?: object | object[];
 }
 
@@ -19,6 +20,7 @@ export function useSeo({
   title,
   image,
   type = "website",
+  robots,
   jsonLd,
 }: SeoOptions) {
   useEffect(() => {
@@ -50,6 +52,7 @@ export function useSeo({
     setMeta("property", "og:url", url);
     if (imgAbs) setMeta("property", "og:image", imgAbs);
     setMeta("name", "twitter:card", "summary_large_image");
+    if (robots) setMeta("name", "robots", robots);
 
     // canonical
     let canonical = document.head.querySelector<HTMLLinkElement>(

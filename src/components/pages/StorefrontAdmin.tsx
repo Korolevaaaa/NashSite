@@ -403,7 +403,7 @@ export default function StorefrontAdmin() {
           {[...draft, ...published].map((card) => (
             <li key={card.id} className="sf-item">
               {card.cover ? (
-                <img className="sf-item__thumb" src={card.cover} alt="" />
+                <img className="sf-item__thumb" src={card.cover} alt={card.name} />
               ) : (
                 <span className="sf-item__thumb sf-item__thumb--empty" />
               )}

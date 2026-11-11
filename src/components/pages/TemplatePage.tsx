@@ -22,6 +22,7 @@ export default function TemplatePage({ slug }: { slug: string }) {
     title: t?.seoTitle,
     image: t?.hero,
     type: "product",
+    robots: t ? undefined : "noindex,follow",
   });
 
   useEffect(() => {

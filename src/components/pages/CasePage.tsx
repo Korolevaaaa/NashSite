@@ -29,6 +29,7 @@ export default function CasePage({ slug }: { slug: string }) {
       : undefined,
     image: c?.cover,
     type: "article",
+    robots: c ? undefined : "noindex,follow",
   });
 
   useEffect(() => {
@@ -270,7 +271,7 @@ export default function CasePage({ slug }: { slug: string }) {
                       aria-label={`Увеличить скриншот: ${s.heading}`}
                       onClick={() => setZoom({ src: s.shot!, alt: s.heading })}
                     >
-                      <img src={s.shot} alt="" loading="lazy" />
+                      <img src={s.shot} alt={`${c.name} — ${s.heading}`} loading="lazy" />
                     </button>
                   )}
                 </section>
@@ -291,7 +292,7 @@ export default function CasePage({ slug }: { slug: string }) {
                   aria-label={`Увеличить экран ${i + 1}`}
                   onClick={() => setZoom({ src: g, alt: `${c.name} — экран ${i + 1}` })}
                 >
-                  <img src={g} alt="" loading="lazy" />
+                  <img src={g} alt={`${c.name} — экран ${i + 1}`} loading="lazy" />
                 </button>
               ))}
             </div>
@@ -333,7 +334,7 @@ export default function CasePage({ slug }: { slug: string }) {
                   <a className="pf-card cs-card" href={`/case/${x.slug}`}>
                     <span className="pf-card__cover">
                       {x.cover ? (
-                        <img src={x.cover} alt="" loading="lazy" />
+                        <img src={x.cover} alt={`${x.name}: ${x.title}`} loading="lazy" />
                       ) : (
                         <span className="pf-card__mark latn-display" aria-hidden="true">
                           {x.name}

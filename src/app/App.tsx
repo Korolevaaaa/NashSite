@@ -25,6 +25,7 @@ import TemplatePage from "../components/pages/TemplatePage";
 import TemplatesPage from "../components/pages/TemplatesPage";
 import NapravleniePage from "../components/pages/NapravleniePage";
 import PartnerPage from "../components/pages/PartnerPage";
+import NotFound from "../components/pages/NotFound";
 import { PrivacyPage, OfferPage } from "../components/pages/LegalPage";
 import LeadModal from "../components/LeadModal";
 import ChatWidget from "../components/ChatWidget";
@@ -58,7 +59,8 @@ type Route =
   | { name: "blog" }
   | { name: "post"; slug: string }
   | { name: "template"; slug: string }
-  | { name: "templates" };
+  | { name: "templates" }
+  | { name: "notfound" };
 
 function routeOf(): Route {
   const p = window.location.pathname;
@@ -86,6 +88,7 @@ function routeOf(): Route {
   if (m) return { name: "niche", slug: m[1] };
   m = p.match(/^\/template\/([\w-]+)/);
   if (m) return { name: "template", slug: m[1] };
+  if (p !== "/" && p !== "") return { name: "notfound" };
   return { name: "main", anchor: h.length > 1 ? h : null };
 }
 
@@ -129,6 +132,8 @@ function titleOf(r: Route): string {
       const t = TEMPLATES.find((x) => x.slug === r.slug);
       return t ? t.seoTitle : "Готовый макет — ZETRONIX";
     }
+    case "notfound":
+      return "Страница не найдена — ZETRONIX";
     default:
       return BASE_TITLE;
   }
@@ -246,6 +251,8 @@ export default function App() {
         <TemplatesPage />
       ) : route.name === "directions" ? (
         <NapravleniePage />
+      ) : route.name === "notfound" ? (
+        <NotFound />
       ) : (
         <main>
           <HomeSeo />
