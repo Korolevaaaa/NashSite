@@ -212,17 +212,18 @@ void main() {
     accumCol += topRib.rgb * (1.0 - accumA);
     accumA   += topRib.a   * (1.0 - accumA);
 
-    // Ветвь 2 (разворот у правого края + возврат справа -> налево на середине высоты y ≈ 0.47)
+    // Ветвь 2 (разворот у правого края + возврат справа -> налево вдоль низа
+    // секции на уровне кнопки «Смотреть все кейсы», y ≈ 0.15)
     float xRev = 1.0 - x; // координата движения обратно налево
     float spineBot =
-        0.47
-      + 0.052 * sin(xRev * 4.2 - t * 0.22 + ph + 2.2)
-      + 0.022 * cos(xRev * 7.6 - t * 0.15 + ph * 1.3)
-      + 0.055 * smoothstep(0.68, 0.96, x) // справа поднимается навстречу верхней ветви
+        0.15
+      + 0.045 * sin(xRev * 4.2 - t * 0.22 + ph + 2.2)
+      + 0.020 * cos(xRev * 7.6 - t * 0.15 + ph * 1.3)
+      + 0.095 * smoothstep(0.60, 0.95, x) // справа поднимается навстречу верхней ветви
       + mPush * 0.45;
     float dSpineBot =
-       -0.052 * 4.2 * cos(xRev * 4.2 - t * 0.22 + ph + 2.2)
-      + 0.022 * 7.6 * sin(xRev * 7.6 - t * 0.15 + ph * 1.3);
+       -0.045 * 4.2 * cos(xRev * 4.2 - t * 0.22 + ph + 2.2)
+      + 0.020 * 7.6 * sin(xRev * 7.6 - t * 0.15 + ph * 1.3);
     float envBot = smoothstep(0.0, 0.10, x) * (1.0 - smoothstep(0.86, 0.97, x));
 
     vec4 botRib = evalSilkRibbon(1.02 + xRev * 1.05, y - spineBot, amp * 1.05, dSpineBot, envBot, 1.4, t);
@@ -231,7 +232,7 @@ void main() {
 
     // Ветвь 3 (правая дуга-петля, соединяющая верхнюю и нижнюю ветви у правого края)
     float yTopEnd = 0.77 + 0.03 * sin(xTurn * 4.4 - t * 0.22 + ph);
-    float yBotEnd = 0.52 + 0.03 * sin((1.0 - xTurn) * 4.2 - t * 0.22 + ph + 2.2);
+    float yBotEnd = 0.23 + 0.03 * sin((1.0 - xTurn) * 4.2 - t * 0.22 + ph + 2.2);
     float yMid = 0.5 * (yTopEnd + yBotEnd);
     float rY   = max(0.5 * (yTopEnd - yBotEnd), 0.08);
     float rX   = 0.075; // горизонтальный вылет дуги в правое поле
