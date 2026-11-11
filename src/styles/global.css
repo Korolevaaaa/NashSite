@@ -5325,7 +5325,7 @@ button.case-hero {
    огибает правое поле за колонкой и уходит влево до левого края внизу */
 .wave-slot--competencies {
   top: -24px;
-  bottom: -96px;
+  bottom: -140px;
   left: -9vw;
   right: -9vw;
   -webkit-mask-image:

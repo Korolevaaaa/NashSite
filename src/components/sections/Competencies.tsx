@@ -23,7 +23,7 @@ export default function Competencies() {
           seed={3.8}
           variant="loop"
           interactive
-          loop={{ xTurn: 0.87, yMid: 0.50, rY: 0.35, rX: 0.10, entry: 0.17, exit: 0.96 }}
+          loop={{ xTurn: 0.87, yMid: 0.50, rY: 0.36, rX: 0.10, entry: 0.17, exit: 0.96 }}
         />
         </div>
         <div className="relative z-[1]">
