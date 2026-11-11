@@ -5396,13 +5396,28 @@ button.case-hero {
     height: 210px;
     opacity: 0.7;
   }
-  .wave-slot-host--faq,
   .wave-slot--services,
-  .wave-slot--page-hero,
+  .wave-slot--page-hero {
+    left: -6vw;
+    right: -6vw;
+    top: -36px;
+    height: 200px;
+    opacity: 0.8;
+  }
   .wave-slot--competencies,
-  .wave-slot--cases,
+  .wave-slot--cases {
+    left: -7vw;
+    right: -7vw;
+    opacity: 0.85;
+  }
+  .wave-slot-host--faq {
+    height: 180px;
+    margin-top: 12px;
+  }
   .wave-slot--contacts {
-    display: none;
+    right: -6vw;
+    height: 220px;
+    opacity: 0.8;
   }
 }
 
