@@ -2,6 +2,7 @@ import { useState } from "react";
 import { COMPETENCIES } from "../../data/content";
 import { useInView } from "../../hooks/useInView";
 import SectionHead from "./SectionHead";
+import WaveShader from "../ui/WaveShader";
 
 const DIPLOMA_SLOTS = 6;
 
@@ -15,13 +16,18 @@ export default function Competencies() {
       ref={ref}
       className={`reveal zt-sec--dense px-[var(--page-gutter)] ${inView ? "is-in" : ""}`}
     >
-      <div className="mx-auto max-w-[var(--content-max)]">
-        <SectionHead
-          title="Компетенции"
-          sub="Стек и практики, которые мы применяем в каждом проекте."
-        />
+      <div className="relative mx-auto max-w-[var(--content-max)]">
+        <div className="wave-slot wave-slot--competencies" aria-hidden="true">
+          <WaveShader opacity={0.82} seed={3.8} interactive />
+        </div>
+        <div className="relative z-[1]">
+          <SectionHead
+            title="Компетенции"
+            sub="Стек и практики, которые мы применяем в каждом проекте."
+          />
+        </div>
 
-        <div className="mt-12 grid grid-cols-1 gap-x-16 gap-y-12 md:grid-cols-2">
+        <div className="relative z-[1] mt-12 grid grid-cols-1 gap-x-16 gap-y-12 md:grid-cols-2">
           {COMPETENCIES.map((c) => (
             <div key={c.title} className="border-t border-line pt-6">
               <h3 className="font-display text-[24px] font-medium text-[var(--z-ink)]">

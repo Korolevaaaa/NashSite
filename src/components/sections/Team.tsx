@@ -3,6 +3,7 @@ import { PARTNERS, initialsOf } from "../../data/partners";
 import { TEAM } from "../../data/team";
 import { useInView } from "../../hooks/useInView";
 import SectionHead from "./SectionHead";
+import WaveShader from "../ui/WaveShader";
 
 export default function Team() {
   const { ref, inView } = useInView<HTMLElement>();
@@ -13,29 +14,34 @@ export default function Team() {
       ref={ref}
       className={`reveal zt-sec px-[var(--page-gutter)] ${inView ? "is-in" : ""}`}
     >
-      <div className="mx-auto max-w-[var(--content-max)]">
-        <SectionHead
-          title="Команда"
-          sub="Шесть ролей закрывают проект целиком. С вами говорят те, кто делает работу."
-        />
+      <div className="relative mx-auto max-w-[var(--content-max)]">
+        <div className="wave-slot wave-slot--team" aria-hidden="true">
+          <WaveShader opacity={0.85} seed={4.5} interactive />
+        </div>
+        <div className="relative z-[1]">
+          <SectionHead
+            title="Команда"
+            sub="Шесть ролей закрывают проект целиком. С вами говорят те, кто делает работу."
+          />
 
-        <p className="team-roles mt-12 max-w-[46ch] font-display text-[clamp(22px,2.4vw,32px)] font-medium leading-[1.35] tracking-[-0.005em] text-[var(--z-ink)]">
-          {TEAM_ROLES.map((r, i) => (
-            <span key={r}>
-              {i > 0 && (
-                <span aria-hidden="true" className="mx-3 text-[var(--z-action)]">
-                  /
-                </span>
-              )}
-              {r}
-            </span>
-          ))}
-        </p>
-        <p className="zt-meta mt-8 max-w-[46ch]">
-          На первом созвоне знакомим с теми, кто будет делать ваш проект.
-        </p>
+          <p className="team-roles mt-12 max-w-[46ch] font-display text-[clamp(22px,2.4vw,32px)] font-medium leading-[1.35] tracking-[-0.005em] text-[var(--z-ink)]">
+            {TEAM_ROLES.map((r, i) => (
+              <span key={r}>
+                {i > 0 && (
+                  <span aria-hidden="true" className="mx-3 text-[var(--z-action)]">
+                    /
+                  </span>
+                )}
+                {r}
+              </span>
+            ))}
+          </p>
+          <p className="zt-meta mt-8 max-w-[46ch]">
+            На первом созвоне знакомим с теми, кто будет делать ваш проект.
+          </p>
+        </div>
 
-        <ul className="mt-12 grid grid-cols-2 gap-4 md:grid-cols-[repeat(auto-fill,minmax(220px,270px))] md:gap-6">
+        <ul className="relative z-[1] mt-12 grid grid-cols-2 gap-4 md:grid-cols-[repeat(auto-fill,minmax(220px,270px))] md:gap-6">
           {TEAM.map((m) => (
             <li
               key={m.slug}

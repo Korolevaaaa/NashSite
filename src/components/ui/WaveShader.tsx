@@ -1,13 +1,17 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef } from "react";
 
-/* «Шёлковые волны» — декоративный WebGL-фон в пустых зонах секций.
-   19 нитей с индивидуальными частотами/амплитудами (переплетение,
-   а не параллельный чертёж), трёхступенчатый градиент mist→teal→cyan,
-   premultiplied-вывод с композитингом «over» внутри шейдера,
-   перпендикулярное расстояние до кривой через аналитическую
-   производную, «дыхание» скорости течения, реакция на курсор
-   (только interactive=true), ленивая инициализация, SVG-фолбэк,
-   reduced-motion → статичный кадр. */
+/* «Шёлковая 3D-вуаль» — широкая перекручивающаяся в пространстве лента
+   (twisted silk ribbon) как на референсе:
+   1. Две огибающие кромки y1(x) и y2(x) перекрещиваются в узлах перекрута.
+      Когда лента сжимается в узел (twist), оптическая плотность растёт
+      по закону Бера — Ламберта: широкие крылья воздушные и полупрозрачные,
+      а сгиб и перекрут уходят в глубокий благородный teal/slate.
+   2. Поверх полупрозрачного шёлкового тела идут 44 субпиксельные
+      микро-нити (филаменты), которые собираются в плотный жгут на перекруте
+      и веером раскрываются на широких дугах.
+   3. Вдоль огибающих кромок скользит френелевский блик и тонкая теневая
+      складка — лента читается как объёмная ткань в воздухе, а не плоский
+      градиент или «щупальце». */
 
 const VERT = `
 attribute vec2 a_pos;
@@ -22,111 +26,189 @@ precision mediump float;
 #endif
 
 uniform vec2  u_res;
-uniform float u_flow;      // интегрированное время с «дыханием»
+uniform float u_flow;
 uniform float u_opacity;
 uniform float u_dpr;
 uniform float u_seed;
-uniform vec2  u_mouse;     // [-1,-1] если курсор вне/неактивен
+uniform float u_variant;   // 0 = wide flow, 1 = editorial arc, 2 = ambient sweep
+uniform vec2  u_mouse;     // [-1,-1] если вне секции
 
-vec3 sheetColor(float x) {
-  vec3 mist = vec3(0.80, 0.84, 0.86);
-  vec3 teal = vec3(0.00, 0.50, 0.52);
-  vec3 cyan = vec3(0.00, 0.82, 0.87);
-  float t1 = smoothstep(0.18, 0.55, x);
-  vec3 c = mix(mist, teal, t1);
-  float t2 = smoothstep(0.62, 0.95, x);
-  return mix(c, cyan, t2 * 0.8);
-}
+const int N = 40;
 
 void main() {
   vec2 uv = gl_FragCoord.xy / u_res;
+  float aspect = u_res.x / max(u_res.y, 1.0);
+  float t = u_flow;
 
-  // лёгкая перспективная деформация: лист не лежит фронтально
-  vec2 w = uv;
-  w.y += 0.035 * (uv.x - 0.5) * (uv.y - 0.5);
-  w.x += 0.018 * sin(uv.y * 3.14) * smoothstep(0.0, 1.0, uv.x);
+  // координаты вдоль потока: на широких баннерах даём 1.15 периода,
+  // чтобы были видны раскрытие → узел перекрута → крутая дуга с гребнем
+  float x = uv.x;
+  float y = uv.y;
 
-  float drift = sin(u_flow * 0.07 + u_seed) * 0.6;
-  float swell = sin(w.x * 3.14 - u_flow * 0.08 + u_seed) * 0.045;
-
-  float env = smoothstep(0.0, 0.24, w.x) * (1.0 - 0.30 * smoothstep(0.7, 1.0, w.x));
-
-  // центральная ось листа
-  float p1 = 6.0  * w.x - u_flow * 0.17 + drift;
-  float p2 = 11.5 * w.x - u_flow * 0.11 + u_seed * 2.5;
-  float wave = 0.095 * sin(p1) + 0.028 * sin(p2);
-  float yc = 0.52 + (w.x - 0.5) * 0.10 + swell + wave * env;
-
-  // курсор тянет лист к себе (только по x-весу — лист «приподнимается»)
-  float lift = 0.0;
+  // мягкое притяжение к курсору (как дуновение воздуха по ткани)
+  float mPush = 0.0;
   if (u_mouse.x >= 0.0) {
-    lift = exp(-pow(uv.x - u_mouse.x, 2.0) * 28.0);
-    yc += lift * (u_mouse.y - yc) * 0.14;
+    float dx = x - u_mouse.x;
+    float dy = y - u_mouse.y;
+    float dist2 = dx * dx * 2.2 + dy * dy * 4.5;
+    mPush = exp(-dist2 * 14.0) * (u_mouse.y - 0.5) * 0.16;
   }
 
-  // толщина листа: широкий слева, сходится в остриё справа (+15% массы по критике)
-  float halfTh = mix(0.212, 0.039, smoothstep(0.0, 1.0, w.x));
-  halfTh *= 0.85 + 0.15 * sin(p2 * 0.5 + u_seed);
+  // центральная траектория ленты — длинная каллиграфическая S-дуга
+  float ph = u_seed * 1.7;
+  float spine =
+      0.50
+    + 0.14 * sin(x * 4.4 - t * 0.22 + ph)
+    + 0.06 * cos(x * 8.2 - t * 0.15 + ph * 1.6)
+    - 0.08 * (x - 0.5) * cos(u_seed + 0.4)
+    + mPush;
 
-  vec3 col = vec3(0.0);
-  float a = 0.0;
+  // угол перекрута ленты в 3D вокруг своей оси:
+  // в точках cos(twist)=0 кромки меняются местами (перехлёст как на референсе)
+  float twist =
+      x * 5.2
+    - t * 0.26
+    + 0.55 * sin(x * 3.3 + t * 0.14 + ph)
+    + u_seed * 2.1;
 
-  // внутренняя складка под основным листом — перегиб ткани, не вторая волна
-  {
-    float ycF = yc + (0.095 * sin(p1 + 2.1) + 0.028 * sin(p2 + 2.1)) * env * 0.45
-              - halfTh * 0.25;
-    float dNF = (w.y - ycF) / max(halfTh * 0.55, 1e-4);
-    float insideF = (1.0 - smoothstep(0.55, 1.0, abs(dNF))) * env;
-    float aF = insideF * 0.14;
-    vec3 colF = sheetColor(w.x) * 0.78; // темнее основного
-    col = colF * aF;
-    a = aF;
+  // второй слой вуали (вторичная складка со сдвигом фазы)
+  float twist2 =
+      x * 4.6
+    - t * 0.19
+    + 1.25
+    + 0.45 * cos(x * 3.8 - t * 0.12 + ph);
+
+  // полуширина раскрытой ленты: в центре и справа раскрывается в широкий парус,
+  // к краям сходится в тонкое перо
+  float wingEnv = smoothstep(0.0, 0.22, x) * smoothstep(1.0, 0.86, x);
+  float R1 = (0.19 + 0.07 * sin(x * 3.1 - t * 0.11 + ph)) * wingEnv;
+  float R2 = (0.13 + 0.05 * cos(x * 4.2 + t * 0.09 + ph)) * wingEnv;
+
+  // проекция перекрута на плоскость экрана
+  float c1 = cos(twist);
+  float s1 = sin(twist); // глубина (Z-нормаль складки)
+
+  float c2 = cos(twist2);
+  float s2 = sin(twist2);
+
+  // вторичная ось чуть смещена, создавая двойной шёлковый шлейф
+  float spine2 = spine + 0.055 * sin(x * 5.6 + t * 0.16 + ph + 1.1) * wingEnv;
+
+  vec3 accumCol = vec3(0.0);
+  float accumA  = 0.0;
+
+  // палитра ZETRONIX: воздушный серебристо-голубой → глубокий морской teal →
+  // чистый бирюзовый блик на гребне
+  vec3 colMist  = vec3(0.74, 0.81, 0.85); // воздушная вуаль на широких крыльях
+  vec3 colSlate = vec3(0.24, 0.46, 0.52); // холодный сине-стальной в полутени
+  vec3 colTeal  = vec3(0.00, 0.39, 0.43); // #006b70 — глубокий сгиб ткани
+  vec3 colCyan  = vec3(0.02, 0.72, 0.77); // #00c9d4 — каустический блик на кромке
+
+  // ===== СЛОЙ 1 + 2: Непрерывное полупрозрачное тело шёлковой вуали =====
+  for (int layer = 0; layer < 2; layer++) {
+    float isSecond = float(layer);
+    float sp = mix(spine, spine2, isSecond);
+    float cc = mix(c1, c2, isSecond);
+    float ss = mix(s1, s2, isSecond);
+    float rr = mix(R1, R2, isSecond);
+
+    // видимая толщина проекции ленты (в узле перекрута сжимается, но не в ноль)
+    float halfSpan = max(abs(cc) * rr, 0.006);
+    float u = (y - sp) / halfSpan; // -1..1 поперёк видимой проекции
+
+    // мягкая маска внутри границ ленты с антиалиасингом в экранных пикселях
+    float pxAA = 2.0 / max(u_res.y * halfSpan, 1.0);
+    float inside = 1.0 - smoothstep(1.0 - pxAA, 1.0 + pxAA, abs(u));
+
+    if (inside > 0.001) {
+      // цилиндрический профиль ткани: на краях (|u|→1) луч проходит сквозь
+      // сгиб ткани по касательной → оптический путь длиннее (Fresnel / rim density)
+      float uClamped = clamp(u, -0.995, 0.995);
+      float rim = 1.0 / sqrt(1.0 - uClamped * uClamped * 0.88); // 1.0 в центре → ~2.9 на кромке
+
+      // сжатие в узле перекрута: когда |cc| мало, вся ширина ленты собралась в жгут
+      float pinch = 1.0 / sqrt(cc * cc + 0.09); // гладкий пик в узле без излома производной
+
+      // гладкая асимметрия сгиба без ступеньки sign():
+      // плавно перетекающая ориентация складки при вращении ленты в 3D
+      float orient = (cc * ss) / sqrt(cc * cc * ss * ss + 0.06);
+      float foldBias = 0.5 + 0.5 * clamp(u * orient, -1.0, 1.0);
+
+      // продольные шёлковые волны внутри самой ткани (муар)
+      float silkWave =
+          0.5 + 0.5 * sin(u * 14.0 + x * 10.0 - t * 0.35 + isSecond * 2.4)
+                    * cos(u * 6.0  - x * 6.0  + t * 0.21);
+
+      // итоговая оптическая плотность участка вуали
+      float density = (0.13 * rim + 0.14 * pinch * foldBias + 0.06 * silkWave) * inside;
+      density *= mix(1.0, 0.62, isSecond);
+
+      // цвет зависит от плотности: тонкая вуаль = светлый mist, сгиб/узел = насыщенный teal
+      float depthMix = clamp((rim - 1.0) * 0.40 + (pinch - 1.0) * 0.24 + foldBias * 0.24, 0.0, 1.0);
+      vec3 bodyCol = mix(colMist, colSlate, smoothstep(0.0, 0.55, depthMix));
+      bodyCol = mix(bodyCol, colTeal, smoothstep(0.38, 0.92, depthMix));
+
+      // гладкий cyan-отлив на освещённом гребне без скачка знака
+      float sSmooth = ss / sqrt(ss * ss + 0.08);
+      float crestGlow = smoothstep(0.45, 0.96, -u * sSmooth) * smoothstep(0.15, 0.75, abs(cc));
+      bodyCol = mix(bodyCol, colCyan, crestGlow * 0.30);
+
+      float la = clamp(density * 0.68, 0.0, 0.72);
+      accumCol += bodyCol * la * (1.0 - accumA);
+      accumA   += la * (1.0 - accumA);
+    }
   }
 
-  float dN = (w.y - yc) / max(halfTh, 1e-4); // -1..1 поперёк листа
-  float ad = abs(dN);
-  float inside = 1.0 - smoothstep(0.80, 0.95, ad); // кромки чётче: -20% размытия
+  // ===== СЛОЙ 3: 40 субпиксельных шёлковых филаментов (микро-нитей) =====
+  // Нити лежат ВНУТРИ геометрии перекручивающейся ленты, поэтому они
+  // собираются в каустический узел на перегибе и дают ту самую текстуру с референса
+  float slopeScale = u_res.y / max(u_res.x, 1.0);
+  float halfW = 0.58 * u_dpr;
+  float aa    = 0.95 * u_dpr;
 
-  // яркое ядро + бегущие шёлковые разводы внутри листа
-  float core = exp(-ad * ad * 2.0);
-  float sheen = sin(dN * 7.0 + w.x * 9.0 - u_flow * 0.40)
-              * sin(w.x * 4.0 + u_flow * 0.23 + u_seed);
-  float lum = 0.84 + 0.16 * sheen;
+  for (int i = 0; i < N; i++) {
+    float s = (float(i) / float(N - 1)) * 2.0 - 1.0; // -1..1 по ширине ленты
 
-  vec3 colM = sheetColor(w.x);
-  colM = mix(colM * 1.08, colM, ad); // центр чуть светлее — объём
-  colM *= lum;
+    // нелинейное сгущение нитей к кромкам ленты (cos-распределение),
+    // чтобы кромка дуги звенела чётким контуром, а середина оставалась воздушной
+    float sWarp = sign(s) * pow(abs(s), 0.74);
 
-  float aM = inside * (0.55 + 0.36 * core);
+    // собственная микро-рябь каждой нити
+    float microPhase = x * (6.8 + s * 1.4) - t * (0.24 + s * 0.04) + s * 2.6 + ph;
+    float micro = 0.012 * sin(microPhase) * wingEnv;
 
-  // тонкая блестящая кромка по краям листа
-  float edge = exp(-pow((ad - 0.90) * 12.0, 2.0));
-  aM += edge * inside * 0.20;
+    // положение нити на перекрученной 3D-ленте
+    float yStrand = spine + sWarp * c1 * R1 + s * s * 0.018 * s1 + micro;
 
-  // блик-нить вдоль верхней кромки — «сгиб» шёлка (узкая, ~10% толщины)
-  float topEdge = exp(-pow((dN - 0.82) * 22.0, 2.0));
-  colM += vec3(0.0, 0.85, 0.90) * topEdge * inside * 0.18;
-  aM   += topEdge * inside * 0.10;
+    // производная dy/dx для честной субпиксельной толщины на крутых изгибах
+    float dSpine = 0.14 * 4.4 * cos(x * 4.4 - t * 0.22 + ph)
+                 - 0.06 * 8.2 * sin(x * 8.2 - t * 0.15 + ph * 1.6);
+    float dTwist = -5.2 * s1 * sWarp * R1;
+    float dy = (dSpine + dTwist) * slopeScale;
+    float d  = abs(y - yStrand) * u_res.y / sqrt(1.0 + dy * dy);
 
-  // бегущие спекулярные полосы — читаемая шёлковая фактура
-  float spec = pow(0.5 + 0.5 * sin(w.x * 14.0 + dN * 5.0 - u_flow * 0.55), 3.0);
-  colM += sheetColor(w.x) * spec * inside * 0.10;
+    float line = 1.0 - smoothstep(halfW, halfW + aa, d);
+    if (line > 0.002) {
+      // крайние нити (|s|→1) — самые чёткие (огибающая кромка как на референсе)
+      float edgeWeight = 0.25 + 0.75 * pow(abs(s), 1.6);
+      // в узле перекрута нити накладываются, создавая глубокий каустический тон
+      float knotBoost = 0.75 + 0.45 * (1.0 - abs(c1));
 
-  // курсор: мягкий cyan-блик на уже видимой части листа
-  if (u_mouse.x >= 0.0) {
-    aM += lift * aM * 0.30;
-    colM = mix(colM, vec3(0.0, 0.72, 0.78), lift * 0.22);
+      vec3 strandCol = mix(colSlate, colTeal, smoothstep(0.15, 0.85, abs(s) + (1.0 - abs(c1)) * 0.4));
+      strandCol = mix(strandCol, colCyan, pow(abs(s), 3.0) * smoothstep(0.3, 0.9, x) * 0.45);
+
+      float la = line * edgeWeight * knotBoost * 0.19;
+      accumCol += strandCol * la * (1.0 - accumA);
+      accumA   += la * (1.0 - accumA);
+    }
   }
 
-  // основной лист поверх складки — композитинг «over»
-  col = col + colM * (1.0 - a);
-  a   = a + aM * (1.0 - a);
+  // мягкое растворение у краёв контейнера, чтобы никогда не было рамки canvas
+  float fadeX = smoothstep(0.0, 0.14, x) * (1.0 - smoothstep(0.86, 1.0, x));
+  float fadeY = smoothstep(0.0, 0.12, y) * (1.0 - smoothstep(0.88, 1.0, y));
+  float k = fadeX * fadeY * u_opacity;
 
-  float fade = smoothstep(0.0, 0.18, uv.x) * (1.0 - smoothstep(0.86, 1.0, uv.x))
-             * smoothstep(0.0, 0.12, uv.y) * (1.0 - smoothstep(0.88, 1.0, uv.y));
-  float k = fade * u_opacity;
-
-  gl_FragColor = vec4(col * a * k, a * k); // premultiplied
+  gl_FragColor = vec4(accumCol * k, accumA * k); // premultiplied alpha
 }
 `;
 
@@ -143,14 +225,28 @@ function compile(gl: WebGLRenderingContext, type: number, src: string) {
   return s;
 }
 
-type Props = { opacity?: number; seed?: number; className?: string; interactive?: boolean };
+export type WaveVariant = "flow" | "arc" | "sweep";
 
-export default function WaveShader({ opacity = 0.6, seed = 0, className = "", interactive = false }: Props) {
+type Props = {
+  opacity?: number;
+  seed?: number;
+  variant?: WaveVariant;
+  className?: string;
+  interactive?: boolean;
+};
+
+export default function WaveShader({
+  opacity = 0.85,
+  seed = 0,
+  variant = "flow",
+  className = "",
+  interactive = true,
+}: Props) {
   const ref = useRef<HTMLCanvasElement>(null);
   const opRef = useRef(opacity);
   opRef.current = opacity;
 
-  const [fallbackSrc] = useState(() => (seed === 0 ? "/img/silk-about.svg" : "/img/silk-process.svg"));
+  const variantNum = variant === "arc" ? 1 : variant === "sweep" ? 2 : 0;
 
   useEffect(() => {
     const canvas = ref.current;
@@ -165,29 +261,34 @@ export default function WaveShader({ opacity = 0.6, seed = 0, className = "", in
     let ready = false;
     let dirty = true;
     let dpr = 1;
-    const t0 = performance.now();
-    const STATIC_T = 8.5;
+    let lastNow = performance.now();
+    const STATIC_T = 6.4;
     const mq = matchMedia("(prefers-reduced-motion: reduce)");
     let reduced = mq.matches;
-    let flow = 0;
-    let mouseX = -1, mouseY = -1, targetX = -1, targetY = -1;
+    let flow = 3.2;
+    let mouseX = -1,
+      mouseY = -1,
+      targetX = -1,
+      targetY = -1;
     let mouseTimeout = 0;
 
     const fail = () => {
-      if (fallbackSrc) canvas.style.backgroundImage = `url(${fallbackSrc})`;
+      canvas.style.backgroundImage = "url(/img/silk-about.svg)";
       canvas.style.backgroundSize = "cover";
       canvas.style.backgroundPosition = "center";
     };
 
     const init = (): boolean => {
-      gl = gl ?? canvas.getContext("webgl", {
-        alpha: true,
-        premultipliedAlpha: true,
-        antialias: false,
-        depth: false,
-        stencil: false,
-        powerPreference: "low-power",
-      });
+      gl =
+        gl ??
+        canvas.getContext("webgl", {
+          alpha: true,
+          premultipliedAlpha: true,
+          antialias: false,
+          depth: false,
+          stencil: false,
+          powerPreference: "low-power",
+        });
       if (!gl || gl.isContextLost()) return false;
 
       const vs = compile(gl, gl.VERTEX_SHADER, VERT);
@@ -206,12 +307,24 @@ export default function WaveShader({ opacity = 0.6, seed = 0, className = "", in
 
       buf = gl.createBuffer();
       gl.bindBuffer(gl.ARRAY_BUFFER, buf);
-      gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, 3, -1, -1, 3]), gl.STATIC_DRAW);
+      gl.bufferData(
+        gl.ARRAY_BUFFER,
+        new Float32Array([-1, -1, 3, -1, -1, 3]),
+        gl.STATIC_DRAW,
+      );
       const loc = gl.getAttribLocation(prog, "a_pos");
       gl.enableVertexAttribArray(loc);
       gl.vertexAttribPointer(loc, 2, gl.FLOAT, false, 0, 0);
 
-      for (const n of ["u_res", "u_flow", "u_opacity", "u_dpr", "u_seed", "u_mouse"]) {
+      for (const n of [
+        "u_res",
+        "u_flow",
+        "u_opacity",
+        "u_dpr",
+        "u_seed",
+        "u_variant",
+        "u_mouse",
+      ]) {
         u[n] = gl.getUniformLocation(prog, n);
       }
       gl.clearColor(0, 0, 0, 0);
@@ -220,7 +333,7 @@ export default function WaveShader({ opacity = 0.6, seed = 0, className = "", in
 
     const resize = () => {
       if (!gl) return;
-      dpr = Math.min(window.devicePixelRatio || 1, 1.5);
+      dpr = Math.min(window.devicePixelRatio || 1, 1.75);
       const w = Math.max(1, Math.round(canvas.clientWidth * dpr));
       const h = Math.max(1, Math.round(canvas.clientHeight * dpr));
       if (canvas.width !== w || canvas.height !== h) {
@@ -230,16 +343,20 @@ export default function WaveShader({ opacity = 0.6, seed = 0, className = "", in
       gl.viewport(0, 0, w, h);
     };
 
-    const draw = (t: number) => {
+    const draw = (now: number) => {
       if (!gl || !prog || gl.isContextLost()) return;
-      if (dirty) { resize(); dirty = false; }
+      if (dirty) {
+        resize();
+        dirty = false;
+      }
 
-      const dt = 1 / 60;
-      const breathe = 1.0 + 0.3 * Math.sin(t * 0.09);
+      const dt = Math.min(0.05, Math.max(0.001, (now - lastNow) / 1000));
+      lastNow = now;
+      const breathe = 1.0 + 0.22 * Math.sin(now * 0.00012 + seed);
       flow += breathe * dt;
 
-      mouseX += (targetX - mouseX) * 0.15;
-      mouseY += (targetY - mouseY) * 0.15;
+      mouseX += (targetX - mouseX) * 0.08;
+      mouseY += (targetY - mouseY) * 0.08;
 
       gl.clear(gl.COLOR_BUFFER_BIT);
       gl.uniform2f(u.u_res, canvas.width, canvas.height);
@@ -247,31 +364,37 @@ export default function WaveShader({ opacity = 0.6, seed = 0, className = "", in
       gl.uniform1f(u.u_opacity, opRef.current);
       gl.uniform1f(u.u_dpr, dpr);
       gl.uniform1f(u.u_seed, seed);
+      gl.uniform1f(u.u_variant, variantNum);
       gl.uniform2f(u.u_mouse, mouseX, mouseY);
       gl.drawArrays(gl.TRIANGLES, 0, 3);
     };
 
-    const loop = () => {
+    const loop = (now: number) => {
       raf = 0;
       if (!visible || reduced) return;
-      draw((performance.now() - t0) / 1000);
+      draw(now);
       raf = requestAnimationFrame(loop);
     };
 
     const kick = () => {
       if (!visible || !ready) return;
-      if (reduced) { draw(STATIC_T); return; }
+      lastNow = performance.now();
+      if (reduced) {
+        draw(lastNow);
+        return;
+      }
       if (!raf) raf = requestAnimationFrame(loop);
     };
 
-    // canvas лежит под текстом с pointer-events:none — слушаем секцию,
-    // а координаты считаем относительно canvas
     const onPointer = (e: PointerEvent) => {
       const r = canvas.getBoundingClientRect();
+      if (r.width <= 0 || r.height <= 0) return;
       targetX = (e.clientX - r.left) / r.width;
       targetY = 1.0 - (e.clientY - r.top) / r.height;
       clearTimeout(mouseTimeout);
-      mouseTimeout = window.setTimeout(() => { targetX = targetY = -1; }, 2000);
+      mouseTimeout = window.setTimeout(() => {
+        targetX = targetY = -1;
+      }, 2200);
     };
     const onPointerLeave = () => {
       targetX = targetY = -1;
@@ -284,11 +407,15 @@ export default function WaveShader({ opacity = 0.6, seed = 0, className = "", in
         if (visible && !ready) {
           ready = init();
           dirty = true;
-          if (!ready) { fail(); io.disconnect(); return; }
+          if (!ready) {
+            fail();
+            io.disconnect();
+            return;
+          }
         }
         kick();
       },
-      { rootMargin: "200px 0px" },
+      { rootMargin: "240px 0px" },
     );
     io.observe(canvas);
 
@@ -298,14 +425,17 @@ export default function WaveShader({ opacity = 0.6, seed = 0, className = "", in
     });
     ro.observe(canvas);
 
-    const onMq = () => { reduced = mq.matches; kick(); };
+    const onMq = () => {
+      reduced = mq.matches;
+      kick();
+    };
     mq.addEventListener("change", onMq);
 
     const pointerHost: HTMLElement | null = interactive
       ? canvas.closest("section") ?? canvas.parentElement
       : null;
     if (pointerHost) {
-      pointerHost.addEventListener("pointermove", onPointer);
+      pointerHost.addEventListener("pointermove", onPointer, { passive: true });
       pointerHost.addEventListener("pointerleave", onPointerLeave);
     }
 
@@ -326,7 +456,6 @@ export default function WaveShader({ opacity = 0.6, seed = 0, className = "", in
     canvas.addEventListener("webglcontextlost", onLost);
     canvas.addEventListener("webglcontextrestored", onRestored);
 
-    // loseContext не вызываем: StrictMode перемонтирует эффект
     return () => {
       io.disconnect();
       ro.disconnect();
@@ -344,7 +473,13 @@ export default function WaveShader({ opacity = 0.6, seed = 0, className = "", in
         if (buf) gl.deleteBuffer(buf);
       }
     };
-  }, [seed, interactive, fallbackSrc]);
+  }, [seed, variantNum, interactive]);
 
-  return <canvas ref={ref} className={`wave-shader ${className}`} aria-hidden="true" />;
+  return (
+    <canvas
+      ref={ref}
+      className={`wave-shader ${className}`}
+      aria-hidden="true"
+    />
+  );
 }

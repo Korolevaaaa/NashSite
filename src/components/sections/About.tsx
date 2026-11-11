@@ -12,11 +12,11 @@ export default function About() {
       className={`reveal zt-sec px-[var(--page-gutter)] ${inView ? "is-in" : ""}`}
     >
       <div className="relative mx-auto max-w-[var(--content-max)]">
-        {/* шёлковые волны — заполняют пустую правую половину секции */}
+        {/* 3D шёлковая вуаль — проходит широким потоком через секцию */}
         <div className="wave-slot wave-slot--about" aria-hidden="true">
-          <WaveShader opacity={0.6} seed={0} interactive />
+          <WaveShader opacity={0.92} seed={0.4} interactive />
         </div>
-        <p className="relative max-w-[30ch] font-display text-[clamp(28px,3vw,40px)] font-normal leading-[1.22] tracking-[-0.01em] text-[var(--z-ink)]">
+        <p className="relative z-[1] max-w-[30ch] font-display text-[clamp(28px,3vw,40px)] font-normal leading-[1.22] tracking-[-0.01em] text-[var(--z-ink)]">
           ZETRONIX — небольшая веб-студия. Проектируем и разрабатываем сайты,
           интерфейсы и AI-инструменты. Вы говорите{" "}
           <span className="font-medium text-[var(--z-action)]">
@@ -25,7 +25,7 @@ export default function About() {
           .
         </p>
 
-        <dl className="mt-14 flex flex-wrap gap-x-14 gap-y-6">
+        <dl className="relative z-[1] mt-14 flex flex-wrap gap-x-14 gap-y-6">
           {STATS.map((s) => (
             <div key={s.label}>
               <dt className="sr-only">{s.label}</dt>
@@ -38,7 +38,7 @@ export default function About() {
           ))}
         </dl>
 
-        <div className="mt-16 grid grid-cols-1 gap-10 border-t border-line pt-8 md:grid-cols-3">
+        <div className="relative z-[1] mt-16 grid grid-cols-1 gap-10 border-t border-line pt-8 md:grid-cols-3">
           {ABOUT.points.map((p) => (
             <div key={p.title}>
               <h3 className="font-display text-[20px] font-medium text-[var(--z-ink)]">

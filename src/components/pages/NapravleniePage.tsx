@@ -1,5 +1,6 @@
 import { DIRECTIONS, NICHES } from "../../data/content";
 import { useSeo } from "../../hooks/useSeo";
+import WaveShader from "../ui/WaveShader";
 
 /**
  * Каталог направлений — /napravlenie.
@@ -44,17 +45,22 @@ export default function NapravleniePage() {
 
   return (
     <main className="px-[var(--page-gutter)] pb-[clamp(80px,12vh,140px)] pt-[calc(var(--header-h,110px)+56px)]">
-      <div className="mx-auto max-w-[var(--content-max)]">
-        <p className="mt-10 font-mono text-[11px] font-semibold uppercase tracking-[0.12em] text-[var(--z-action)]">
-          Специализация
-        </p>
-        <h1 className="mt-4 font-body text-[clamp(34px,4.6vw,62px)] font-medium leading-[1.05] tracking-[-0.045em] text-[var(--z-ink)]">
-          Направления для бизнеса
-        </h1>
-        <p className="mt-6 max-w-[52ch] text-[16px] leading-[1.65] text-[var(--z-muted)]">
-          Семь направлений — в каждом свои сроки, цены и примеры работ.
-          Откройте своё, чтобы посмотреть состав работ и частые вопросы.
-        </p>
+      <div className="relative mx-auto max-w-[var(--content-max)]">
+        <div className="wave-slot wave-slot--page-hero" aria-hidden="true">
+          <WaveShader opacity={0.86} seed={3.4} interactive />
+        </div>
+        <div className="relative z-[1]">
+          <p className="mt-10 font-mono text-[11px] font-semibold uppercase tracking-[0.12em] text-[var(--z-action)]">
+            Специализация
+          </p>
+          <h1 className="mt-4 font-body text-[clamp(34px,4.6vw,62px)] font-medium leading-[1.05] tracking-[-0.045em] text-[var(--z-ink)]">
+            Направления для бизнеса
+          </h1>
+          <p className="mt-6 max-w-[52ch] text-[16px] leading-[1.65] text-[var(--z-muted)]">
+            Семь направлений — в каждом свои сроки, цены и примеры работ.
+            Откройте своё, чтобы посмотреть состав работ и частые вопросы.
+          </p>
+        </div>
 
         <ul className="dir-grid mt-10">
           {DIRECTIONS.map((d) => (

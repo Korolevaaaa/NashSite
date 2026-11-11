@@ -2,6 +2,7 @@ import { useMemo, useState } from "react";
 import { CASES, CASE_INDUSTRIES, CASE_TYPES } from "../../data/cases";
 import { CONTACT_EMAIL } from "../../data/content";
 import { useSeo } from "../../hooks/useSeo";
+import WaveShader from "../ui/WaveShader";
 
 type Sort = "new" | "old" | "name";
 
@@ -55,21 +56,26 @@ export default function CasesPage() {
 
   return (
     <main className="px-[var(--page-gutter)] pb-[clamp(80px,12vh,140px)] pt-[calc(var(--header-h,110px)+56px)]">
-      <div className="mx-auto max-w-[var(--content-max)]">
-        <a
-          href="/#top"
-          className="font-mono text-[11px] uppercase tracking-[0.1em] text-[var(--z-muted)] no-underline hover:text-[var(--z-action)]"
-        >
-          ← На главную
-        </a>
+      <div className="relative mx-auto max-w-[var(--content-max)]">
+        <div className="wave-slot wave-slot--page-hero" aria-hidden="true">
+          <WaveShader opacity={0.86} seed={1.9} interactive />
+        </div>
+        <div className="relative z-[1]">
+          <a
+            href="/#top"
+            className="font-mono text-[11px] uppercase tracking-[0.1em] text-[var(--z-muted)] no-underline hover:text-[var(--z-action)]"
+          >
+            ← На главную
+          </a>
 
-        <h1 className="mt-10 font-body text-[clamp(34px,4.6vw,62px)] font-medium leading-[1.05] tracking-[-0.045em] text-[var(--z-ink)]">
-          Все кейсы
-        </h1>
-        <p className="mt-5 max-w-[52ch] text-[16px] leading-[1.65] text-[var(--z-muted)]">
-          {plural(CASES.length)} — сайты, сервисы, приложения и AI-инструменты.
-          В каждом кейсе: задача, решение и результат с экранами.
-        </p>
+          <h1 className="mt-10 font-body text-[clamp(34px,4.6vw,62px)] font-medium leading-[1.05] tracking-[-0.045em] text-[var(--z-ink)]">
+            Все кейсы
+          </h1>
+          <p className="mt-5 max-w-[52ch] text-[16px] leading-[1.65] text-[var(--z-muted)]">
+            {plural(CASES.length)} — сайты, сервисы, приложения и AI-инструменты.
+            В каждом кейсе: задача, решение и результат с экранами.
+          </p>
+        </div>
 
         <div className="csp-filters">
           <div className="csp-filters__top">

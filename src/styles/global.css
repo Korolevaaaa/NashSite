@@ -5237,7 +5237,7 @@ button.case-hero {
   }
 }
 
-/* ================= WaveShader — декоративные «шёлковые» волны ================= */
+/* ================= WaveShader — 3D «шёлковая вуаль» (twisted silk ribbon) ================= */
 .wave-shader {
   position: absolute;
   inset: 0;
@@ -5249,46 +5249,154 @@ button.case-hero {
 .wave-shader--fallback {
   background-size: cover;
   background-position: center;
-  opacity: 0.5;
+  opacity: 0.55;
 }
-/* слот позиционирует canvas; текст секции живёт поверх */
 .wave-slot {
   position: absolute;
   pointer-events: none;
   z-index: 0;
 }
-/* About: только в правой половине, затухает к заголовку */
+
+/* About: широкая 3D-лента в свободном поле справа от цифр «2 / 20+» и правее заголовка,
+   над горизонтальной линией — ни одной буквы не пересекает */
 .wave-slot--about {
-  left: 42%;
-  right: 0;
-  top: 6%;
-  bottom: 18%;
-  -webkit-mask-image: linear-gradient(90deg, transparent 0 40%, #000 70%);
-  mask-image: linear-gradient(90deg, transparent 0 40%, #000 70%);
-}
-@media (max-width: 1023px) {
-  .wave-slot--about { display: none; } /* заголовок на всю ширину: декору негде жить */
-}
-/* Process: радиальное затухание, хвост ведёт к таймлайну */
-.wave-slot-host {
-  position: relative;
-  height: 220px;
-  margin-top: 32px;
-}
-.wave-slot--process {
-  top: -40px;
-  bottom: -40px;
-  left: -10vw;
-  right: -40px;
+  left: 30%;
+  right: -8vw;
+  top: 165px;
+  height: 290px;
   -webkit-mask-image:
-    linear-gradient(90deg, transparent 0%, #000 18%, #000 72%, transparent 100%),
-    linear-gradient(180deg, #000 0%, #000 65%, transparent 100%);
+    linear-gradient(90deg, transparent 0%, rgba(0,0,0,0.12) 22%, #000 44%, #000 92%, transparent 100%),
+    linear-gradient(180deg, transparent 0%, #000 18%, #000 86%, transparent 100%);
   mask-image:
-    linear-gradient(90deg, transparent 0%, #000 18%, #000 72%, transparent 100%),
-    linear-gradient(180deg, #000 0%, #000 65%, transparent 100%);
+    linear-gradient(90deg, transparent 0%, rgba(0,0,0,0.12) 22%, #000 44%, #000 92%, transparent 100%),
+    linear-gradient(180deg, transparent 0%, #000 18%, #000 86%, transparent 100%);
   -webkit-mask-composite: source-in;
   mask-composite: intersect;
 }
+
+/* Team: в верхней правой части шапки напротив заголовка «Команда» — выше строки ролей */
+.wave-slot--team {
+  left: 38%;
+  right: -8vw;
+  top: -56px;
+  height: 250px;
+  -webkit-mask-image:
+    linear-gradient(90deg, transparent 0%, rgba(0,0,0,0.28) 18%, #000 38%, #000 92%, transparent 100%),
+    linear-gradient(180deg, transparent 0%, #000 16%, #000 78%, transparent 100%);
+  mask-image:
+    linear-gradient(90deg, transparent 0%, rgba(0,0,0,0.28) 18%, #000 38%, #000 92%, transparent 100%),
+    linear-gradient(180deg, transparent 0%, #000 16%, #000 78%, transparent 100%);
+  -webkit-mask-composite: source-in;
+  mask-composite: intersect;
+}
+
+/* Process: высокая пластичная волна под липкой левой колонкой, уходящая к таймлайну */
+.wave-slot-host {
+  position: relative;
+  height: 290px;
+  margin-top: 20px;
+}
+.wave-slot--process {
+  top: -36px;
+  bottom: -44px;
+  left: -12vw;
+  right: -70px;
+  -webkit-mask-image:
+    linear-gradient(90deg, transparent 0%, #000 14%, #000 82%, transparent 100%),
+    linear-gradient(180deg, transparent 0%, #000 14%, #000 84%, transparent 100%);
+  mask-image:
+    linear-gradient(90deg, transparent 0%, #000 14%, #000 82%, transparent 100%),
+    linear-gradient(180deg, transparent 0%, #000 14%, #000 84%, transparent 100%);
+  -webkit-mask-composite: source-in;
+  mask-composite: intersect;
+}
+
+/* Competencies: горизонтальная шёлковая лента в шапке секции справа от заголовка */
+.wave-slot--competencies {
+  left: 24%;
+  right: -6vw;
+  top: -54px;
+  height: 310px;
+  -webkit-mask-image:
+    linear-gradient(90deg, transparent 0%, rgba(0,0,0,0.35) 22%, #000 48%, #000 90%, transparent 100%),
+    linear-gradient(180deg, transparent 0%, #000 18%, #000 82%, transparent 100%);
+  mask-image:
+    linear-gradient(90deg, transparent 0%, rgba(0,0,0,0.35) 22%, #000 48%, #000 90%, transparent 100%),
+    linear-gradient(180deg, transparent 0%, #000 18%, #000 82%, transparent 100%);
+  -webkit-mask-composite: source-in;
+  mask-composite: intersect;
+}
+
+/* FAQ: воздушный шлейф под заголовком левой колонки */
+.wave-slot-host--faq {
+  position: relative;
+  height: 250px;
+  margin-top: 24px;
+}
+.wave-slot--faq {
+  top: -28px;
+  bottom: -36px;
+  left: -10vw;
+  right: -50px;
+  -webkit-mask-image:
+    linear-gradient(90deg, transparent 0%, #000 14%, #000 80%, transparent 100%),
+    linear-gradient(180deg, transparent 0%, #000 16%, #000 84%, transparent 100%);
+  mask-image:
+    linear-gradient(90deg, transparent 0%, #000 14%, #000 80%, transparent 100%),
+    linear-gradient(180deg, transparent 0%, #000 16%, #000 84%, transparent 100%);
+  -webkit-mask-composite: source-in;
+  mask-composite: intersect;
+}
+
+/* Contacts: финальная волна под призывом «Обсудим ваш проект?», ведущая взгляд к форме */
+.wave-slot--contacts {
+  left: -10vw;
+  right: 34%;
+  bottom: -64px;
+  height: 270px;
+  -webkit-mask-image:
+    linear-gradient(90deg, transparent 0%, #000 14%, #000 80%, transparent 100%),
+    linear-gradient(180deg, transparent 0%, rgba(0,0,0,0.35) 28%, #000 52%, #000 88%, transparent 100%);
+  mask-image:
+    linear-gradient(90deg, transparent 0%, #000 14%, #000 80%, transparent 100%),
+    linear-gradient(180deg, transparent 0%, rgba(0,0,0,0.35) 28%, #000 52%, #000 88%, transparent 100%);
+  -webkit-mask-composite: source-in;
+  mask-composite: intersect;
+}
+
+/* Services и шапки внутренних страниц: широкая 3D-лента в свободном правом поле
+   напротив заголовка секции/страницы */
+.wave-slot--services,
+.wave-slot--page-hero {
+  left: 38%;
+  right: -8vw;
+  top: -48px;
+  height: 260px;
+  -webkit-mask-image:
+    linear-gradient(90deg, transparent 0%, rgba(0,0,0,0.28) 18%, #000 38%, #000 92%, transparent 100%),
+    linear-gradient(180deg, transparent 0%, #000 16%, #000 82%, transparent 100%);
+  mask-image:
+    linear-gradient(90deg, transparent 0%, rgba(0,0,0,0.28) 18%, #000 38%, #000 92%, transparent 100%),
+    linear-gradient(180deg, transparent 0%, #000 16%, #000 82%, transparent 100%);
+  -webkit-mask-composite: source-in;
+  mask-composite: intersect;
+}
+
 @media (max-width: 767px) {
-  .wave-slot-host { display: none; }
+  .wave-slot--about {
+    left: -6vw;
+    right: -6vw;
+    top: 150px;
+    height: 210px;
+    opacity: 0.7;
+  }
+  .wave-slot-host,
+  .wave-slot-host--faq,
+  .wave-slot--services,
+  .wave-slot--page-hero,
+  .wave-slot--team,
+  .wave-slot--competencies,
+  .wave-slot--contacts {
+    display: none;
+  }
 }

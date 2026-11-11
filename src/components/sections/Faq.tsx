@@ -2,6 +2,7 @@ import { useRef } from "react";
 import { FAQ } from "../../data/content";
 import { useInView } from "../../hooks/useInView";
 import SectionHead from "./SectionHead";
+import WaveShader from "../ui/WaveShader";
 
 function FaqItem({ q, a }: { q: string; a: string }) {
   const dRef = useRef<HTMLDetailsElement>(null);
@@ -65,6 +66,11 @@ export default function Faq() {
             title="Частые вопросы"
             sub="Сроки, стоимость, поддержка и другие важные моменты."
           />
+          <div className="wave-slot-host--faq">
+            <div className="wave-slot wave-slot--faq" aria-hidden="true">
+              <WaveShader opacity={0.82} seed={5.2} interactive />
+            </div>
+          </div>
         </div>
 
         <div className="border-t border-line">

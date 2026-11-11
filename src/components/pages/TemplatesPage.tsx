@@ -2,6 +2,7 @@ import { CONTACT_EMAIL } from "../../data/content";
 import { publishedItems } from "../../data/storefront";
 import { StorefrontGrid } from "../sections/Templates";
 import { useSeo } from "../../hooks/useSeo";
+import WaveShader from "../ui/WaveShader";
 
 /**
  * Витрина готовых макетов — /templates.
@@ -55,24 +56,29 @@ export default function TemplatesPage() {
 
   return (
     <main className="px-[var(--page-gutter)] pb-[clamp(80px,12vh,140px)] pt-[calc(var(--header-h,110px)+56px)]">
-      <div className="mx-auto max-w-[var(--content-max)]">
-        <a
-          href="/#top"
-          className="font-mono text-[11px] uppercase tracking-[0.1em] text-[var(--z-muted)] no-underline hover:text-[var(--z-action)]"
-        >
-          ← На главную
-        </a>
-        <p className="mt-10 font-mono text-[11px] font-semibold uppercase tracking-[0.12em] text-[var(--z-action)]">
-          Витрина ZETRONIX
-        </p>
-        <h1 className="mt-4 font-body text-[clamp(34px,4.6vw,62px)] font-medium leading-[1.05] tracking-[-0.045em] text-[var(--z-ink)]">
-          Готовые сайты и макеты
-        </h1>
-        <p className="mt-6 max-w-[60ch] text-[16px] leading-[1.65] text-[var(--z-muted)]">
-          Проверенные дизайны, которые адаптируем под ваш бизнес за одну-две недели — быстрее
-          и дешевле проекта с нуля. Выбираете макет, мы подставляем ваш бренд, тексты,
-          фото и город — и сайт готов принимать заявки. Разовая оплата, сайт остаётся вашим.
-        </p>
+      <div className="relative mx-auto max-w-[var(--content-max)]">
+        <div className="wave-slot wave-slot--page-hero" aria-hidden="true">
+          <WaveShader opacity={0.86} seed={2.8} interactive />
+        </div>
+        <div className="relative z-[1]">
+          <a
+            href="/#top"
+            className="font-mono text-[11px] uppercase tracking-[0.1em] text-[var(--z-muted)] no-underline hover:text-[var(--z-action)]"
+          >
+            ← На главную
+          </a>
+          <p className="mt-10 font-mono text-[11px] font-semibold uppercase tracking-[0.12em] text-[var(--z-action)]">
+            Витрина ZETRONIX
+          </p>
+          <h1 className="mt-4 font-body text-[clamp(34px,4.6vw,62px)] font-medium leading-[1.05] tracking-[-0.045em] text-[var(--z-ink)]">
+            Готовые сайты и макеты
+          </h1>
+          <p className="mt-6 max-w-[60ch] text-[16px] leading-[1.65] text-[var(--z-muted)]">
+            Проверенные дизайны, которые адаптируем под ваш бизнес за одну-две недели — быстрее
+            и дешевле проекта с нуля. Выбираете макет, мы подставляем ваш бренд, тексты,
+            фото и город — и сайт готов принимать заявки. Разовая оплата, сайт остаётся вашим.
+          </p>
+        </div>
 
         <div className="mt-10">
           <StorefrontGrid />

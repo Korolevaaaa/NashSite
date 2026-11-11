@@ -2,6 +2,7 @@ import { SERVICES } from "../../data/content";
 import { ArrowUpRight } from "../ui/icons";
 import { useInView } from "../../hooks/useInView";
 import SectionHead from "./SectionHead";
+import WaveShader from "../ui/WaveShader";
 
 export default function Services() {
   const { ref, inView } = useInView<HTMLElement>();
@@ -12,11 +13,16 @@ export default function Services() {
       ref={ref}
       className={`reveal zt-sec--dense px-[var(--page-gutter)] ${inView ? "is-in" : ""}`}
     >
-      <div className="mx-auto max-w-[var(--content-max)]">
-        <SectionHead
-          title="Услуги"
-          sub="Сайты, боты и приложения. Цены указаны за стартовый пакет. Точную смету считаем после брифа."
-        />
+      <div className="relative mx-auto max-w-[var(--content-max)]">
+        <div className="wave-slot wave-slot--services" aria-hidden="true">
+          <WaveShader opacity={0.84} seed={6.1} interactive />
+        </div>
+        <div className="relative z-[1]">
+          <SectionHead
+            title="Услуги"
+            sub="Сайты, боты и приложения. Цены указаны за стартовый пакет. Точную смету считаем после брифа."
+          />
+        </div>
 
         <ul className="svc-acc mt-8 md:hidden">
           {SERVICES.map((s, i) => (

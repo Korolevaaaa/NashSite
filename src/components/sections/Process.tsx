@@ -74,7 +74,7 @@ export default function Process() {
           </p>
           <div className="wave-slot-host">
             <div className="wave-slot wave-slot--process" aria-hidden="true">
-              <WaveShader opacity={0.5} seed={2.3} />
+              <WaveShader opacity={0.88} seed={2.1} interactive />
             </div>
           </div>
         </div>

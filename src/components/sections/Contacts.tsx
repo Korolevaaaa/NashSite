@@ -2,6 +2,7 @@ import { useState } from "react";
 import { CONTACT_EMAIL, TELEGRAM_URL } from "../../data/content";
 import { useInView } from "../../hooks/useInView";
 import { submitLead } from "../../lib/leads";
+import WaveShader from "../ui/WaveShader";
 
 export default function Contacts() {
   const { ref, inView } = useInView<HTMLElement>();
@@ -43,8 +44,11 @@ export default function Contacts() {
       ref={ref}
       className={`reveal px-[var(--page-gutter)] pb-[var(--z-sec-pad)] pt-[clamp(96px,11vw,144px)] ${inView ? "is-in" : ""}`}
     >
-      <div className="mx-auto grid max-w-[var(--content-max)] grid-cols-1 gap-12 md:grid-cols-[minmax(0,1fr)_minmax(320px,440px)]">
-        <div>
+      <div className="relative mx-auto grid max-w-[var(--content-max)] grid-cols-1 gap-12 md:grid-cols-[minmax(0,1fr)_minmax(320px,440px)]">
+        <div className="wave-slot wave-slot--contacts" aria-hidden="true">
+          <WaveShader opacity={0.86} seed={1.3} interactive />
+        </div>
+        <div className="relative z-[1]">
           <p className="zt-kicker">Следующий шаг</p>
           <h2 className="mt-6 font-display text-[clamp(44px,5.6vw,72px)] font-medium leading-[1.02] tracking-[-0.02em] text-[var(--z-ink)]">
             Обсудим
@@ -84,7 +88,7 @@ export default function Contacts() {
           </dl>
         </div>
 
-        <div className="contact-brief">
+        <div className="contact-brief relative z-[1]">
           <p className="contact-brief__title">Короткий бриф</p>
           <p className="contact-brief__hint">
             Четыре поля — и заявка уже у нас.
