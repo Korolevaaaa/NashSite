@@ -68,9 +68,14 @@ export default function Cases() {
           </div>
         </div>
 
-        {/* шёлковая лента-«обойма»: заходит слева, огибает сетку справа и уходит влево */}
+        {/* шёлковая лента-«обойма»: заходит слева, огибает сетку справа и уходит влево;
+            на узких экранах — мягкий поток в полосе над заголовком секции */}
         <div className="wave-slot wave-slot--cases" aria-hidden="true">
-          <WaveShader opacity={0.9} seed={7.7} variant="loop" />
+          <WaveShader
+            opacity={0.9}
+            seed={7.7}
+            variant={typeof window !== "undefined" && window.matchMedia("(max-width: 767px)").matches ? "flow" : "loop"}
+          />
         </div>
 
         {shown.length === 0 ? (
