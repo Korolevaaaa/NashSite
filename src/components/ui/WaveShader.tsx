@@ -33,7 +33,7 @@ uniform float u_seed;
 uniform float u_variant;   // 0 = wide flow, 1 = editorial arc, 2 = loop-«обойма»
 uniform vec2  u_mouse;     // [-1,-1] если вне секции
 uniform vec4  u_loop;      // геометрия подковы: xTurn, yMid, rY, rX
-uniform float u_loopEntry; // где верхняя ветвь «рождается» слева (0 = у самого края)
+uniform vec2  u_loopEnds;  // sPath: x = точка «рождения» ленты, y = начало затухания конца
 
 const int N = 40;
 
@@ -235,11 +235,12 @@ void main() {
     // гасим поле глубоко внутри подковы (rad < 0.55), чтобы на оси симметрии y=yMid
     // никогда не возникало паразитных изолиний, и мягко растворяем левые концы
     float innerMask = smoothstep(0.45, 0.72, rad);
-    // точка «рождения» ленты по продольной координате sPath: верхняя ветвь
-    // (sPath < 0.36) может начинаться правее левого края, нижняя (sPath > 0.64)
-    // и дуга всегда проходят весь путь; 0 = кончик у самого левого края
-    float entryFade = smoothstep(u_loopEntry, u_loopEntry + 0.06, sPath);
-    float envPath   = innerMask * entryFade * smoothstep(0.01, 0.10, sPath) * (1.0 - smoothstep(0.90, 0.99, sPath));
+    // концы ленты растворяются мягко по продольной координате sPath: верхняя
+    // ветвь «рождается» в точке u_loopEnds.x (0 = у самого левого края), нижняя
+    // уходит за край, затухая с u_loopEnds.y до конца трека — без резких срезов
+    float entryFade = smoothstep(u_loopEnds.x, u_loopEnds.x + 0.10, sPath);
+    float exitFade  = 1.0 - smoothstep(u_loopEnds.y, 1.0, sPath);
+    float envPath   = innerMask * entryFade * exitFade;
 
     if (envPath > 0.001) {
       vec4 rib = evalSilkRibbon(sPath * 2.15, nCoord, amp, 0.0, envPath, 0.0, t);
@@ -295,7 +296,8 @@ export type LoopGeometry = {
   yMid?: number;   // середина между ветвями
   rY?: number;     // вертикальный полуразмах (yMid±rY — ветви)
   rX?: number;     // вылет дуги вправо за xTurn
-  entryX?: number; // точка рождения ленты в sPath (0..0.36 на верхней ветви); 0 — у левого края
+  entry?: number; // sPath, где лента «рождается» (0..0.36 на верхней ветви); 0 — у левого края
+  exit?: number;  // sPath, с которого конец начинает растворяться; 1 — до самого края
 };
 
 const LOOP_DEFAULTS: Required<LoopGeometry> = {
@@ -303,7 +305,8 @@ const LOOP_DEFAULTS: Required<LoopGeometry> = {
   yMid: 0.485,
   rY: 0.335,
   rX: 0.095,
-  entryX: 0,
+  entry: 0,
+  exit: 0.90,
 };
 
 type Props = {
@@ -408,7 +411,7 @@ export default function WaveShader({
         "u_variant",
         "u_mouse",
         "u_loop",
-        "u_loopEntry",
+        "u_loopEnds",
       ]) {
         u[n] = gl.getUniformLocation(prog, n);
       }
@@ -453,7 +456,7 @@ export default function WaveShader({
       gl.uniform2f(u.u_mouse, mouseX, mouseY);
       const lg = loopRef.current;
       gl.uniform4f(u.u_loop, lg.xTurn, lg.yMid, lg.rY, lg.rX);
-      gl.uniform1f(u.u_loopEntry, lg.entryX);
+      gl.uniform2f(u.u_loopEnds, lg.entry, lg.exit);
       gl.drawArrays(gl.TRIANGLES, 0, 3);
     };
 
