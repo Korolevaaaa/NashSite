@@ -1457,10 +1457,11 @@ section[id] {
 }
 .pf-card {
   border: 1px solid var(--color-line);
-  background: var(--color-bg);
   border-radius: var(--r-card);
   overflow: hidden;
-  background: rgba(255, 255, 255, 0.5);
+  background: rgba(250, 251, 252, 0.94);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
   transition:
     border-color 0.25s ease,
     transform 0.25s ease,
@@ -1551,7 +1552,9 @@ section[id] {
   padding: 0 18px;
   border: 1px solid var(--color-line);
   border-radius: var(--r-pill);
-  background: rgba(255, 255, 255, 0.6);
+  background: rgba(250, 251, 252, 0.92);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
   font-family: var(--font-body);
   font-size: 14px;
   color: var(--z-ink);
@@ -1584,7 +1587,9 @@ section[id] {
   padding: 0 18px;
   border: 1px solid var(--color-line);
   border-radius: var(--r-pill);
-  background: transparent;
+  background: rgba(250, 251, 252, 0.88);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
   font-family: var(--font-body);
   font-size: 13px;
   font-weight: 500;
@@ -5350,21 +5355,32 @@ button.case-hero {
 }
 
 /* Cases: лента-«обойма» через всю секцию — волна variant="loop" рисует
-   вход слева → правый разворот → выход слева задним ходом */
+   вход слева → доходит до правого края → на середине высоты разворачивается
+   обратно налево и уходит за левый край, обвивая блок карточек */
 .wave-slot--cases {
-  inset: -30px -8vw -50px -8vw;
+  top: -20px;
+  bottom: -20px;
+  left: -9vw;
+  right: -9vw;
   -webkit-mask-image:
-    linear-gradient(90deg, transparent 0%, #000 8%, #000 94%, transparent 100%);
+    linear-gradient(90deg, transparent 0%, #000 5%, #000 96%, transparent 100%);
   mask-image:
-    linear-gradient(90deg, transparent 0%, #000 8%, #000 94%, transparent 100%);
+    linear-gradient(90deg, transparent 0%, #000 5%, #000 96%, transparent 100%);
 }
 
-/* контент кейсов над лентой — волна «обвивает» сетку, проглядывая в зазорах */
+/* контент кейсов над лентой — волна «обвивает» сетку, проглядывая сверху,
+   справа на развороте, в межрядном коридоре посередине высоты и между колонками */
 #cases .cs-filters,
 #cases .pf-grid,
 #cases .cs-more {
   position: relative;
   z-index: 1;
+}
+@media (min-width: 1024px) {
+  #cases .pf-grid--preview {
+    row-gap: 44px;
+    column-gap: 24px;
+  }
 }
 
 /* Contacts: финальная волна под призывом «Обсудим ваш проект?», ведущая взгляд к форме */

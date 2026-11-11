@@ -35,13 +35,139 @@ uniform vec2  u_mouse;     // [-1,-1] если вне секции
 
 const int N = 40;
 
+// Единое ядро 3D-перекрученной шёлковой вуали:
+// sCoord — координата вдоль ленты (0..1+),
+// nCoord — поперечное отклонение от центральной оси (в долях высоты),
+// ampScale — масштаб раскрытия крыла (в более высоких контейнерах уменьшается, чтобы толщина в px была одинаковой),
+// dSpineBase — наклон центральной оси dy/dx для честной толщины субпиксельных нитей,
+// seedOff — фазовый сдвиг.
+vec4 evalSilkRibbon(
+  float sCoord,
+  float nCoord,
+  float ampScale,
+  float dSpineBase,
+  float env,
+  float seedOff,
+  float t
+) {
+  float ph = (u_seed + seedOff) * 1.7;
+
+  // угол перекрута ленты в 3D вокруг своей оси:
+  // в точках cos(twist)=0 кромки меняются местами (перехлёст как на референсе)
+  float twist =
+      sCoord * 5.2
+    - t * 0.26
+    + 0.55 * sin(sCoord * 3.3 + t * 0.14 + ph)
+    + (u_seed + seedOff) * 2.1;
+
+  // второй слой вуали (вторичная складка со сдвигом фазы)
+  float twist2 =
+      sCoord * 4.6
+    - t * 0.19
+    + 1.25
+    + 0.45 * cos(sCoord * 3.8 - t * 0.12 + ph);
+
+  float R1 = (0.19 + 0.07 * sin(sCoord * 3.1 - t * 0.11 + ph)) * env * ampScale;
+  float R2 = (0.13 + 0.05 * cos(sCoord * 4.2 + t * 0.09 + ph)) * env * ampScale;
+
+  float c1 = cos(twist);
+  float s1 = sin(twist);
+  float c2 = cos(twist2);
+  float s2 = sin(twist2);
+
+  float off2 = 0.055 * sin(sCoord * 5.6 + t * 0.16 + ph + 1.1) * env * ampScale;
+
+  vec3 accumCol = vec3(0.0);
+  float accumA  = 0.0;
+
+  vec3 colMist  = vec3(0.74, 0.81, 0.85);
+  vec3 colSlate = vec3(0.24, 0.46, 0.52);
+  vec3 colTeal  = vec3(0.00, 0.39, 0.43);
+  vec3 colCyan  = vec3(0.02, 0.72, 0.77);
+
+  // ===== СЛОЙ 1 + 2: Непрерывное полупрозрачное тело шёлковой вуали =====
+  for (int layer = 0; layer < 2; layer++) {
+    float isSecond = float(layer);
+    float localN = nCoord - isSecond * off2;
+    float cc = mix(c1, c2, isSecond);
+    float ss = mix(s1, s2, isSecond);
+    float rr = mix(R1, R2, isSecond);
+
+    float halfSpan = max(abs(cc) * rr, 0.004 * ampScale);
+    float u = localN / halfSpan;
+
+    float pxAA = 2.0 / max(u_res.y * halfSpan, 1.0);
+    float inside = 1.0 - smoothstep(1.0 - pxAA, 1.0 + pxAA, abs(u));
+
+    if (inside > 0.001) {
+      float uClamped = clamp(u, -0.995, 0.995);
+      float rim = 1.0 / sqrt(1.0 - uClamped * uClamped * 0.88);
+      float pinch = 1.0 / sqrt(cc * cc + 0.09);
+
+      float orient = (cc * ss) / sqrt(cc * cc * ss * ss + 0.06);
+      float foldBias = 0.5 + 0.5 * clamp(u * orient, -1.0, 1.0);
+
+      float silkWave =
+          0.5 + 0.5 * sin(u * 14.0 + sCoord * 10.0 - t * 0.35 + isSecond * 2.4)
+                    * cos(u * 6.0  - sCoord * 6.0  + t * 0.21);
+
+      float density = (0.13 * rim + 0.14 * pinch * foldBias + 0.06 * silkWave) * inside;
+      density *= mix(1.0, 0.62, isSecond);
+
+      float depthMix = clamp((rim - 1.0) * 0.40 + (pinch - 1.0) * 0.24 + foldBias * 0.24, 0.0, 1.0);
+      vec3 bodyCol = mix(colMist, colSlate, smoothstep(0.0, 0.55, depthMix));
+      bodyCol = mix(bodyCol, colTeal, smoothstep(0.38, 0.92, depthMix));
+
+      float sSmooth = ss / sqrt(ss * ss + 0.08);
+      float crestGlow = smoothstep(0.45, 0.96, -u * sSmooth) * smoothstep(0.15, 0.75, abs(cc));
+      bodyCol = mix(bodyCol, colCyan, crestGlow * 0.30);
+
+      float la = clamp(density * 0.68, 0.0, 0.72);
+      accumCol += bodyCol * la * (1.0 - accumA);
+      accumA   += la * (1.0 - accumA);
+    }
+  }
+
+  // ===== СЛОЙ 3: 40 субпиксельных шёлковых филаментов (микро-нитей) =====
+  float slopeScale = u_res.y / max(u_res.x, 1.0);
+  float halfW = 0.58 * u_dpr;
+  float aa    = 0.95 * u_dpr;
+
+  for (int i = 0; i < N; i++) {
+    float s = (float(i) / float(N - 1)) * 2.0 - 1.0;
+    float sWarp = sign(s) * pow(abs(s), 0.74);
+
+    float microPhase = sCoord * (6.8 + s * 1.4) - t * (0.24 + s * 0.04) + s * 2.6 + ph;
+    float micro = 0.012 * sin(microPhase) * env * ampScale;
+
+    float nStrand = sWarp * c1 * R1 + s * s * 0.018 * s1 * ampScale + micro;
+
+    float dTwist = -5.2 * s1 * sWarp * R1;
+    float dy = (dSpineBase + dTwist) * slopeScale;
+    float d  = abs(nCoord - nStrand) * u_res.y / sqrt(1.0 + dy * dy);
+
+    float line = 1.0 - smoothstep(halfW, halfW + aa, d);
+    if (line > 0.002) {
+      float edgeWeight = 0.25 + 0.75 * pow(abs(s), 1.6);
+      float knotBoost = 0.75 + 0.45 * (1.0 - abs(c1));
+
+      vec3 strandCol = mix(colSlate, colTeal, smoothstep(0.15, 0.85, abs(s) + (1.0 - abs(c1)) * 0.4));
+      strandCol = mix(strandCol, colCyan, pow(abs(s), 3.0) * smoothstep(0.25, 0.9, fract(sCoord)) * 0.45);
+
+      float la = line * edgeWeight * knotBoost * 0.19;
+      accumCol += strandCol * la * (1.0 - accumA);
+      accumA   += la * (1.0 - accumA);
+    }
+  }
+
+  return vec4(accumCol, accumA);
+}
+
 void main() {
   vec2 uv = gl_FragCoord.xy / u_res;
   float aspect = u_res.x / max(u_res.y, 1.0);
   float t = u_flow;
 
-  // координаты вдоль потока: на широких баннерах даём 1.15 периода,
-  // чтобы были видны раскрытие → узел перекрута → крутая дуга с гребнем
   float x = uv.x;
   float y = uv.y;
 
@@ -55,241 +181,97 @@ void main() {
   }
 
   float ph = u_seed * 1.7;
-
   vec3 accumCol = vec3(0.0);
   float accumA  = 0.0;
 
-  // палитра ZETRONIX: воздушный серебристо-голубой → глубокий морской teal →
-  // чистый бирюзовый блик на гребне
-  vec3 colMist  = vec3(0.74, 0.81, 0.85); // воздушная вуаль на широких крыльях
-  vec3 colSlate = vec3(0.24, 0.46, 0.52); // холодный сине-стальной в полутени
-  vec3 colTeal  = vec3(0.00, 0.39, 0.43); // #006b70 — глубокий сгиб ткани
-  vec3 colCyan  = vec3(0.02, 0.72, 0.77); // #00c9d4 — каустический блик на кромке
-
-  float halfW = 0.58 * u_dpr;
-  float aa    = 0.95 * u_dpr;
-
   if (u_variant > 1.5) {
-    // ===== ЛЕНТА-«ОБОЙМА»: вход слева сверху → дуга-разворот у правого края
-    // → выход слева снизу. Всё строится на поле расстояния до траектории,
-    // поэтому тело ленты и все филаменты огибают разворот автоматически =====
-    float yT = 0.30
-      + 0.040 * sin(x * 5.2 - t * 0.20 + ph)
-      + 0.014 * cos(x * 9.0 - t * 0.13);
-    float yB = 0.70
-      + 0.040 * sin(x * 4.6 + t * 0.16 + ph * 1.3)
-      + 0.013 * cos(x * 8.0 + t * 0.11 + 1.7);
+    // ===== VARIANT "loop": ЛЕНТА-ОБОЙМА ВОКРУГ БЛОКА КЕЙСОВ =====
+    // 1) Верхняя ветвь заходит слева вверху (в зоне шапки/фильтров и верха 1-го ряда),
+    //    течёт направо до правого края (x ≈ 0.93).
+    // 2) У правого края плавно заворачивает вниз по дуге.
+    // 3) На середине высоты секции (между 1-м и 2-м рядом карточек, y ≈ 0.47)
+    //    разворачивается обратно налево и уходит за левый край.
+    // Вся отрисовка идёт через то же самое 3D-ядро evalSilkRibbon!
 
-    // разворот — полуокружность; x домножаем на aspect, чтобы дуга была круглой
-    float xc  = 0.86;
-    float yTc = 0.30 + 0.040 * sin(xc * 5.2 - t * 0.20 + ph)
-                   + 0.014 * cos(xc * 9.0 - t * 0.13);
-    float yBc = 0.70 + 0.040 * sin(xc * 4.6 + t * 0.16 + ph * 1.3)
-                   + 0.013 * cos(xc * 8.0 + t * 0.11 + 1.7);
-    float midC = 0.5 * (yTc + yBc);
-    float rC   = max(0.5 * (yBc - yTc), 0.03);
+    float amp = 0.44; // масштаб ширины ленты под высокий контейнер секции Кейсов
+    float xTurn = 0.87;
 
-    vec2 rel = vec2((x - xc) * aspect, y - midC);
-    float dArc = rel.x > 0.0 ? abs(length(rel) - rC) : 1e3;
-    float dTop = x <= xc ? abs(y - yT) : 1e3;
-    float dBot = x <= xc ? abs(y - yB) : 1e3;
-    float dPath = min(min(dTop, dBot), dArc);
+    // Ветвь 1 (верхняя, слева -> направо): y около 0.80 (вверху секции, GL y=1 вверху)
+    float spineTop =
+        0.81
+      + 0.048 * sin(x * 4.4 - t * 0.22 + ph)
+      + 0.020 * cos(x * 8.0 - t * 0.15 + ph * 1.5)
+      - 0.045 * smoothstep(0.62, 0.95, x) // плавный нырок к точке разворота справа
+      + mPush * 0.45;
+    float dSpineTop =
+        0.048 * 4.4 * cos(x * 4.4 - t * 0.22 + ph)
+      - 0.020 * 8.0 * sin(x * 8.0 - t * 0.15 + ph * 1.5);
+    float envTop = smoothstep(0.0, 0.12, x) * (1.0 - smoothstep(0.86, 0.97, x));
 
-    // координата вдоль пути: 0 — левый вход, ~0.5 — разворот, 1 — левый выход
-    float sPath;
-    if (dArc <= dTop && dArc <= dBot) {
-      float ang = atan(rel.y, rel.x);
-      sPath = 0.40 + (1.5708 - ang) / 3.1416 * 0.18;
-    } else if (dTop <= dBot) {
-      sPath = x * 0.42;
-    } else {
-      sPath = 0.58 + (xc - x) / xc * 0.40;
-    }
+    vec4 topRib = evalSilkRibbon(x * 1.05, y - spineTop, amp, dSpineTop, envTop, 0.0, t);
+    accumCol += topRib.rgb * (1.0 - accumA);
+    accumA   += topRib.a   * (1.0 - accumA);
 
-    // перекрут идёт вдоль пути — узлы плотности плывут через разворот
-    float twL    = sPath * 9.0 - t * 0.22 + u_seed * 2.0;
-    float cL     = cos(twL);
-    float pinchL = 1.0 / sqrt(cL * cL + 0.09);
+    // Ветвь 2 (разворот у правого края + возврат справа -> налево на середине высоты y ≈ 0.47)
+    float xRev = 1.0 - x; // координата движения обратно налево
+    float spineBot =
+        0.47
+      + 0.052 * sin(xRev * 4.2 - t * 0.22 + ph + 2.2)
+      + 0.022 * cos(xRev * 7.6 - t * 0.15 + ph * 1.3)
+      + 0.055 * smoothstep(0.68, 0.96, x) // справа поднимается навстречу верхней ветви
+      + mPush * 0.45;
+    float dSpineBot =
+       -0.052 * 4.2 * cos(xRev * 4.2 - t * 0.22 + ph + 2.2)
+      + 0.022 * 7.6 * sin(xRev * 7.6 - t * 0.15 + ph * 1.3);
+    float envBot = smoothstep(0.0, 0.10, x) * (1.0 - smoothstep(0.86, 0.97, x));
 
-    float halfTh  = 0.028 + 0.010 * (0.5 + 0.5 * sin(sPath * 7.0 + u_seed));
-    float uu      = dPath / halfTh;
-    float insideL = 1.0 - smoothstep(0.55, 1.0, uu);
-    float uC      = clamp(uu, 0.0, 0.995);
-    float rimL    = 1.0 / sqrt(1.0 - uC * uC * 0.88);
-    float silkW   = 0.5 + 0.5 * sin(uu * 10.0 + sPath * 40.0 - t * 0.3);
-    float densityL = (0.14 * rimL + 0.16 * pinchL + 0.06 * silkW) * insideL;
-    float depthL  = clamp((rimL - 1.0) * 0.40 + (pinchL - 1.0) * 0.26, 0.0, 1.0);
-    vec3 bodyL = mix(colMist, colSlate, smoothstep(0.0, 0.55, depthL));
-    bodyL = mix(bodyL, colTeal, smoothstep(0.38, 0.92, depthL));
-    float la = clamp(densityL * 0.72, 0.0, 0.75);
-    accumCol += bodyL * la * (1.0 - accumA);
-    accumA   += la * (1.0 - accumA);
+    vec4 botRib = evalSilkRibbon(1.02 + xRev * 1.05, y - spineBot, amp * 1.05, dSpineBot, envBot, 1.4, t);
+    accumCol += botRib.rgb * (1.0 - accumA);
+    accumA   += botRib.a   * (1.0 - accumA);
 
-    // 40 филаментов — изолинии поля расстояния: сами огибают разворот
-    // и сгущаются в узлах перекрута
-    for (int i = 0; i < N; i++) {
-      float s = (float(i) / float(N - 1)) * 2.0 - 1.0;
-      float sWarp = sign(s) * pow(abs(s), 0.74);
-      float off = sWarp * halfTh * 0.85
-                + 0.005 * sin(sPath * 30.0 + s * 3.0 + t * 0.2);
-      float dd   = abs(dPath - off) * u_res.y;
-      float line = 1.0 - smoothstep(halfW, halfW + aa, dd);
-      if (line > 0.002) {
-        float edgeWeight = 0.25 + 0.75 * pow(abs(s), 1.6);
-        float knotBoost  = 0.75 + 0.45 * (1.0 - abs(cL));
-        vec3 strandCol = mix(colSlate, colTeal,
-            smoothstep(0.15, 0.85, abs(s) + (1.0 - abs(cL)) * 0.4));
-        strandCol = mix(strandCol, colCyan, pow(abs(s), 3.0) * 0.4);
-        float la2 = line * edgeWeight * knotBoost * 0.18;
-        accumCol += strandCol * la2 * (1.0 - accumA);
-        accumA   += la2 * (1.0 - accumA);
-      }
+    // Ветвь 3 (правая дуга-петля, соединяющая верхнюю и нижнюю ветви у правого края)
+    float yTopEnd = 0.77 + 0.03 * sin(xTurn * 4.4 - t * 0.22 + ph);
+    float yBotEnd = 0.52 + 0.03 * sin((1.0 - xTurn) * 4.2 - t * 0.22 + ph + 2.2);
+    float yMid = 0.5 * (yTopEnd + yBotEnd);
+    float rY   = max(0.5 * (yTopEnd - yBotEnd), 0.08);
+    float rX   = 0.075; // горизонтальный вылет дуги в правое поле
+
+    vec2 pArc = vec2((x - xTurn) / rX, (y - yMid) / rY);
+    float rNorm = length(pArc);
+    float ang = atan(pArc.y, pArc.x); // -pi/2 (низ) .. +pi/2 (верх) при x > xTurn
+    float rightSide = smoothstep(-0.35, 0.15, pArc.x);
+    float arcEnv = rightSide * smoothstep(1.65, 1.0, abs(ang));
+
+    if (arcEnv > 0.002) {
+      float sArc = 0.88 + (1.5708 - ang) / 3.14159 * 0.34;
+      float nArc = (rNorm - 1.0) * rY;
+      vec4 arcRib = evalSilkRibbon(sArc, nArc, amp * 0.92, -cos(ang) * 0.6, arcEnv, 0.65, t);
+      accumCol += arcRib.rgb * arcEnv * (1.0 - accumA);
+      accumA   += arcRib.a   * arcEnv * (1.0 - accumA);
     }
   } else {
-  // ===== ШИРОКИЙ ПОТОК: перекрученная шёлковая лента через всю секцию =====
-  // центральная траектория ленты — длинная каллиграфическая S-дуга
-  float spine =
-      0.50
-    + 0.14 * sin(x * 4.4 - t * 0.22 + ph)
-    + 0.06 * cos(x * 8.2 - t * 0.15 + ph * 1.6)
-    - 0.08 * (x - 0.5) * cos(u_seed + 0.4)
-    + mPush;
+    // ===== VARIANT "flow": широкая перекрученная шёлковая лента через секцию =====
+    float spine =
+        0.50
+      + 0.14 * sin(x * 4.4 - t * 0.22 + ph)
+      + 0.06 * cos(x * 8.2 - t * 0.15 + ph * 1.6)
+      - 0.08 * (x - 0.5) * cos(u_seed + 0.4)
+      + mPush;
+    float dSpine =
+        0.14 * 4.4 * cos(x * 4.4 - t * 0.22 + ph)
+      - 0.06 * 8.2 * sin(x * 8.2 - t * 0.15 + ph * 1.6);
+    float wingEnv = smoothstep(0.0, 0.22, x) * smoothstep(1.0, 0.86, x);
 
-  // угол перекрута ленты в 3D вокруг своей оси:
-  // в точках cos(twist)=0 кромки меняются местами (перехлёст как на референсе)
-  float twist =
-      x * 5.2
-    - t * 0.26
-    + 0.55 * sin(x * 3.3 + t * 0.14 + ph)
-    + u_seed * 2.1;
-
-  // второй слой вуали (вторичная складка со сдвигом фазы)
-  float twist2 =
-      x * 4.6
-    - t * 0.19
-    + 1.25
-    + 0.45 * cos(x * 3.8 - t * 0.12 + ph);
-
-  // полуширина раскрытой ленты: в центре и справа раскрывается в широкий парус,
-  // к краям сходится в тонкое перо
-  float wingEnv = smoothstep(0.0, 0.22, x) * smoothstep(1.0, 0.86, x);
-  float R1 = (0.19 + 0.07 * sin(x * 3.1 - t * 0.11 + ph)) * wingEnv;
-  float R2 = (0.13 + 0.05 * cos(x * 4.2 + t * 0.09 + ph)) * wingEnv;
-
-  // проекция перекрута на плоскость экрана
-  float c1 = cos(twist);
-  float s1 = sin(twist); // глубина (Z-нормаль складки)
-
-  float c2 = cos(twist2);
-  float s2 = sin(twist2);
-
-  // вторичная ось чуть смещена, создавая двойной шёлковый шлейф
-  float spine2 = spine + 0.055 * sin(x * 5.6 + t * 0.16 + ph + 1.1) * wingEnv;
-
-  // ===== СЛОЙ 1 + 2: Непрерывное полупрозрачное тело шёлковой вуали =====
-  for (int layer = 0; layer < 2; layer++) {
-    float isSecond = float(layer);
-    float sp = mix(spine, spine2, isSecond);
-    float cc = mix(c1, c2, isSecond);
-    float ss = mix(s1, s2, isSecond);
-    float rr = mix(R1, R2, isSecond);
-
-    // видимая толщина проекции ленты (в узле перекрута сжимается, но не в ноль)
-    float halfSpan = max(abs(cc) * rr, 0.006);
-    float u = (y - sp) / halfSpan; // -1..1 поперёк видимой проекции
-
-    // мягкая маска внутри границ ленты с антиалиасингом в экранных пикселях
-    float pxAA = 2.0 / max(u_res.y * halfSpan, 1.0);
-    float inside = 1.0 - smoothstep(1.0 - pxAA, 1.0 + pxAA, abs(u));
-
-    if (inside > 0.001) {
-      // цилиндрический профиль ткани: на краях (|u|→1) луч проходит сквозь
-      // сгиб ткани по касательной → оптический путь длиннее (Fresnel / rim density)
-      float uClamped = clamp(u, -0.995, 0.995);
-      float rim = 1.0 / sqrt(1.0 - uClamped * uClamped * 0.88); // 1.0 в центре → ~2.9 на кромке
-
-      // сжатие в узле перекрута: когда |cc| мало, вся ширина ленты собралась в жгут
-      float pinch = 1.0 / sqrt(cc * cc + 0.09); // гладкий пик в узле без излома производной
-
-      // гладкая асимметрия сгиба без ступеньки sign():
-      // плавно перетекающая ориентация складки при вращении ленты в 3D
-      float orient = (cc * ss) / sqrt(cc * cc * ss * ss + 0.06);
-      float foldBias = 0.5 + 0.5 * clamp(u * orient, -1.0, 1.0);
-
-      // продольные шёлковые волны внутри самой ткани (муар)
-      float silkWave =
-          0.5 + 0.5 * sin(u * 14.0 + x * 10.0 - t * 0.35 + isSecond * 2.4)
-                    * cos(u * 6.0  - x * 6.0  + t * 0.21);
-
-      // итоговая оптическая плотность участка вуали
-      float density = (0.13 * rim + 0.14 * pinch * foldBias + 0.06 * silkWave) * inside;
-      density *= mix(1.0, 0.62, isSecond);
-
-      // цвет зависит от плотности: тонкая вуаль = светлый mist, сгиб/узел = насыщенный teal
-      float depthMix = clamp((rim - 1.0) * 0.40 + (pinch - 1.0) * 0.24 + foldBias * 0.24, 0.0, 1.0);
-      vec3 bodyCol = mix(colMist, colSlate, smoothstep(0.0, 0.55, depthMix));
-      bodyCol = mix(bodyCol, colTeal, smoothstep(0.38, 0.92, depthMix));
-
-      // гладкий cyan-отлив на освещённом гребне без скачка знака
-      float sSmooth = ss / sqrt(ss * ss + 0.08);
-      float crestGlow = smoothstep(0.45, 0.96, -u * sSmooth) * smoothstep(0.15, 0.75, abs(cc));
-      bodyCol = mix(bodyCol, colCyan, crestGlow * 0.30);
-
-      float la = clamp(density * 0.68, 0.0, 0.72);
-      accumCol += bodyCol * la * (1.0 - accumA);
-      accumA   += la * (1.0 - accumA);
-    }
+    vec4 rib = evalSilkRibbon(x, y - spine, 1.0, dSpine, wingEnv, 0.0, t);
+    accumCol = rib.rgb;
+    accumA   = rib.a;
   }
-
-  // ===== СЛОЙ 3: 40 субпиксельных шёлковых филаментов (микро-нитей) =====
-  // Нити лежат ВНУТРИ геометрии перекручивающейся ленты, поэтому они
-  // собираются в каустический узел на перегибе и дают ту самую текстуру с референса
-  float slopeScale = u_res.y / max(u_res.x, 1.0);
-
-  for (int i = 0; i < N; i++) {
-    float s = (float(i) / float(N - 1)) * 2.0 - 1.0; // -1..1 по ширине ленты
-
-    // нелинейное сгущение нитей к кромкам ленты (cos-распределение),
-    // чтобы кромка дуги звенела чётким контуром, а середина оставалась воздушной
-    float sWarp = sign(s) * pow(abs(s), 0.74);
-
-    // собственная микро-рябь каждой нити
-    float microPhase = x * (6.8 + s * 1.4) - t * (0.24 + s * 0.04) + s * 2.6 + ph;
-    float micro = 0.012 * sin(microPhase) * wingEnv;
-
-    // положение нити на перекрученной 3D-ленте
-    float yStrand = spine + sWarp * c1 * R1 + s * s * 0.018 * s1 + micro;
-
-    // производная dy/dx для честной субпиксельной толщины на крутых изгибах
-    float dSpine = 0.14 * 4.4 * cos(x * 4.4 - t * 0.22 + ph)
-                 - 0.06 * 8.2 * sin(x * 8.2 - t * 0.15 + ph * 1.6);
-    float dTwist = -5.2 * s1 * sWarp * R1;
-    float dy = (dSpine + dTwist) * slopeScale;
-    float d  = abs(y - yStrand) * u_res.y / sqrt(1.0 + dy * dy);
-
-    float line = 1.0 - smoothstep(halfW, halfW + aa, d);
-    if (line > 0.002) {
-      // крайние нити (|s|→1) — самые чёткие (огибающая кромка как на референсе)
-      float edgeWeight = 0.25 + 0.75 * pow(abs(s), 1.6);
-      // в узле перекрута нити накладываются, создавая глубокий каустический тон
-      float knotBoost = 0.75 + 0.45 * (1.0 - abs(c1));
-
-      vec3 strandCol = mix(colSlate, colTeal, smoothstep(0.15, 0.85, abs(s) + (1.0 - abs(c1)) * 0.4));
-      strandCol = mix(strandCol, colCyan, pow(abs(s), 3.0) * smoothstep(0.3, 0.9, x) * 0.45);
-
-      float la = line * edgeWeight * knotBoost * 0.19;
-      accumCol += strandCol * la * (1.0 - accumA);
-      accumA   += la * (1.0 - accumA);
-    }
-  }
-  } // end flow/loop branch
 
   // мягкое растворение у краёв контейнера, чтобы никогда не было рамки canvas
-  // для «обоймы» правый фейд короче — разворот должен остаться видимым
   float fadeX = u_variant > 1.5
-      ? smoothstep(0.0, 0.08, x) * (1.0 - smoothstep(0.965, 1.0, x))
+      ? smoothstep(0.0, 0.06, x) * (1.0 - smoothstep(0.95, 1.0, x))
       : smoothstep(0.0, 0.14, x) * (1.0 - smoothstep(0.86, 1.0, x));
-  float fadeY = smoothstep(0.0, 0.12, y) * (1.0 - smoothstep(0.88, 1.0, y));
+  float fadeY = smoothstep(0.0, 0.08, y) * (1.0 - smoothstep(0.92, 1.0, y));
   float k = fadeX * fadeY * u_opacity;
 
   gl_FragColor = vec4(accumCol * k, accumA * k); // premultiplied alpha
