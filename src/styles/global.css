@@ -5284,43 +5284,6 @@ button.case-hero {
   mask-composite: intersect;
 }
 
-/* Team: в верхней правой части шапки напротив заголовка «Команда» — выше строки ролей */
-.wave-slot--team {
-  left: 38%;
-  right: -8vw;
-  top: -56px;
-  height: 250px;
-  -webkit-mask-image:
-    linear-gradient(90deg, transparent 0%, rgba(0,0,0,0.28) 18%, #000 38%, #000 92%, transparent 100%),
-    linear-gradient(180deg, transparent 0%, #000 16%, #000 78%, transparent 100%);
-  mask-image:
-    linear-gradient(90deg, transparent 0%, rgba(0,0,0,0.28) 18%, #000 38%, #000 92%, transparent 100%),
-    linear-gradient(180deg, transparent 0%, #000 16%, #000 78%, transparent 100%);
-  -webkit-mask-composite: source-in;
-  mask-composite: intersect;
-}
-
-/* Process: высокая пластичная волна под липкой левой колонкой, уходящая к таймлайну */
-.wave-slot-host {
-  position: relative;
-  height: 290px;
-  margin-top: 20px;
-}
-.wave-slot--process {
-  top: -36px;
-  bottom: -44px;
-  left: -12vw;
-  right: -70px;
-  -webkit-mask-image:
-    linear-gradient(90deg, transparent 0%, #000 14%, #000 82%, transparent 100%),
-    linear-gradient(180deg, transparent 0%, #000 14%, #000 84%, transparent 100%);
-  mask-image:
-    linear-gradient(90deg, transparent 0%, #000 14%, #000 82%, transparent 100%),
-    linear-gradient(180deg, transparent 0%, #000 14%, #000 84%, transparent 100%);
-  -webkit-mask-composite: source-in;
-  mask-composite: intersect;
-}
-
 /* Competencies: та же лента-«обойма», что и в кейсах — заходит сверху,
    огибает правое поле за колонкой и уходит влево до левого края внизу */
 .wave-slot--competencies {
@@ -5433,11 +5396,9 @@ button.case-hero {
     height: 210px;
     opacity: 0.7;
   }
-  .wave-slot-host,
   .wave-slot-host--faq,
   .wave-slot--services,
   .wave-slot--page-hero,
-  .wave-slot--team,
   .wave-slot--competencies,
   .wave-slot--cases,
   .wave-slot--contacts {

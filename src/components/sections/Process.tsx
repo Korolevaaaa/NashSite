@@ -2,7 +2,6 @@ import { useEffect, useRef, useState } from "react";
 import { PROCESS } from "../../data/content";
 import { useInView } from "../../hooks/useInView";
 import SectionHead from "./SectionHead";
-import WaveShader from "../ui/WaveShader";
 
 function useActiveStep(count: number) {
   const refs = useRef<(HTMLElement | null)[]>([]);
@@ -72,11 +71,6 @@ export default function Process() {
           <p className="zt-meta mt-8">
             Этап {active + 1} из {PROCESS.length}
           </p>
-          <div className="wave-slot-host">
-            <div className="wave-slot wave-slot--process" aria-hidden="true">
-              <WaveShader opacity={0.88} seed={2.1} interactive />
-            </div>
-          </div>
         </div>
 
         <ol ref={listRef} className="relative md:pl-10">

@@ -3,7 +3,6 @@ import { PARTNERS, initialsOf } from "../../data/partners";
 import { TEAM } from "../../data/team";
 import { useInView } from "../../hooks/useInView";
 import SectionHead from "./SectionHead";
-import WaveShader from "../ui/WaveShader";
 
 export default function Team() {
   const { ref, inView } = useInView<HTMLElement>();
@@ -15,9 +14,6 @@ export default function Team() {
       className={`reveal zt-sec px-[var(--page-gutter)] ${inView ? "is-in" : ""}`}
     >
       <div className="relative mx-auto max-w-[var(--content-max)]">
-        <div className="wave-slot wave-slot--team" aria-hidden="true">
-          <WaveShader opacity={0.85} seed={4.5} interactive />
-        </div>
         <div className="relative z-[1]">
           <SectionHead
             title="Команда"
