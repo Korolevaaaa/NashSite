@@ -18,7 +18,13 @@ export default function Competencies() {
     >
       <div className="relative mx-auto max-w-[var(--content-max)]">
         <div className="wave-slot wave-slot--competencies" aria-hidden="true">
-          <WaveShader opacity={0.82} seed={3.8} variant="loop" interactive />
+          <WaveShader
+          opacity={0.82}
+          seed={3.8}
+          variant="loop"
+          interactive
+          loop={{ xTurn: 0.84, yMid: 0.46, rY: 0.32, rX: 0.09, entryX: 0.24 }}
+        />
         </div>
         <div className="relative z-[1]">
           <SectionHead

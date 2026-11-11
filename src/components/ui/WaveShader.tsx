@@ -32,6 +32,8 @@ uniform float u_dpr;
 uniform float u_seed;
 uniform float u_variant;   // 0 = wide flow, 1 = editorial arc, 2 = loop-«обойма»
 uniform vec2  u_mouse;     // [-1,-1] если вне секции
+uniform vec4  u_loop;      // геометрия подковы: xTurn, yMid, rY, rX
+uniform float u_loopEntry; // где верхняя ветвь «рождается» слева (0 = у самого края)
 
 const int N = 40;
 
@@ -186,11 +188,11 @@ void main() {
 
   if (u_variant > 1.5) {
     // ===== VARIANT "loop": C∞ аналитическая U-подкова с точной евклидовой метрикой =====
-    float amp   = 0.25;  // изящная полуширина паруса
-    float xTurn = 0.855; // начало плавного закругления к правому полю
-    float yMid  = 0.485; // середина между верхней ветвью (~0.82) и нижней (~0.15)
-    float rY    = 0.335; // вертикальный полуразмах между ветвями
-    float rX    = 0.095; // широкий плавный вылет дуги в правое поле за карточками
+    float amp   = 0.25;      // изящная полуширина паруса
+    float xTurn = u_loop.x;  // начало плавного закругления к правому полю
+    float yMid  = u_loop.y;  // середина между верхней и нижней ветвью
+    float rY    = u_loop.z;  // вертикальный полуразмах между ветвями
+    float rX    = u_loop.w;  // широкий плавный вылет дуги в правое поле
 
     float dx = x - xTurn;
     // широкий мягкий радиус сопряжения epsX — даёт плавную каллиграфическую дугу без «плеча» на углах
@@ -233,7 +235,11 @@ void main() {
     // гасим поле глубоко внутри подковы (rad < 0.55), чтобы на оси симметрии y=yMid
     // никогда не возникало паразитных изолиний, и мягко растворяем левые концы
     float innerMask = smoothstep(0.45, 0.72, rad);
-    float envPath   = innerMask * smoothstep(0.01, 0.10, sPath) * (1.0 - smoothstep(0.90, 0.99, sPath));
+    // точка «рождения» ленты по продольной координате sPath: верхняя ветвь
+    // (sPath < 0.36) может начинаться правее левого края, нижняя (sPath > 0.64)
+    // и дуга всегда проходят весь путь; 0 = кончик у самого левого края
+    float entryFade = smoothstep(u_loopEntry, u_loopEntry + 0.06, sPath);
+    float envPath   = innerMask * entryFade * smoothstep(0.01, 0.10, sPath) * (1.0 - smoothstep(0.90, 0.99, sPath));
 
     if (envPath > 0.001) {
       vec4 rib = evalSilkRibbon(sPath * 2.15, nCoord, amp, 0.0, envPath, 0.0, t);
@@ -284,12 +290,29 @@ function compile(gl: WebGLRenderingContext, type: number, src: string) {
 
 export type WaveVariant = "flow" | "arc" | "loop";
 
+export type LoopGeometry = {
+  xTurn?: number;  // начало закругления к правому полю (0..1 в коорд. слота)
+  yMid?: number;   // середина между ветвями
+  rY?: number;     // вертикальный полуразмах (yMid±rY — ветви)
+  rX?: number;     // вылет дуги вправо за xTurn
+  entryX?: number; // точка рождения ленты в sPath (0..0.36 на верхней ветви); 0 — у левого края
+};
+
+const LOOP_DEFAULTS: Required<LoopGeometry> = {
+  xTurn: 0.855,
+  yMid: 0.485,
+  rY: 0.335,
+  rX: 0.095,
+  entryX: 0,
+};
+
 type Props = {
   opacity?: number;
   seed?: number;
   variant?: WaveVariant;
   className?: string;
   interactive?: boolean;
+  loop?: LoopGeometry;
 };
 
 export default function WaveShader({
@@ -298,10 +321,13 @@ export default function WaveShader({
   variant = "flow",
   className = "",
   interactive = true,
+  loop = {},
 }: Props) {
   const ref = useRef<HTMLCanvasElement>(null);
   const opRef = useRef(opacity);
   opRef.current = opacity;
+  const loopRef = useRef<Required<LoopGeometry>>(LOOP_DEFAULTS);
+  loopRef.current = { ...LOOP_DEFAULTS, ...loop };
 
   const variantNum = variant === "arc" ? 1 : variant === "loop" ? 2 : 0;
 
@@ -381,6 +407,8 @@ export default function WaveShader({
         "u_seed",
         "u_variant",
         "u_mouse",
+        "u_loop",
+        "u_loopEntry",
       ]) {
         u[n] = gl.getUniformLocation(prog, n);
       }
@@ -423,6 +451,9 @@ export default function WaveShader({
       gl.uniform1f(u.u_seed, seed);
       gl.uniform1f(u.u_variant, variantNum);
       gl.uniform2f(u.u_mouse, mouseX, mouseY);
+      const lg = loopRef.current;
+      gl.uniform4f(u.u_loop, lg.xTurn, lg.yMid, lg.rY, lg.rX);
+      gl.uniform1f(u.u_loopEntry, lg.entryX);
       gl.drawArrays(gl.TRIANGLES, 0, 3);
     };
 
