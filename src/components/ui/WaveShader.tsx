@@ -235,15 +235,20 @@ void main() {
     // гасим поле глубоко внутри подковы (rad < 0.55), чтобы на оси симметрии y=yMid
     // никогда не возникало паразитных изолиний, и мягко растворяем левые концы
     float innerMask = smoothstep(0.45, 0.72, rad);
-    // концы ленты растворяются мягко по продольной координате sPath: верхняя
-    // ветвь «рождается» в точке u_loopEnds.x (0 = у самого левого края), нижняя
-    // уходит за край, затухая с u_loopEnds.y до конца трека — без резких срезов
-    float entryFade = smoothstep(u_loopEnds.x, u_loopEnds.x + 0.10, sPath);
-    float exitFade  = 1.0 - smoothstep(u_loopEnds.y, 1.0, sPath);
-    float envPath   = innerMask * entryFade * exitFade;
+    // концы ленты растворяются мягко по продольной координате sPath:
+    // у точки «рождения» ширина ленты раскрывается быстро (entryAmp), а
+    // непрозрачность набирается длинным пандусом (entryA) — кончик выглядит
+    // лёгкой дымкой, а не тёмной иглой; конец уходит за край с u_loopEnds.y
+    float entryAmp = smoothstep(u_loopEnds.x, u_loopEnds.x + 0.05, sPath);
+    float entryA   = pow(smoothstep(u_loopEnds.x, u_loopEnds.x + 0.16, sPath), 1.6);
+    float exitFade = 1.0 - smoothstep(u_loopEnds.y, 1.0, sPath);
+    float envPath  = innerMask * entryAmp * exitFade;
+    float alphaMul = entryA * exitFade;
 
-    if (envPath > 0.001) {
+    if (envPath > 0.001 && alphaMul > 0.001) {
       vec4 rib = evalSilkRibbon(sPath * 2.15, nCoord, amp, 0.0, envPath, 0.0, t);
+      rib.rgb *= alphaMul;
+      rib.a   *= alphaMul;
       accumCol += rib.rgb * (1.0 - accumA);
       accumA   += rib.a   * (1.0 - accumA);
     }
