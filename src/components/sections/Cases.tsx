@@ -2,8 +2,9 @@ import { useMemo, useState } from "react";
 import { CASES, CASE_TYPES } from "../../data/cases";
 import { useInView } from "../../hooks/useInView";
 import SectionHead from "./SectionHead";
+import WaveShader from "../ui/WaveShader";
 
-const PREVIEW_COUNT = 4;
+const PREVIEW_COUNT = 8;
 
 export default function Cases() {
   const { ref, inView } = useInView<HTMLElement>();
@@ -31,7 +32,7 @@ export default function Cases() {
       ref={ref}
       className={`reveal zt-sec px-[var(--page-gutter)] ${inView ? "is-in" : ""}`}
     >
-      <div className="mx-auto max-w-[var(--content-max)]">
+      <div className="relative mx-auto max-w-[var(--content-max)]">
         <SectionHead
           title="Кейсы"
           sub="Сайты, сервисы и AI-инструменты — с разбором задачи и результата."
@@ -67,6 +68,11 @@ export default function Cases() {
           </div>
         </div>
 
+        {/* шёлковая лента-«обойма»: заходит слева, огибает сетку справа и уходит влево */}
+        <div className="wave-slot wave-slot--cases" aria-hidden="true">
+          <WaveShader opacity={0.9} seed={7.7} variant="loop" />
+        </div>
+
         {shown.length === 0 ? (
           <p className="sf-empty">
             По запросу ничего не нашлось.{" "}
@@ -76,7 +82,7 @@ export default function Cases() {
             — покажем похожий проект на созвоне.
           </p>
         ) : (
-          <ul className="pf-grid">
+          <ul className="pf-grid pf-grid--preview">
             {shown.map((c) => (
               <li key={c.slug}>
                 <a className="pf-card cs-card" href={`/case/${c.slug}`}>

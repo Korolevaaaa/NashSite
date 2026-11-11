@@ -68,7 +68,7 @@ export function StorefrontGrid({ preview = false }: { preview?: boolean }) {
       });
   }, [items, cat, sub, q]);
 
-  const visible = preview ? filtered.slice(0, 4) : filtered;
+  const visible = preview ? filtered.slice(0, 8) : filtered;
 
   return (
     <>
@@ -134,7 +134,7 @@ export function StorefrontGrid({ preview = false }: { preview?: boolean }) {
       )}
 
         {visible.length > 0 ? (
-          <ul className="sf-grid">
+          <ul className={preview ? "sf-grid sf-grid--preview" : "sf-grid"}>
             {visible.map((item) => (
               <TemplateCard key={item.id} item={item} />
             ))}

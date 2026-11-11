@@ -30,7 +30,7 @@ uniform float u_flow;
 uniform float u_opacity;
 uniform float u_dpr;
 uniform float u_seed;
-uniform float u_variant;   // 0 = wide flow, 1 = editorial arc, 2 = ambient sweep
+uniform float u_variant;   // 0 = wide flow, 1 = editorial arc, 2 = loop-«обойма»
 uniform vec2  u_mouse;     // [-1,-1] если вне секции
 
 const int N = 40;
@@ -54,8 +54,100 @@ void main() {
     mPush = exp(-dist2 * 14.0) * (u_mouse.y - 0.5) * 0.16;
   }
 
-  // центральная траектория ленты — длинная каллиграфическая S-дуга
   float ph = u_seed * 1.7;
+
+  vec3 accumCol = vec3(0.0);
+  float accumA  = 0.0;
+
+  // палитра ZETRONIX: воздушный серебристо-голубой → глубокий морской teal →
+  // чистый бирюзовый блик на гребне
+  vec3 colMist  = vec3(0.74, 0.81, 0.85); // воздушная вуаль на широких крыльях
+  vec3 colSlate = vec3(0.24, 0.46, 0.52); // холодный сине-стальной в полутени
+  vec3 colTeal  = vec3(0.00, 0.39, 0.43); // #006b70 — глубокий сгиб ткани
+  vec3 colCyan  = vec3(0.02, 0.72, 0.77); // #00c9d4 — каустический блик на кромке
+
+  float halfW = 0.58 * u_dpr;
+  float aa    = 0.95 * u_dpr;
+
+  if (u_variant > 1.5) {
+    // ===== ЛЕНТА-«ОБОЙМА»: вход слева сверху → дуга-разворот у правого края
+    // → выход слева снизу. Всё строится на поле расстояния до траектории,
+    // поэтому тело ленты и все филаменты огибают разворот автоматически =====
+    float yT = 0.30
+      + 0.040 * sin(x * 5.2 - t * 0.20 + ph)
+      + 0.014 * cos(x * 9.0 - t * 0.13);
+    float yB = 0.70
+      + 0.040 * sin(x * 4.6 + t * 0.16 + ph * 1.3)
+      + 0.013 * cos(x * 8.0 + t * 0.11 + 1.7);
+
+    // разворот — полуокружность; x домножаем на aspect, чтобы дуга была круглой
+    float xc  = 0.86;
+    float yTc = 0.30 + 0.040 * sin(xc * 5.2 - t * 0.20 + ph)
+                   + 0.014 * cos(xc * 9.0 - t * 0.13);
+    float yBc = 0.70 + 0.040 * sin(xc * 4.6 + t * 0.16 + ph * 1.3)
+                   + 0.013 * cos(xc * 8.0 + t * 0.11 + 1.7);
+    float midC = 0.5 * (yTc + yBc);
+    float rC   = max(0.5 * (yBc - yTc), 0.03);
+
+    vec2 rel = vec2((x - xc) * aspect, y - midC);
+    float dArc = rel.x > 0.0 ? abs(length(rel) - rC) : 1e3;
+    float dTop = x <= xc ? abs(y - yT) : 1e3;
+    float dBot = x <= xc ? abs(y - yB) : 1e3;
+    float dPath = min(min(dTop, dBot), dArc);
+
+    // координата вдоль пути: 0 — левый вход, ~0.5 — разворот, 1 — левый выход
+    float sPath;
+    if (dArc <= dTop && dArc <= dBot) {
+      float ang = atan(rel.y, rel.x);
+      sPath = 0.40 + (1.5708 - ang) / 3.1416 * 0.18;
+    } else if (dTop <= dBot) {
+      sPath = x * 0.42;
+    } else {
+      sPath = 0.58 + (xc - x) / xc * 0.40;
+    }
+
+    // перекрут идёт вдоль пути — узлы плотности плывут через разворот
+    float twL    = sPath * 9.0 - t * 0.22 + u_seed * 2.0;
+    float cL     = cos(twL);
+    float pinchL = 1.0 / sqrt(cL * cL + 0.09);
+
+    float halfTh  = 0.028 + 0.010 * (0.5 + 0.5 * sin(sPath * 7.0 + u_seed));
+    float uu      = dPath / halfTh;
+    float insideL = 1.0 - smoothstep(0.55, 1.0, uu);
+    float uC      = clamp(uu, 0.0, 0.995);
+    float rimL    = 1.0 / sqrt(1.0 - uC * uC * 0.88);
+    float silkW   = 0.5 + 0.5 * sin(uu * 10.0 + sPath * 40.0 - t * 0.3);
+    float densityL = (0.14 * rimL + 0.16 * pinchL + 0.06 * silkW) * insideL;
+    float depthL  = clamp((rimL - 1.0) * 0.40 + (pinchL - 1.0) * 0.26, 0.0, 1.0);
+    vec3 bodyL = mix(colMist, colSlate, smoothstep(0.0, 0.55, depthL));
+    bodyL = mix(bodyL, colTeal, smoothstep(0.38, 0.92, depthL));
+    float la = clamp(densityL * 0.72, 0.0, 0.75);
+    accumCol += bodyL * la * (1.0 - accumA);
+    accumA   += la * (1.0 - accumA);
+
+    // 40 филаментов — изолинии поля расстояния: сами огибают разворот
+    // и сгущаются в узлах перекрута
+    for (int i = 0; i < N; i++) {
+      float s = (float(i) / float(N - 1)) * 2.0 - 1.0;
+      float sWarp = sign(s) * pow(abs(s), 0.74);
+      float off = sWarp * halfTh * 0.85
+                + 0.005 * sin(sPath * 30.0 + s * 3.0 + t * 0.2);
+      float dd   = abs(dPath - off) * u_res.y;
+      float line = 1.0 - smoothstep(halfW, halfW + aa, dd);
+      if (line > 0.002) {
+        float edgeWeight = 0.25 + 0.75 * pow(abs(s), 1.6);
+        float knotBoost  = 0.75 + 0.45 * (1.0 - abs(cL));
+        vec3 strandCol = mix(colSlate, colTeal,
+            smoothstep(0.15, 0.85, abs(s) + (1.0 - abs(cL)) * 0.4));
+        strandCol = mix(strandCol, colCyan, pow(abs(s), 3.0) * 0.4);
+        float la2 = line * edgeWeight * knotBoost * 0.18;
+        accumCol += strandCol * la2 * (1.0 - accumA);
+        accumA   += la2 * (1.0 - accumA);
+      }
+    }
+  } else {
+  // ===== ШИРОКИЙ ПОТОК: перекрученная шёлковая лента через всю секцию =====
+  // центральная траектория ленты — длинная каллиграфическая S-дуга
   float spine =
       0.50
     + 0.14 * sin(x * 4.4 - t * 0.22 + ph)
@@ -93,16 +185,6 @@ void main() {
 
   // вторичная ось чуть смещена, создавая двойной шёлковый шлейф
   float spine2 = spine + 0.055 * sin(x * 5.6 + t * 0.16 + ph + 1.1) * wingEnv;
-
-  vec3 accumCol = vec3(0.0);
-  float accumA  = 0.0;
-
-  // палитра ZETRONIX: воздушный серебристо-голубой → глубокий морской teal →
-  // чистый бирюзовый блик на гребне
-  vec3 colMist  = vec3(0.74, 0.81, 0.85); // воздушная вуаль на широких крыльях
-  vec3 colSlate = vec3(0.24, 0.46, 0.52); // холодный сине-стальной в полутени
-  vec3 colTeal  = vec3(0.00, 0.39, 0.43); // #006b70 — глубокий сгиб ткани
-  vec3 colCyan  = vec3(0.02, 0.72, 0.77); // #00c9d4 — каустический блик на кромке
 
   // ===== СЛОЙ 1 + 2: Непрерывное полупрозрачное тело шёлковой вуали =====
   for (int layer = 0; layer < 2; layer++) {
@@ -163,8 +245,6 @@ void main() {
   // Нити лежат ВНУТРИ геометрии перекручивающейся ленты, поэтому они
   // собираются в каустический узел на перегибе и дают ту самую текстуру с референса
   float slopeScale = u_res.y / max(u_res.x, 1.0);
-  float halfW = 0.58 * u_dpr;
-  float aa    = 0.95 * u_dpr;
 
   for (int i = 0; i < N; i++) {
     float s = (float(i) / float(N - 1)) * 2.0 - 1.0; // -1..1 по ширине ленты
@@ -202,9 +282,13 @@ void main() {
       accumA   += la * (1.0 - accumA);
     }
   }
+  } // end flow/loop branch
 
   // мягкое растворение у краёв контейнера, чтобы никогда не было рамки canvas
-  float fadeX = smoothstep(0.0, 0.14, x) * (1.0 - smoothstep(0.86, 1.0, x));
+  // для «обоймы» правый фейд короче — разворот должен остаться видимым
+  float fadeX = u_variant > 1.5
+      ? smoothstep(0.0, 0.08, x) * (1.0 - smoothstep(0.965, 1.0, x))
+      : smoothstep(0.0, 0.14, x) * (1.0 - smoothstep(0.86, 1.0, x));
   float fadeY = smoothstep(0.0, 0.12, y) * (1.0 - smoothstep(0.88, 1.0, y));
   float k = fadeX * fadeY * u_opacity;
 
@@ -225,7 +309,7 @@ function compile(gl: WebGLRenderingContext, type: number, src: string) {
   return s;
 }
 
-export type WaveVariant = "flow" | "arc" | "sweep";
+export type WaveVariant = "flow" | "arc" | "loop";
 
 type Props = {
   opacity?: number;
@@ -246,7 +330,7 @@ export default function WaveShader({
   const opRef = useRef(opacity);
   opRef.current = opacity;
 
-  const variantNum = variant === "arc" ? 1 : variant === "sweep" ? 2 : 0;
+  const variantNum = variant === "arc" ? 1 : variant === "loop" ? 2 : 0;
 
   useEffect(() => {
     const canvas = ref.current;

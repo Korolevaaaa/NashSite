@@ -1457,6 +1457,7 @@ section[id] {
 }
 .pf-card {
   border: 1px solid var(--color-line);
+  background: var(--color-bg);
   border-radius: var(--r-card);
   overflow: hidden;
   background: rgba(255, 255, 255, 0.5);
@@ -5348,6 +5349,24 @@ button.case-hero {
   mask-composite: intersect;
 }
 
+/* Cases: лента-«обойма» через всю секцию — волна variant="loop" рисует
+   вход слева → правый разворот → выход слева задним ходом */
+.wave-slot--cases {
+  inset: -30px -8vw -50px -8vw;
+  -webkit-mask-image:
+    linear-gradient(90deg, transparent 0%, #000 8%, #000 94%, transparent 100%);
+  mask-image:
+    linear-gradient(90deg, transparent 0%, #000 8%, #000 94%, transparent 100%);
+}
+
+/* контент кейсов над лентой — волна «обвивает» сетку, проглядывая в зазорах */
+#cases .cs-filters,
+#cases .pf-grid,
+#cases .cs-more {
+  position: relative;
+  z-index: 1;
+}
+
 /* Contacts: финальная волна под призывом «Обсудим ваш проект?», ведущая взгляд к форме */
 .wave-slot--contacts {
   left: -10vw;
@@ -5396,7 +5415,16 @@ button.case-hero {
   .wave-slot--page-hero,
   .wave-slot--team,
   .wave-slot--competencies,
+  .wave-slot--cases,
   .wave-slot--contacts {
+    display: none;
+  }
+}
+
+/* Превью на главной: 8 карточек на десктопе, 4 на мобиле (5–8 скрыты) */
+@media (max-width: 767px) {
+  .pf-grid--preview > li:nth-child(n + 5),
+  .sf-grid--preview > li:nth-child(n + 5) {
     display: none;
   }
 }
