@@ -35,12 +35,6 @@ uniform vec2  u_mouse;     // [-1,-1] если вне секции
 
 const int N = 40;
 
-// полиномиальный smooth-min — объединяет поля ветвей без скачков градиента
-float smin2(float a, float b, float k) {
-  float h = clamp(0.5 + 0.5 * (b - a) / k, 0.0, 1.0);
-  return mix(b, a, h) - k * h * (1.0 - h);
-}
-
 // Единое ядро 3D-перекрученной шёлковой вуали:
 // sCoord — координата вдоль ленты (0..1+),
 // nCoord — поперечное отклонение от центральной оси (в долях высоты),
@@ -158,7 +152,7 @@ vec4 evalSilkRibbon(
       float knotBoost = 0.75 + 0.45 * (1.0 - abs(c1));
 
       vec3 strandCol = mix(colSlate, colTeal, smoothstep(0.15, 0.85, abs(s) + (1.0 - abs(c1)) * 0.4));
-      strandCol = mix(strandCol, colCyan, pow(abs(s), 3.0) * smoothstep(0.25, 0.9, fract(sCoord)) * 0.45);
+      strandCol = mix(strandCol, colCyan, pow(abs(s), 3.0) * (0.5 + 0.5 * sin(sCoord * 3.14159)) * 0.45);
 
       float la = line * edgeWeight * knotBoost * 0.19;
       accumCol += strandCol * la * (1.0 - accumA);
@@ -191,102 +185,61 @@ void main() {
   float accumA  = 0.0;
 
   if (u_variant > 1.5) {
-    // ===== VARIANT "loop": ЕДИНАЯ лента-«обойма» вокруг блока кейсов =====
-    // Траектория-подкова: вход слева вверху → правый край → дуга-разворот
-    // → возврат налево вдоль низа секции (уровень кнопки «Смотреть все кейсы»).
-    // Вся лента рисуется ОДНИМ вызовом evalSilkRibbon по полю подписанного
-    // расстояния до пути — узлы перекрута и все 40 нитей непрерывно текут
-    // через разворот, никаких склеек между ветвями.
+    // ===== VARIANT "loop": C∞ аналитическая U-подкова с точной евклидовой метрикой =====
+    float amp   = 0.25;  // изящная полуширина паруса
+    float xTurn = 0.855; // начало плавного закругления к правому полю
+    float yMid  = 0.485; // середина между верхней ветвью (~0.82) и нижней (~0.15)
+    float rY    = 0.335; // вертикальный полуразмах между ветвями
+    float rX    = 0.095; // широкий плавный вылет дуги в правое поле за карточками
 
-    float amp = 0.30;  // тоньше: полуширина паруса ~4.5% высоты контейнера
-    float xTurn = 0.885;
+    float dx = x - xTurn;
+    // широкий мягкий радиус сопряжения epsX — даёт плавную каллиграфическую дугу без «плеча» на углах
+    float epsX    = 0.012;
+    float rootX   = sqrt(dx * dx + epsX);
+    float qx      = 0.5 * (dx + rootX);
+    float dqx_dx  = 0.5 * (1.0 + dx / rootX); // точная производная d(qx)/dx
+    float leftLen = 0.5 * (-dx + rootX) / xTurn;
 
-    // Верхняя ветвь (слева -> направо), y около 0.81 вверху секции (GL y=1 вверху)
-    float spineTop =
-        0.81
-      + 0.048 * sin(x * 4.4 - t * 0.22 + ph)
-      + 0.020 * cos(x * 8.0 - t * 0.15 + ph * 1.5)
-      - 0.045 * smoothstep(0.62, 0.95, x)
-      + mPush * 0.45;
+    vec2 uVec = vec2(qx / rX, (y - yMid) / rY);
+    float rad = length(uVec);
 
-    // Нижняя ветвь возврата (справа -> налево) вдоль низа, y ≈ 0.15
-    float xRev = 1.0 - x;
-    float spineBot =
-        0.15
-      + 0.045 * sin(xRev * 4.2 - t * 0.22 + ph + 2.2)
-      + 0.020 * cos(xRev * 7.6 - t * 0.15 + ph * 1.3)
-      + 0.095 * smoothstep(0.60, 0.95, x)
-      + mPush * 0.45;
+    // точный экранный градиент ∇rad (в единицах высоты экрана u_res.y):
+    // деление (rad - 1.0) на |∇rad| даёт честное евклидово расстояние по нормали к кривой
+    // и на горизонталях, и на углах, и на вертикальном спуске справа!
+    vec2 gradRad = vec2(
+      (uVec.x / (rX * max(rad, 0.001))) * dqx_dx / aspect,
+      (uVec.y / (rY * max(rad, 0.001)))
+    );
+    float gradLen = max(length(gradRad), 0.5);
 
-    // Правая дуга-петля: концы берутся ТОЧНО из spine-функций у xTurn,
-    // чтобы стыки были идеально непрерывными
-    float xRevT = 1.0 - xTurn;
-    float yTopEnd =
-        0.81
-      + 0.048 * sin(xTurn * 4.4 - t * 0.22 + ph)
-      + 0.020 * cos(xTurn * 8.0 - t * 0.15 + ph * 1.5)
-      - 0.045 * smoothstep(0.62, 0.95, xTurn);
-    float yBotEnd =
-        0.15
-      + 0.045 * sin(xRevT * 4.2 - t * 0.22 + ph + 2.2)
-      + 0.020 * cos(xRevT * 7.6 - t * 0.15 + ph * 1.3)
-      + 0.095 * smoothstep(0.60, 0.95, xTurn);
-    float yMid = 0.5 * (yTopEnd + yBotEnd);
-    float rY   = max(0.5 * (yTopEnd - yBotEnd), 0.06);
-    float rX   = 0.055; // дуга растянута вправо — спуск идёт в поле ПРАВЕЕ карточек
+    // непрерывная продольная координата sPath (0 вверху слева → 0.5 на правом развороте → 1 внизу слева):
+    // используем sinTheta = uVec.y / rad вместо ступеньки topBottom, чтобы на экваторе
+    // правой дуги (y = yMid) скорость изменения sPath была идеально равномерной
+    float theta    = atan(uVec.y, max(uVec.x, 1e-4));
+    float sArcPart = (1.5707963 - theta) / 3.1415926;
+    float sinTheta = clamp(uVec.y / max(rad, 0.35), -1.0, 1.0);
+    float sPath    = 0.50 + (sArcPart - 0.50) * 0.28 - sinTheta * leftLen * 0.36;
 
-    vec2 pArc = vec2((x - xTurn) / rX, (y - yMid) / rY);
-    float rNorm = length(pArc);
-    float nArc = (rNorm - 1.0) * rY;
+    // плавная живая волна вдоль траектории
+    float turnCalm = 1.0 - 0.55 * exp(-pow((sPath - 0.50) / 0.18, 2.0));
+    float waveOff  = (
+        0.026 * sin(sPath * 10.5 - t * 0.22 + ph)
+      + 0.011 * cos(sPath * 19.0 - t * 0.15 + ph * 1.4)
+    ) * turnCalm;
 
-    // расстояния до ветвей как до СЕГМЕНТОВ: за xTurn верхняя/нижняя ветви
-    // замыкаются на свои концевые точки (pT/pB), поэтому поле непрерывно
-    // по всей плоскости и лента не обрезается вертикальными срезами
-    float dxEnd = (x - xTurn) * aspect;
-    float dTop = x <= xTurn ? abs(y - spineTop)
-                            : length(vec2(dxEnd, y - yTopEnd));
-    float dBot = x <= xTurn ? abs(y - spineBot)
-                            : length(vec2(dxEnd, y - yBotEnd));
-    // дуга: вся правая половина эллипса + верхний/нижний колпачки у стыков;
-    // внутренняя левая половина эллипса исключена — лента не задваивается
-    float dArc = (pArc.x > 0.0 || abs(pArc.y) > 0.80) ? abs(nArc) : 1e3;
-    float dPath = smin2(smin2(dTop, dArc, 0.02), dBot, 0.02);
+    // евклидово знаковое расстояние поперёк подковы (+ снаружи, - внутри)
+    float nCoord = (rad - 1.0) / gradLen - waveOff + mPush * 0.22 * sinTheta;
 
-    // параметр вдоль пути на каждой ветви (стыки совпадают: 0.44 и 0.60)
-    float sTop = x * (0.44 / xTurn);
-    float sArc = 0.44 + (1.5708 - atan(pArc.y, pArc.x)) / 3.1416 * 0.16;
-    float sBot = 0.60 + (xTurn - x) / xTurn * 0.38;
+    // гасим поле глубоко внутри подковы (rad < 0.55), чтобы на оси симметрии y=yMid
+    // никогда не возникало паразитных изолиний, и мягко растворяем левые концы
+    float innerMask = smoothstep(0.45, 0.72, rad);
+    float envPath   = innerMask * smoothstep(0.01, 0.10, sPath) * (1.0 - smoothstep(0.90, 0.99, sPath));
 
-    // мягкое смешивание sPath по обратным весам близости к ветви —
-    // никаких жёстких границ Вороного → никаких видимых швов на стыках
-    float e = 0.006;
-    float wT = e / (dTop + e);
-    float wA = e / (dArc + e);
-    float wB = e / (dBot + e);
-    float sPath = (sTop * wT + sArc * wA + sBot * wB) / (wT + wA + wB);
-
-    // подписанное поле: знак берётся от ближайшей ветви (у сегментных концов —
-    // от ближайшей концевой точки); |nCoord| непрерывно, поэтому тело ленты
-    // и все 40 нитей проходят стыки без шва
-    float sgn;
-    if (dTop <= dArc && dTop <= dBot) {
-      float refY = x <= xTurn ? spineTop : yTopEnd;
-      sgn = y >= refY ? 1.0 : -1.0;
-    } else if (dBot <= dArc) {
-      float refY = x <= xTurn ? spineBot : yBotEnd;
-      sgn = y <= refY ? 1.0 : -1.0; // внешняя сторона подковы остаётся «внешней»
-    } else {
-      sgn = nArc >= 0.0 ? 1.0 : -1.0;
+    if (envPath > 0.001) {
+      vec4 rib = evalSilkRibbon(sPath * 2.15, nCoord, amp, 0.0, envPath, 0.0, t);
+      accumCol += rib.rgb * (1.0 - accumA);
+      accumA   += rib.a   * (1.0 - accumA);
     }
-    float nCoord = sgn * dPath;
-
-    // концы ленты тают за левым краем (вход и выход)
-    float envPath = smoothstep(0.0, 0.10, sPath) * (1.0 - smoothstep(0.94, 1.0, sPath));
-
-    // sPath * 2.1 — та же плотность перекрутов, что у потока x * 5.2 на единицу длины
-    vec4 rib = evalSilkRibbon(sPath * 2.1, nCoord, amp, 0.0, envPath, 0.0, t);
-    accumCol += rib.rgb * (1.0 - accumA);
-    accumA   += rib.a   * (1.0 - accumA);
   } else {
     // ===== VARIANT "flow": широкая перекрученная шёлковая лента через секцию =====
     float spine =
