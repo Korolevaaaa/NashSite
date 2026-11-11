@@ -56,6 +56,12 @@ export default function TemplatesPage() {
   return (
     <main className="px-[var(--page-gutter)] pb-[clamp(80px,12vh,140px)] pt-[calc(var(--header-h,110px)+56px)]">
       <div className="mx-auto max-w-[var(--content-max)]">
+        <a
+          href="/#top"
+          className="font-mono text-[11px] uppercase tracking-[0.1em] text-[var(--z-muted)] no-underline hover:text-[var(--z-action)]"
+        >
+          ← На главную
+        </a>
         <p className="mt-10 font-mono text-[11px] font-semibold uppercase tracking-[0.12em] text-[var(--z-action)]">
           Витрина ZETRONIX
         </p>
