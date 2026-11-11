@@ -1,70 +1,31 @@
 import { useEffect, useRef, useState } from "react";
 import { NAV_LINKS, TELEGRAM_URL } from "../../data/content";
 import { LEGAL } from "../../data/legal";
-import { ArrowUpRight, List, X, Phone, TelegramLogo } from "../ui/icons";
+import { ArrowUpRight, X, Phone, TelegramLogo } from "../ui/icons";
 
-/* Mobile OS chrome: scroll beam + floating dock + bottom-sheet menu.
-   Rendered on every route; CSS hides it at ≥768px. No motion deps —
-   drag is pointer events, springs are cubic-bezier. */
+/* Mobile OS chrome: scroll beam + bottom-sheet menu.
+   The menu trigger lives in the header (`.site-header__menu`) and opens
+   the sheet via the "ztx:open-menu" event — the bottom-right corner is
+   reserved for the upcoming chat-bot button.
+   CSS hides this component at ≥768px. */
 
-function useSelectorVisible(selector: string, threshold = 0.1) {
-  const [visible, setVisible] = useState(false);
+function useScrollBeam(beamRef: React.RefObject<HTMLDivElement | null>) {
   useEffect(() => {
-    const el = document.querySelector(selector);
-    if (!el) return;
-    const io = new IntersectionObserver(([e]) => setVisible(e.isIntersecting), {
-      threshold,
-    });
-    io.observe(el);
-    return () => io.disconnect();
-  }, [selector, threshold]);
-  return visible;
-}
-
-/* The holo nav box is always in-layout at hero mid-height (revealed via
-   opacity, not geometry) — IntersectionObserver can't see its real state.
-   The honest signal is .hero-stage.is-nav, toggled by the scroll driver. */
-function useHoloNavLive() {
-  const [live, setLive] = useState(false);
-  useEffect(() => {
-    const check = () =>
-      setLive(!!document.querySelector(".hero-stage.is-nav"));
-    check();
-    const mo = new MutationObserver(check);
-    const stage = document.querySelector(".hero-stage");
-    if (stage) mo.observe(stage, { attributes: true, attributeFilter: ["class"] });
-    return () => mo.disconnect();
-  }, []);
-  return live;
-}
-
-function useScrollEffects(beamRef: React.RefObject<HTMLDivElement | null>) {
-  const [dockHidden, setDockHidden] = useState(false);
-
-  useEffect(() => {
-    let last = window.scrollY;
     let ticking = false;
     const onScroll = () => {
       if (ticking) return;
       ticking = true;
       requestAnimationFrame(() => {
         ticking = false;
-        const y = window.scrollY;
         const max = document.documentElement.scrollHeight - innerHeight;
-        if (beamRef.current) {
-          const p = max > 0 ? Math.min(1, y / max) : 0;
-          beamRef.current.style.transform = `scaleX(${p})`;
-        }
-        setDockHidden(y > last && y > 160);
-        last = y;
+        const p = max > 0 ? Math.min(1, window.scrollY / max) : 0;
+        if (beamRef.current) beamRef.current.style.transform = `scaleX(${p})`;
       });
     };
     onScroll();
     addEventListener("scroll", onScroll, { passive: true });
     return () => removeEventListener("scroll", onScroll);
   }, [beamRef]);
-
-  return dockHidden;
 }
 
 /* Sheet hints: only where the hint carries data, not an echo of the label. */
@@ -191,34 +152,18 @@ function MenuSheet({ open, onClose }: { open: boolean; onClose: () => void }) {
 
 export default function MobileChrome() {
   const beamRef = useRef<HTMLDivElement | null>(null);
-  const dockHidden = useScrollEffects(beamRef);
-  const heroCtaVisible = useSelectorVisible("[data-hero-cta]", 0.1);
-  const holoVisible = useHoloNavLive();
+  useScrollBeam(beamRef);
   const [menuOpen, setMenuOpen] = useState(false);
 
-  const hidden = dockHidden || holoVisible || menuOpen;
+  useEffect(() => {
+    const open = () => setMenuOpen(true);
+    document.addEventListener("ztx:open-menu", open);
+    return () => document.removeEventListener("ztx:open-menu", open);
+  }, []);
 
   return (
     <div className="m-chrome">
       <div ref={beamRef} className="m-beam" aria-hidden="true" />
-      <div className={`m-dock${hidden ? " is-hidden" : ""}${heroCtaVisible ? " cta-away" : ""}`}>
-        <button
-          className="m-dock__menu"
-          onClick={() => setMenuOpen(true)}
-          aria-label="Меню"
-        >
-          <List size={20} weight="bold" />
-        </button>
-        <a
-          className="m-dock__cta"
-          href="/#contacts"
-          aria-hidden={heroCtaVisible}
-          tabIndex={heroCtaVisible ? -1 : undefined}
-        >
-          Обсудить проект
-          <ArrowUpRight size={15} weight="bold" />
-        </a>
-      </div>
       <MenuSheet open={menuOpen} onClose={() => setMenuOpen(false)} />
     </div>
   );

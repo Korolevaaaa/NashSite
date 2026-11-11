@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { NAV_LINKS } from "../../data/content";
+import { List } from "../ui/icons";
 
 export default function Header() {
   const [solid, setSolid] = useState(false);
@@ -51,6 +52,14 @@ export default function Header() {
           Обсудить проект
           <span aria-hidden="true">→</span>
         </a>
+
+        <button
+          className="site-header__menu"
+          aria-label="Меню"
+          onClick={() => document.dispatchEvent(new CustomEvent("ztx:open-menu"))}
+        >
+          <List size={20} weight="bold" />
+        </button>
       </nav>
     </header>
   );

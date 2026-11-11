@@ -35,7 +35,7 @@ export default function Team() {
           На первом созвоне знакомим с теми, кто будет делать ваш проект.
         </p>
 
-        <ul className="mt-12 grid grid-cols-[repeat(auto-fill,minmax(220px,270px))] gap-6">
+        <ul className="mt-12 grid grid-cols-2 gap-4 md:grid-cols-[repeat(auto-fill,minmax(220px,270px))] md:gap-6">
           {TEAM.map((m) => (
             <li
               key={m.slug}

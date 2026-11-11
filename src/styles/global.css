@@ -4871,3 +4871,79 @@ button.case-hero {
   }
   .m-sheet__glow { display: none; }
 }
+
+/* ================= Mobile OS — round 5 (header menu + 2-col grids) ================= */
+/* burger lives in the header — hidden on desktop */
+.site-header__menu { display: none; }
+
+@media (max-width: 767px) {
+  /* header: logo + compact CTA + burger; menu opens the sheet */
+  .site-header__cta {
+    display: inline-flex !important;
+    order: 2;
+    margin-left: auto;
+    align-items: center;
+    justify-content: center;
+    min-height: 40px;
+    padding: 0 16px;
+    border-radius: 999px;
+    font-size: 12.5px;
+    gap: 8px;
+  }
+  .site-header__cta span { display: none; }
+  .site-header__menu {
+    display: grid;
+    place-items: center;
+    order: 3;
+    width: 40px;
+    height: 40px;
+    flex: 0 0 auto;
+    border: 1px solid rgba(21, 27, 32, 0.14);
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.6);
+    color: var(--z-ink);
+    cursor: pointer;
+  }
+  .site-header__menu:active { border-color: var(--z-action); color: var(--z-action); }
+
+  /* no dock anymore — bottom-right is reserved for the chat bot */
+  main { padding-bottom: 0; }
+  .m-dock { display: none; }
+
+  /* ---- everything two-up ---- */
+  .dir-cell { grid-column: span 6; }
+  .dir-cell__link { padding: 18px 14px 14px; gap: 8px; }
+  .dir-cell__title { font-size: 15px; }
+  .dir-cell__text {
+    font-size: 12px;
+    line-height: 1.45;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+  .dir-cell__foot { padding-top: 8px; }
+  .dir-cell__arrow { width: 32px; height: 32px; }
+
+  .pf-grid,
+  .sf-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+  }
+  .pf-card__meta { padding: 10px 12px 12px; }
+  .pf-card__cat { font-size: 11px; }
+  .pf-card__title { font-size: 13.5px; }
+  .sf-card__title { font-size: 14px; }
+  .sf-card__cta { min-height: 40px; padding: 0 14px; font-size: 12px; }
+  .sf-card__price { font-size: 13px; }
+
+  .dipl-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+
+  .blog-list { grid-template-columns: repeat(2, 1fr); gap: 10px; }
+  .blog-item--cover .blog-item__body { padding: 12px 12px 14px; }
+  .blog-item__title { font-size: 14.5px; }
+  .blog-item__excerpt { display: none; }
+  .blog-item__hook { left: 10px; bottom: 10px; padding: 6px 10px; font-size: 12px; }
+  .blog-item__meta { gap: 6px; font-size: 10.5px; }
+}
