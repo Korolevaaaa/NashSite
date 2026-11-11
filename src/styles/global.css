@@ -5236,3 +5236,59 @@ button.case-hero {
     height: min(520px, calc(100dvh - 90px));
   }
 }
+
+/* ================= WaveShader — декоративные «шёлковые» волны ================= */
+.wave-shader {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+  pointer-events: none;
+}
+.wave-shader--fallback {
+  background-size: cover;
+  background-position: center;
+  opacity: 0.5;
+}
+/* слот позиционирует canvas; текст секции живёт поверх */
+.wave-slot {
+  position: absolute;
+  pointer-events: none;
+  z-index: 0;
+}
+/* About: только в правой половине, затухает к заголовку */
+.wave-slot--about {
+  left: 42%;
+  right: 0;
+  top: 6%;
+  bottom: 18%;
+  -webkit-mask-image: linear-gradient(90deg, transparent 0 40%, #000 70%);
+  mask-image: linear-gradient(90deg, transparent 0 40%, #000 70%);
+}
+@media (max-width: 1023px) {
+  .wave-slot--about { display: none; } /* заголовок на всю ширину: декору негде жить */
+}
+/* Process: радиальное затухание, хвост ведёт к таймлайну */
+.wave-slot-host {
+  position: relative;
+  height: 220px;
+  margin-top: 32px;
+}
+.wave-slot--process {
+  top: -40px;
+  bottom: -40px;
+  left: -10vw;
+  right: -40px;
+  -webkit-mask-image:
+    linear-gradient(90deg, transparent 0%, #000 18%, #000 72%, transparent 100%),
+    linear-gradient(180deg, #000 0%, #000 65%, transparent 100%);
+  mask-image:
+    linear-gradient(90deg, transparent 0%, #000 18%, #000 72%, transparent 100%),
+    linear-gradient(180deg, #000 0%, #000 65%, transparent 100%);
+  -webkit-mask-composite: source-in;
+  mask-composite: intersect;
+}
+@media (max-width: 767px) {
+  .wave-slot-host { display: none; }
+}

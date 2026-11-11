@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 840 300" preserveAspectRatio="xMidYMid slice" fill="none">
+  <defs>
+    <linearGradient id="ga" x1="0" x2="1">
+      <stop offset="0" stop-color="#d1d9de" stop-opacity=".3"/>
+      <stop offset=".35" stop-color="#d1d9de" stop-opacity=".5"/>
+      <stop offset=".60" stop-color="#008085" stop-opacity=".55"/>
+      <stop offset=".88" stop-color="#00d1de" stop-opacity=".45"/>
+      <stop offset="1" stop-color="#00d1de" stop-opacity="0"/>
+    </linearGradient>
+  </defs>
+  <g stroke="url(#ga)" stroke-width="1.2" stroke-linecap="round" fill="none">
+    <path d="M0 245 Q140 210 280 235 T560 215 T840 190"/>
+    <path d="M0 225 Q145 195 285 218 T565 205 T840 185"/>
+    <path d="M0 205 Q150 180 290 201 T570 195 T840 180"/>
+    <path d="M0 185 Q155 165 295 184 T575 185 T840 175"/>
+    <path d="M0 165 Q160 150 300 167 T580 175 T840 170"/>
+    <path d="M0 145 Q165 135 305 150 T585 165 T840 165"/>
+    <path d="M0 125 Q170 120 310 133 T590 155 T840 160"/>
+    <path d="M0 105 Q175 105 315 116 T595 145 T840 155"/>
+    <path d="M0 85  Q180 90  320 99  T600 135 T840 150"/>
+  </g>
+</svg>

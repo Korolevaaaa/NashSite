@@ -1,5 +1,6 @@
 import { ABOUT, STATS } from "../../data/content";
 import { useInView } from "../../hooks/useInView";
+import WaveShader from "../ui/WaveShader";
 
 export default function About() {
   const { ref, inView } = useInView<HTMLElement>();
@@ -10,8 +11,12 @@ export default function About() {
       ref={ref}
       className={`reveal zt-sec px-[var(--page-gutter)] ${inView ? "is-in" : ""}`}
     >
-      <div className="mx-auto max-w-[var(--content-max)]">
-        <p className="max-w-[30ch] font-display text-[clamp(28px,3vw,40px)] font-normal leading-[1.22] tracking-[-0.01em] text-[var(--z-ink)]">
+      <div className="relative mx-auto max-w-[var(--content-max)]">
+        {/* шёлковые волны — заполняют пустую правую половину секции */}
+        <div className="wave-slot wave-slot--about" aria-hidden="true">
+          <WaveShader opacity={0.6} seed={0} interactive />
+        </div>
+        <p className="relative max-w-[30ch] font-display text-[clamp(28px,3vw,40px)] font-normal leading-[1.22] tracking-[-0.01em] text-[var(--z-ink)]">
           ZETRONIX — небольшая веб-студия. Проектируем и разрабатываем сайты,
           интерфейсы и AI-инструменты. Вы говорите{" "}
           <span className="font-medium text-[var(--z-action)]">
