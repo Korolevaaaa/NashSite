@@ -193,7 +193,7 @@ void main() {
     // через разворот, никаких склеек между ветвями.
 
     float amp = 0.30;  // тоньше: полуширина паруса ~4.5% высоты контейнера
-    float xTurn = 0.82;
+    float xTurn = 0.885;
 
     // Верхняя ветвь (слева -> направо), y около 0.81 вверху секции (GL y=1 вверху)
     float spineTop =
@@ -227,29 +227,43 @@ void main() {
       + 0.095 * smoothstep(0.60, 0.95, xTurn);
     float yMid = 0.5 * (yTopEnd + yBotEnd);
     float rY   = max(0.5 * (yTopEnd - yBotEnd), 0.06);
-    float rX   = 0.060; // дуга держится у правого края, не уходя за рамку
+    float rX   = 0.055; // дуга растянута вправо — спуск идёт в поле ПРАВЕЕ карточек
 
     vec2 pArc = vec2((x - xTurn) / rX, (y - yMid) / rY);
     float rNorm = length(pArc);
     float nArc = (rNorm - 1.0) * rY;
-    float dArc = pArc.x > -0.15 ? abs(nArc) : 1e3;
-    float dTop = x <= xTurn ? abs(y - spineTop) : 1e3;
-    float dBot = x <= xTurn ? abs(y - spineBot) : 1e3;
 
-    // параметр вдоль пути: 0 — вход слева вверху, ~0.5 — разворот, 1 — выход слева внизу
-    float sPath;
-    float nCoord;
-    if (dArc <= dTop && dArc <= dBot) {
-      float ang = atan(pArc.y, pArc.x); // +pi/2 сверху .. -pi/2 снизу
-      sPath  = 0.44 + (1.5708 - ang) / 3.1416 * 0.16;
-      nCoord = nArc;
-    } else if (dTop <= dBot) {
-      sPath  = x * 0.50;
-      nCoord = y - spineTop;
+    // расстояния до трёх ветвей; небольшие нахлёсты у стыков — поле не рвётся
+    float dTop = x <= xTurn + 0.03 ? abs(y - spineTop) : 1e3;
+    float dBot = x <= xTurn + 0.03 ? abs(y - spineBot) : 1e3;
+    float dArc = pArc.x > -0.30 ? abs(nArc) : 1e3;
+    float dPath = min(min(dTop, dBot), dArc);
+
+    // параметр вдоль пути на каждой ветви (стыки совпадают: 0.44 и 0.60)
+    float sTop = x * (0.44 / xTurn);
+    float sArc = 0.44 + (1.5708 - atan(pArc.y, pArc.x)) / 3.1416 * 0.16;
+    float sBot = 0.60 + (xTurn - x) / xTurn * 0.38;
+
+    // мягкое смешивание sPath по обратным весам близости к ветви —
+    // никаких жёстких границ Вороного → никаких видимых швов на стыках
+    float e = 0.006;
+    float wT = e / (dTop + e);
+    float wA = e / (dArc + e);
+    float wB = e / (dBot + e);
+    float sPath = (sTop * wT + sArc * wA + sBot * wB) / (wT + wA + wB);
+
+    // подписанное поле: знак берётся от ближайшей ветви; на границах Вороного
+    // знак зеркалится, но |nCoord| непрерывно — тело ленты и 40 нитей
+    // идут через стыки без видимого шва
+    float sgn;
+    if (dTop <= dArc && dTop <= dBot) {
+      sgn = y >= spineTop ? 1.0 : -1.0;
+    } else if (dBot <= dArc) {
+      sgn = y <= spineBot ? 1.0 : -1.0; // внешняя сторона подковы остаётся «внешней»
     } else {
-      sPath  = 0.60 + (xTurn - x) / xTurn * 0.38;
-      nCoord = -(y - spineBot); // внешняя сторона подковы остаётся «внешней»
+      sgn = nArc >= 0.0 ? 1.0 : -1.0;
     }
+    float nCoord = sgn * dPath;
 
     // концы ленты тают за левым краем (вход и выход)
     float envPath = smoothstep(0.0, 0.10, sPath) * (1.0 - smoothstep(0.94, 1.0, sPath));
