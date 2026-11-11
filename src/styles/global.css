@@ -1976,7 +1976,9 @@ section[id] {
   border: 1px solid var(--color-line);
   padding: 8px 14px;
   border-radius: var(--r-pill);
-  background: transparent;
+  background: rgba(250, 251, 252, 0.88);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
 }
 
 /* — competencies: diplomas disclosure (0fr→1fr, no JS height measure) — */
@@ -1989,7 +1991,9 @@ section[id] {
   padding: 0 22px;
   border: 1px solid var(--color-line);
   border-radius: var(--r-pill);
-  background: transparent;
+  background: rgba(250, 251, 252, 0.9);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
   font-family: var(--font-body);
   font-size: 14px;
   font-weight: 500;
@@ -5317,20 +5321,24 @@ button.case-hero {
   mask-composite: intersect;
 }
 
-/* Competencies: горизонтальная шёлковая лента в шапке секции справа от заголовка */
+/* Competencies: та же лента-«обойма», что и в кейсах — заходит сверху,
+   огибает правое поле за колонкой и уходит влево до левого края внизу */
 .wave-slot--competencies {
-  left: 24%;
-  right: -6vw;
-  top: -54px;
-  height: 310px;
+  top: -24px;
+  bottom: -24px;
+  left: -9vw;
+  right: -9vw;
   -webkit-mask-image:
-    linear-gradient(90deg, transparent 0%, rgba(0,0,0,0.35) 22%, #000 48%, #000 90%, transparent 100%),
-    linear-gradient(180deg, transparent 0%, #000 18%, #000 82%, transparent 100%);
+    linear-gradient(90deg, transparent 0%, #000 5%, #000 96%, transparent 100%);
   mask-image:
-    linear-gradient(90deg, transparent 0%, rgba(0,0,0,0.35) 22%, #000 48%, #000 90%, transparent 100%),
-    linear-gradient(180deg, transparent 0%, #000 18%, #000 82%, transparent 100%);
-  -webkit-mask-composite: source-in;
-  mask-composite: intersect;
+    linear-gradient(90deg, transparent 0%, #000 5%, #000 96%, transparent 100%);
+}
+
+/* контент компетенций поверх ленты */
+#competencies .comp-toggle,
+#competencies .comp-diplomas {
+  position: relative;
+  z-index: 1;
 }
 
 /* FAQ: воздушный шлейф под заголовком левой колонки */
