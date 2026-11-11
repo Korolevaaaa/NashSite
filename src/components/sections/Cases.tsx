@@ -3,7 +3,7 @@ import { CASES, CASE_TYPES } from "../../data/cases";
 import { useInView } from "../../hooks/useInView";
 import SectionHead from "./SectionHead";
 
-const PREVIEW_COUNT = 8;
+const PREVIEW_COUNT = 4;
 
 export default function Cases() {
   const { ref, inView } = useInView<HTMLElement>();

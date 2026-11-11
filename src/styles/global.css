@@ -4985,3 +4985,13 @@ button.case-hero {
   }
   .blog-item__meta { gap: 10px; font-size: 12px; }
 }
+
+/* ================= Mobile OS — round 7 (badge anchor + row fit) ================= */
+@media (max-width: 767px) {
+  /* alt badge back to right edge — the r6 left:8px overrode base left:auto */
+  .sf-card__badge--alt { left: auto; }
+
+  /* narrow 2-col card: price + CTA can't share one line — CTA fills the row */
+  .sf-card__row { flex-wrap: wrap; gap: 8px; }
+  .sf-card__cta { flex: 1 1 100%; justify-content: center; }
+}

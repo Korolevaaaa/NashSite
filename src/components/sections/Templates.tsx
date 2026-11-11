@@ -28,14 +28,15 @@ export default function Templates() {
           title="Готовые макеты"
           sub="Проверенные дизайны, которые адаптируем под ваш бизнес за одну-две недели — быстрее и дешевле проекта с нуля."
         />
-        <StorefrontGrid />
+        <StorefrontGrid preview />
       </div>
     </section>
   );
 }
 
-/* Витрина без заголовка секции — используется и на главной, и на /templates */
-export function StorefrontGrid() {
+/* Витрина без заголовка секции — используется и на главной (preview: 4 карточки,
+   без фильтров), и на /templates (полный каталог) */
+export function StorefrontGrid({ preview = false }: { preview?: boolean }) {
   const [items] = useState(publishedItems);
   const [cat, setCat] = useState("all");
   const [sub, setSub] = useState("all");
@@ -67,8 +68,11 @@ export function StorefrontGrid() {
       });
   }, [items, cat, sub, q]);
 
+  const visible = preview ? filtered.slice(0, 4) : filtered;
+
   return (
     <>
+      {!preview && (
       <div className="sf-filters">
           <input
             className="sf-search"
@@ -127,10 +131,11 @@ export function StorefrontGrid() {
             </div>
           )}
         </div>
+      )}
 
-        {filtered.length > 0 ? (
+        {visible.length > 0 ? (
           <ul className="sf-grid">
-            {filtered.map((item) => (
+            {visible.map((item) => (
               <TemplateCard key={item.id} item={item} />
             ))}
           </ul>
@@ -145,6 +150,15 @@ export function StorefrontGrid() {
             , подберём под задачу.
           </p>
         )}
+
+      {preview && filtered.length > 4 && (
+        <div className="cs-more">
+          <a className="btn" href="/templates">
+            <span>Смотреть все макеты</span>
+            <i className="btn-arrow">→</i>
+          </a>
+        </div>
+      )}
     </>
   );
 }
