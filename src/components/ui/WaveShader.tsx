@@ -185,71 +185,79 @@ void main() {
   float accumA  = 0.0;
 
   if (u_variant > 1.5) {
-    // ===== VARIANT "loop": ЛЕНТА-ОБОЙМА ВОКРУГ БЛОКА КЕЙСОВ =====
-    // 1) Верхняя ветвь заходит слева вверху (в зоне шапки/фильтров и верха 1-го ряда),
-    //    течёт направо до правого края (x ≈ 0.93).
-    // 2) У правого края плавно заворачивает вниз по дуге.
-    // 3) На середине высоты секции (между 1-м и 2-м рядом карточек, y ≈ 0.47)
-    //    разворачивается обратно налево и уходит за левый край.
-    // Вся отрисовка идёт через то же самое 3D-ядро evalSilkRibbon!
+    // ===== VARIANT "loop": ЕДИНАЯ лента-«обойма» вокруг блока кейсов =====
+    // Траектория-подкова: вход слева вверху → правый край → дуга-разворот
+    // → возврат налево вдоль низа секции (уровень кнопки «Смотреть все кейсы»).
+    // Вся лента рисуется ОДНИМ вызовом evalSilkRibbon по полю подписанного
+    // расстояния до пути — узлы перекрута и все 40 нитей непрерывно текут
+    // через разворот, никаких склеек между ветвями.
 
-    float amp = 0.44; // масштаб ширины ленты под высокий контейнер секции Кейсов
-    float xTurn = 0.87;
+    float amp = 0.30;  // тоньше: полуширина паруса ~4.5% высоты контейнера
+    float xTurn = 0.82;
 
-    // Ветвь 1 (верхняя, слева -> направо): y около 0.80 (вверху секции, GL y=1 вверху)
+    // Верхняя ветвь (слева -> направо), y около 0.81 вверху секции (GL y=1 вверху)
     float spineTop =
         0.81
       + 0.048 * sin(x * 4.4 - t * 0.22 + ph)
       + 0.020 * cos(x * 8.0 - t * 0.15 + ph * 1.5)
-      - 0.045 * smoothstep(0.62, 0.95, x) // плавный нырок к точке разворота справа
+      - 0.045 * smoothstep(0.62, 0.95, x)
       + mPush * 0.45;
-    float dSpineTop =
-        0.048 * 4.4 * cos(x * 4.4 - t * 0.22 + ph)
-      - 0.020 * 8.0 * sin(x * 8.0 - t * 0.15 + ph * 1.5);
-    float envTop = smoothstep(0.0, 0.12, x) * (1.0 - smoothstep(0.86, 0.97, x));
 
-    vec4 topRib = evalSilkRibbon(x * 1.05, y - spineTop, amp, dSpineTop, envTop, 0.0, t);
-    accumCol += topRib.rgb * (1.0 - accumA);
-    accumA   += topRib.a   * (1.0 - accumA);
-
-    // Ветвь 2 (разворот у правого края + возврат справа -> налево вдоль низа
-    // секции на уровне кнопки «Смотреть все кейсы», y ≈ 0.15)
-    float xRev = 1.0 - x; // координата движения обратно налево
+    // Нижняя ветвь возврата (справа -> налево) вдоль низа, y ≈ 0.15
+    float xRev = 1.0 - x;
     float spineBot =
         0.15
       + 0.045 * sin(xRev * 4.2 - t * 0.22 + ph + 2.2)
       + 0.020 * cos(xRev * 7.6 - t * 0.15 + ph * 1.3)
-      + 0.095 * smoothstep(0.60, 0.95, x) // справа поднимается навстречу верхней ветви
+      + 0.095 * smoothstep(0.60, 0.95, x)
       + mPush * 0.45;
-    float dSpineBot =
-       -0.045 * 4.2 * cos(xRev * 4.2 - t * 0.22 + ph + 2.2)
-      + 0.020 * 7.6 * sin(xRev * 7.6 - t * 0.15 + ph * 1.3);
-    float envBot = smoothstep(0.0, 0.10, x) * (1.0 - smoothstep(0.86, 0.97, x));
 
-    vec4 botRib = evalSilkRibbon(1.02 + xRev * 1.05, y - spineBot, amp * 1.05, dSpineBot, envBot, 1.4, t);
-    accumCol += botRib.rgb * (1.0 - accumA);
-    accumA   += botRib.a   * (1.0 - accumA);
-
-    // Ветвь 3 (правая дуга-петля, соединяющая верхнюю и нижнюю ветви у правого края)
-    float yTopEnd = 0.77 + 0.03 * sin(xTurn * 4.4 - t * 0.22 + ph);
-    float yBotEnd = 0.23 + 0.03 * sin((1.0 - xTurn) * 4.2 - t * 0.22 + ph + 2.2);
+    // Правая дуга-петля: концы берутся ТОЧНО из spine-функций у xTurn,
+    // чтобы стыки были идеально непрерывными
+    float xRevT = 1.0 - xTurn;
+    float yTopEnd =
+        0.81
+      + 0.048 * sin(xTurn * 4.4 - t * 0.22 + ph)
+      + 0.020 * cos(xTurn * 8.0 - t * 0.15 + ph * 1.5)
+      - 0.045 * smoothstep(0.62, 0.95, xTurn);
+    float yBotEnd =
+        0.15
+      + 0.045 * sin(xRevT * 4.2 - t * 0.22 + ph + 2.2)
+      + 0.020 * cos(xRevT * 7.6 - t * 0.15 + ph * 1.3)
+      + 0.095 * smoothstep(0.60, 0.95, xTurn);
     float yMid = 0.5 * (yTopEnd + yBotEnd);
-    float rY   = max(0.5 * (yTopEnd - yBotEnd), 0.08);
-    float rX   = 0.075; // горизонтальный вылет дуги в правое поле
+    float rY   = max(0.5 * (yTopEnd - yBotEnd), 0.06);
+    float rX   = 0.060; // дуга держится у правого края, не уходя за рамку
 
     vec2 pArc = vec2((x - xTurn) / rX, (y - yMid) / rY);
     float rNorm = length(pArc);
-    float ang = atan(pArc.y, pArc.x); // -pi/2 (низ) .. +pi/2 (верх) при x > xTurn
-    float rightSide = smoothstep(-0.35, 0.15, pArc.x);
-    float arcEnv = rightSide * smoothstep(1.65, 1.0, abs(ang));
+    float nArc = (rNorm - 1.0) * rY;
+    float dArc = pArc.x > -0.15 ? abs(nArc) : 1e3;
+    float dTop = x <= xTurn ? abs(y - spineTop) : 1e3;
+    float dBot = x <= xTurn ? abs(y - spineBot) : 1e3;
 
-    if (arcEnv > 0.002) {
-      float sArc = 0.88 + (1.5708 - ang) / 3.14159 * 0.34;
-      float nArc = (rNorm - 1.0) * rY;
-      vec4 arcRib = evalSilkRibbon(sArc, nArc, amp * 0.92, -cos(ang) * 0.6, arcEnv, 0.65, t);
-      accumCol += arcRib.rgb * arcEnv * (1.0 - accumA);
-      accumA   += arcRib.a   * arcEnv * (1.0 - accumA);
+    // параметр вдоль пути: 0 — вход слева вверху, ~0.5 — разворот, 1 — выход слева внизу
+    float sPath;
+    float nCoord;
+    if (dArc <= dTop && dArc <= dBot) {
+      float ang = atan(pArc.y, pArc.x); // +pi/2 сверху .. -pi/2 снизу
+      sPath  = 0.44 + (1.5708 - ang) / 3.1416 * 0.16;
+      nCoord = nArc;
+    } else if (dTop <= dBot) {
+      sPath  = x * 0.50;
+      nCoord = y - spineTop;
+    } else {
+      sPath  = 0.60 + (xTurn - x) / xTurn * 0.38;
+      nCoord = -(y - spineBot); // внешняя сторона подковы остаётся «внешней»
     }
+
+    // концы ленты тают за левым краем (вход и выход)
+    float envPath = smoothstep(0.0, 0.10, sPath) * (1.0 - smoothstep(0.94, 1.0, sPath));
+
+    // sPath * 2.1 — та же плотность перекрутов, что у потока x * 5.2 на единицу длины
+    vec4 rib = evalSilkRibbon(sPath * 2.1, nCoord, amp, 0.0, envPath, 0.0, t);
+    accumCol += rib.rgb * (1.0 - accumA);
+    accumA   += rib.a   * (1.0 - accumA);
   } else {
     // ===== VARIANT "flow": широкая перекрученная шёлковая лента через секцию =====
     float spine =
