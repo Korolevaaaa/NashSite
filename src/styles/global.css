@@ -4995,3 +4995,244 @@ button.case-hero {
   .sf-card__row { flex-wrap: wrap; gap: 8px; }
   .sf-card__cta { flex: 1 1 100%; justify-content: center; }
 }
+
+/* ================= Consent checkbox (site-styled) ================= */
+.z-consent {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  cursor: pointer;
+  font-size: 12px;
+  line-height: 1.45;
+  color: rgba(21, 27, 32, 0.55);
+}
+.z-check {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 18px;
+  height: 18px;
+  flex: none;
+  margin: 0;
+  border: 1.5px solid var(--z-line);
+  border-radius: 6px;
+  background: #fff;
+  display: grid;
+  place-content: center;
+  cursor: pointer;
+  transition: background 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease;
+}
+.z-check::after {
+  content: "";
+  width: 9px;
+  height: 5px;
+  margin-top: -2px;
+  border-left: 2px solid #fff;
+  border-bottom: 2px solid #fff;
+  transform: rotate(-45deg) scale(0);
+  transition: transform 0.18s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+.z-check:checked {
+  background: var(--z-action);
+  border-color: var(--z-action);
+}
+.z-check:checked::after { transform: rotate(-45deg) scale(1); }
+.z-check:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+}
+.z-consent a { color: var(--z-action); text-decoration: underline; text-underline-offset: 3px; }
+
+.contact-brief__opt {
+  font-style: normal;
+  font-weight: 400;
+  color: rgba(21, 27, 32, 0.38);
+}
+.contact-brief__field textarea { resize: none; }
+
+/* ================= Scrollbars — thin & quiet ================= */
+* { scrollbar-width: thin; scrollbar-color: rgba(21, 27, 32, 0.18) transparent; }
+*::-webkit-scrollbar { width: 6px; height: 6px; }
+*::-webkit-scrollbar-thumb {
+  background: rgba(21, 27, 32, 0.14);
+  border-radius: 3px;
+}
+*::-webkit-scrollbar-thumb:hover { background: rgba(21, 27, 32, 0.28); }
+*::-webkit-scrollbar-track,
+*::-webkit-scrollbar-corner { background: transparent; }
+
+/* ================= Chat widget (ZTRX assistant) ================= */
+.zc {
+  position: fixed;
+  right: 20px;
+  bottom: 20px;
+  z-index: 60;
+  font-family: var(--font-body);
+}
+.zc-fab {
+  position: relative;
+  width: 54px;
+  height: 54px;
+  border: none;
+  border-radius: 50%;
+  background: var(--z-ink);
+  color: #fff;
+  display: grid;
+  place-content: center;
+  cursor: pointer;
+  box-shadow: 0 8px 28px rgba(13, 17, 23, 0.28);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+@media (hover: hover) {
+  .zc-fab:hover { transform: translateY(-2px) scale(1.04); box-shadow: 0 12px 34px rgba(13, 17, 23, 0.32); }
+}
+.zc-fab__dot {
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: var(--z-action);
+  border: 2px solid #fff;
+}
+.zc-panel {
+  width: min(360px, calc(100vw - 40px));
+  height: min(480px, calc(100dvh - 110px));
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  border: 1px solid var(--z-line);
+  border-radius: 20px;
+  background: #fff;
+  box-shadow: 0 18px 60px rgba(13, 17, 23, 0.22);
+  animation: zc-in 0.3s cubic-bezier(0.32, 0.72, 0.24, 1) both;
+}
+@keyframes zc-in {
+  from { opacity: 0; transform: translateY(12px) scale(0.97); }
+  to { opacity: 1; transform: none; }
+}
+.zc-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 14px;
+  border-bottom: 1px solid var(--z-line);
+}
+.zc-avatar {
+  width: 34px;
+  height: 34px;
+  flex: none;
+  display: grid;
+  place-content: center;
+  border-radius: 10px;
+  background: rgba(0, 107, 112, 0.12);
+  color: var(--z-action);
+}
+.zc-id { flex: 1; min-width: 0; display: grid; }
+.zc-id strong { font-size: 14px; font-weight: 600; color: var(--z-ink); }
+.zc-id em { font-style: normal; font-size: 11px; color: var(--z-action); }
+.zc-close {
+  width: 32px;
+  height: 32px;
+  border: none;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--z-muted);
+  display: grid;
+  place-content: center;
+  cursor: pointer;
+}
+.zc-close:hover { background: rgba(21, 27, 32, 0.06); color: var(--z-ink); }
+.zc-msgs {
+  flex: 1;
+  overflow-y: auto;
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  overscroll-behavior: contain;
+}
+.zc-msg {
+  max-width: 82%;
+  padding: 9px 13px;
+  border-radius: 14px;
+  font-size: 13.5px;
+  line-height: 1.45;
+}
+.zc-msg--assistant {
+  align-self: flex-start;
+  background: var(--color-bg);
+  color: var(--z-ink);
+  border-bottom-left-radius: 4px;
+}
+.zc-msg--user {
+  align-self: flex-end;
+  background: var(--z-ink);
+  color: #fff;
+  border-bottom-right-radius: 4px;
+}
+.zc-typing { display: flex; gap: 5px; padding: 12px 14px; }
+.zc-typing i {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--z-muted);
+  animation: zc-dot 1s infinite;
+}
+.zc-typing i:nth-child(2) { animation-delay: 0.15s; }
+.zc-typing i:nth-child(3) { animation-delay: 0.3s; }
+@keyframes zc-dot {
+  0%, 60%, 100% { opacity: 0.3; transform: none; }
+  30% { opacity: 1; transform: translateY(-3px); }
+}
+.zc-lead {
+  padding: 10px 14px;
+  border-radius: 12px;
+  border: 1px solid rgba(0, 107, 112, 0.3);
+  background: rgba(0, 107, 112, 0.07);
+  color: var(--z-action);
+  font-size: 12.5px;
+  text-align: center;
+}
+.zc-form {
+  display: flex;
+  gap: 8px;
+  padding: 10px;
+  border-top: 1px solid var(--z-line);
+}
+.zc-form input {
+  flex: 1;
+  min-width: 0;
+  min-height: 40px;
+  padding: 0 14px;
+  border: 1px solid var(--z-line);
+  border-radius: 20px;
+  background: #fff;
+  font-family: var(--font-body);
+  font-size: 13.5px;
+  color: var(--z-ink);
+  outline: none;
+}
+.zc-form input:focus { border-color: var(--z-action); }
+.zc-form button {
+  width: 40px;
+  height: 40px;
+  flex: none;
+  border: none;
+  border-radius: 50%;
+  background: var(--z-action);
+  color: #fff;
+  display: grid;
+  place-content: center;
+  cursor: pointer;
+  transition: opacity 0.15s ease;
+}
+.zc-form button:disabled { opacity: 0.4; cursor: default; }
+
+@media (max-width: 767px) {
+  .zc { right: 14px; bottom: 14px; }
+  .zc-panel {
+    width: calc(100vw - 28px);
+    height: min(520px, calc(100dvh - 90px));
+  }
+}

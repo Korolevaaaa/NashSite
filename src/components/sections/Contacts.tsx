@@ -7,7 +7,8 @@ export default function Contacts() {
   const { ref, inView } = useInView<HTMLElement>();
   const [brief, setBrief] = useState({
     name: "",
-    contact: "",
+    phone: "",
+    social: "",
     budget: "",
     task: "",
   });
@@ -26,7 +27,8 @@ export default function Contacts() {
     setState("sending");
     const r = await submitLead({
       name: brief.name.trim(),
-      contact: brief.contact.trim(),
+      phone: brief.phone.trim(),
+      social: brief.social.trim() || undefined,
       comment: [brief.budget && `Бюджет: ${brief.budget}`, brief.task]
         .filter(Boolean)
         .join("\n"),
@@ -105,14 +107,26 @@ export default function Contacts() {
             />
           </label>
           <label className="contact-brief__field">
-            <span>Контакт</span>
+            <span>Телефон</span>
+            <input
+              type="tel"
+              required
+              value={brief.phone}
+              onChange={(e) => setBrief({ ...brief, phone: e.target.value })}
+              placeholder="+7 (___) ___-__-__"
+              autoComplete="tel"
+            />
+          </label>
+          <label className="contact-brief__field">
+            <span>
+              Соцсеть <em className="contact-brief__opt">— не обязательно</em>
+            </span>
             <input
               type="text"
-              required
-              value={brief.contact}
-              onChange={(e) => setBrief({ ...brief, contact: e.target.value })}
-              placeholder="Телефон или Telegram"
-              autoComplete="tel"
+              value={brief.social}
+              onChange={(e) => setBrief({ ...brief, social: e.target.value })}
+              placeholder="Telegram или WhatsApp — @ник или номер"
+              autoComplete="off"
             />
           </label>
           <label className="contact-brief__field">
@@ -133,13 +147,13 @@ export default function Contacts() {
               placeholder="Что нужно сделать, в двух словах"
             />
           </label>
-          <label className="mt-1 flex cursor-pointer items-start gap-2.5 text-[12px] leading-snug text-[var(--z-ink)]/55">
+          <label className="z-consent mt-1">
             <input
               type="checkbox"
               required
               checked={consent}
               onChange={(e) => setConsent(e.target.checked)}
-              className="mt-0.5"
+              className="z-check"
             />
             <span>
               Соглашаюсь с{" "}

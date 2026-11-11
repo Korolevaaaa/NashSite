@@ -27,6 +27,7 @@ import NapravleniePage from "../components/pages/NapravleniePage";
 import PartnerPage from "../components/pages/PartnerPage";
 import { PrivacyPage, OfferPage } from "../components/pages/LegalPage";
 import LeadModal from "../components/LeadModal";
+import ChatWidget from "../components/ChatWidget";
 import PartnerBadge from "../components/PartnerBadge";
 import { activePartner, captureRef } from "../utils/refSource";
 import { CASES } from "../data/cases";
@@ -270,6 +271,7 @@ export default function App() {
         onClose={() => setLeadOpen(false)}
         context={leadContext}
       />
+      {route.name !== "admin" && route.name !== "partner" && <ChatWidget />}
     </>
   );
 }

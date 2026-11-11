@@ -5,6 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "server": "node server/index.mjs",
     "build": "tsc --noEmit && vite build && node scripts/prerender.mjs",
     "preview": "vite preview"
   },
@@ -12,6 +13,8 @@
     "@phosphor-icons/react": "^2.1.10",
     "@react-three/drei": "^10.7.9",
     "@react-three/fiber": "^9.8.2",
+    "https-proxy-agent": "^9.1.0",
+    "nodemailer": "^10.5.0",
     "react": "^19.3.1",
     "react-dom": "^19.3.1",
     "three": "^0.187.0"

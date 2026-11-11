@@ -19,7 +19,8 @@ export default function LeadModal({
   context: string;
 }) {
   const [name, setName] = useState("");
-  const [contact, setContact] = useState("");
+  const [phone, setPhone] = useState("");
+  const [social, setSocial] = useState("");
   const [comment, setComment] = useState("");
   const [consent, setConsent] = useState(false);
   const [state, setState] = useState<"idle" | "sending" | "done" | "error">(
@@ -42,7 +43,8 @@ export default function LeadModal({
     setState("sending");
     const r = await submitLead({
       name: name.trim(),
-      contact: contact.trim(),
+      phone: phone.trim(),
+      social: social.trim() || undefined,
       comment: comment.trim(),
       page: location.pathname,
     });
@@ -107,9 +109,18 @@ export default function LeadModal({
               />
               <input
                 required
-                value={contact}
-                onChange={(e) => setContact(e.target.value)}
-                placeholder="Телефон или Telegram"
+                type="tel"
+                value={phone}
+                onChange={(e) => setPhone(e.target.value)}
+                placeholder="Телефон *"
+                autoComplete="tel"
+                className={inputCls}
+              />
+              <input
+                value={social}
+                onChange={(e) => setSocial(e.target.value)}
+                placeholder="Telegram / WhatsApp — не обязательно"
+                autoComplete="off"
                 className={inputCls}
               />
               <textarea
@@ -121,13 +132,13 @@ export default function LeadModal({
               />
             </div>
 
-            <label className="mt-4 flex cursor-pointer items-start gap-2.5 text-xs leading-snug text-[var(--z-ink)]/55">
+            <label className="z-consent mt-4">
               <input
                 type="checkbox"
                 required
                 checked={consent}
                 onChange={(e) => setConsent(e.target.checked)}
-                className="mt-0.5"
+                className="z-check"
               />
               <span>
                 Соглашаюсь с{" "}
