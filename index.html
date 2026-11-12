@@ -19,6 +19,8 @@
   <!-- self-hosted fonts (см. @font-face в global.css): preload — Unbounded (h1/LCP) и Inter (body) -->
   <link rel="preload" href="/fonts/unbounded-400700-cyrillic.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="preload" href="/fonts/inter-400600-cyrillic.woff2" as="font" type="font/woff2" crossorigin>
+  <!-- LCP-элемент на мобильном — статичный робот (грузим до WebGL) -->
+  <link rel="preload" href="/assets/robot/robot-fallback-680.webp" as="image" media="(max-width: 767px)">
 </head>
 <body>
   <div id="root"></div>

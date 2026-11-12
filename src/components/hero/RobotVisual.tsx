@@ -54,13 +54,31 @@ export default function RobotVisual({ progressRef, pointerRef, beamRef }: Props)
   const handleReady = useCallback(() => setLive(true), []);
   const handleFail = useCallback(() => setFailed(true), []);
 
-  useEffect(() => setWebgl(detectWebGL()), []);
+  useEffect(() => {
+    if (!detectWebGL()) return;
+    // На телефонах откладываем тяжёлый WebGL-чанк до idle — иначе его
+    // парсинг/оценка отодвигает LCP (fallback img) на слабом железе.
+    if (window.innerWidth >= 768) {
+      setWebgl(true);
+      return;
+    }
+    const ric =
+      (window as { requestIdleCallback?: (cb: () => void, o?: { timeout: number }) => number })
+        .requestIdleCallback ?? ((cb: () => void) => window.setTimeout(cb, 1500));
+    const id = ric(() => setWebgl(true), { timeout: 2500 });
+    return () => {
+      const cic = (window as { cancelIdleCallback?: (id: number) => void }).cancelIdleCallback;
+      if (cic) cic(id); else clearTimeout(id);
+    };
+  }, []);
 
   return (
     <div className={`robot-visual${live ? " is-live" : ""}`}>
       <img
         className="robot-fallback"
-        src="/assets/robot/robot-fallback.webp"
+        src="/assets/robot/robot-fallback-680.webp"
+        srcSet="/assets/robot/robot-fallback-680.webp 680w, /assets/robot/robot-fallback.webp 900w"
+        sizes="(max-width: 767px) min(62vw, 300px), min(52vw, 340px)"
         alt="Робот-ассистент ZETRONIX — белый парящий андроид с бирюзовой оптикой"
         draggable={false}
         decoding="async"
