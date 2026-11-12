@@ -4,8 +4,8 @@ import { readFileSync, writeFileSync } from "node:fs";
 import puppeteer from "puppeteer-core";
 
 const SRC = "public/assets/robot/robot-fallback.webp";
-const OUT = "public/assets/robot/robot-fallback-680.webp";
-const WIDTH = 680;
+const WIDTH = Number(process.argv[2] ?? 680);
+const OUT = `public/assets/robot/robot-fallback-${WIDTH}.webp`;
 
 const b64 = readFileSync(SRC).toString("base64");
 const browser = await puppeteer.launch({

@@ -1,0 +1,11 @@
+import puppeteer from "puppeteer-core";
+const b = await puppeteer.launch({ executablePath: "C:/Program Files/Google/Chrome/Application/chrome.exe", headless: "shell" });
+const p = await b.newPage();
+const errs = [];
+p.on("console", m => { if (["error","warning"].includes(m.type())) errs.push(m.type()+": "+m.text().slice(0,200)); });
+p.on("pageerror", e => errs.push("pageerror: "+String(e).slice(0,200)));
+await p.setViewport({ width: 390, height: 844 });
+await p.goto("https://zetronix.ru/", { waitUntil: "networkidle0", timeout: 45000 });
+await new Promise(r => setTimeout(r, 4000));
+console.log(errs.slice(0, 15).join("\n") || "clean");
+await b.close();

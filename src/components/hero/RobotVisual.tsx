@@ -77,7 +77,7 @@ export default function RobotVisual({ progressRef, pointerRef, beamRef }: Props)
       <img
         className="robot-fallback"
         src="/assets/robot/robot-fallback-680.webp"
-        srcSet="/assets/robot/robot-fallback-680.webp 680w, /assets/robot/robot-fallback.webp 900w"
+        srcSet="/assets/robot/robot-fallback-480.webp 480w, /assets/robot/robot-fallback-680.webp 680w, /assets/robot/robot-fallback.webp 900w"
         sizes="(max-width: 767px) min(62vw, 300px), min(52vw, 340px)"
         alt="Робот-ассистент ZETRONIX — белый парящий андроид с бирюзовой оптикой"
         draggable={false}

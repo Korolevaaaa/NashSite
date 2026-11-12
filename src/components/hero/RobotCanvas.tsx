@@ -1,5 +1,5 @@
 import { Suspense, useRef, useState, useEffect } from "react";
-import { Canvas } from "@react-three/fiber";
+import { Canvas, useThree } from "@react-three/fiber";
 import { Environment, Lightformer } from "@react-three/drei";
 import RobotModel from "./RobotModel";
 import type { BeamRef, PointerRef, ProgressRef } from "./heroTypes";
@@ -19,6 +19,19 @@ interface Props {
  * cannot export; it lights the shell and feeds glossy reflections
  * without becoming a visible background.
  */
+const IS_MOBILE = typeof window !== "undefined" && window.innerWidth < 768;
+
+/** frameloop="demand" + 30fps invalidation на мобильных — halved main-thread
+ *  work of the idle render loop (Lighthouse TBT). */
+function MobileFrameLimiter() {
+  const invalidate = useThree((s) => s.invalidate);
+  useEffect(() => {
+    const id = setInterval(() => invalidate(), 33);
+    return () => clearInterval(id);
+  }, [invalidate]);
+  return null;
+}
+
 export default function RobotCanvas({ progressRef, pointerRef, beamRef, reducedMotion, onReady }: Props) {
   const hostRef = useRef<HTMLDivElement>(null);
   const [active, setActive] = useState(true);
@@ -40,11 +53,12 @@ export default function RobotCanvas({ progressRef, pointerRef, beamRef, reducedM
       <Canvas
         gl={{ alpha: true, antialias: true, powerPreference: "high-performance" }}
         // на телефонах 1x — 1.5x DPR это ~2.3x пикселей каждого кадра на слабом GPU
-        dpr={typeof window !== "undefined" && window.innerWidth < 768 ? 1 : [1, 2]}
+        dpr={IS_MOBILE ? 1 : [1, 2]}
         camera={{ position: [0, 0.06, 2.7], fov: 30 }}
-        frameloop={active ? "always" : "never"}
+        frameloop={!active ? "never" : IS_MOBILE ? "demand" : "always"}
         onCreated={({ gl }) => gl.setClearColor(0x000000, 0)}
       >
+        {IS_MOBILE && <MobileFrameLimiter />}
         <Suspense fallback={null}>
           <RobotModel
             progressRef={progressRef}
