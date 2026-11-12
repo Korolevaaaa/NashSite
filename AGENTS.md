@@ -126,3 +126,10 @@ accumA   += rib.a   * (1.0 - accumA);
 - `server/.env` lives ONLY on the server at `/var/www/zetronix/server/.env` (untracked, survives deploys); `server/data/` for stored leads likewise.
 - There are OTHER sites on this nginx (`limit` on save.zetronix.ru, legacy `nashsite` on :8088) — don't touch them.
 
+
+## Model council (scripts/council.mjs)
+- `node scripts/council.mjs start|round|post <alias> <msg>|me <msg>|resume|status|key <k>`
+- Общий чат Devin + внешние LLM через coarena.ai (`/api/v1`). Роли: Kimi K3.1 Pro = Explorer, Claude Opus 5.5 = Adversary (жёсткое опровержение, scoring incentives), Devin = Referee+код.
+- gpt-6-1-terra была model_off на 2026-11 — вернуть одной строкой в MODELS.
+- История: `council/session.json` (gitignored, ключ там же в config.json). При смене аккаунта: `key <новый>` → `resume` — модели перечитают контекст из council/context.md (регенерировать при больших изменениях кода).
+- Reasoning-модели: max_tokens 16000 нужен, reasoning ест лимит.
