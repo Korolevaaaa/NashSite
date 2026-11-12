@@ -1,4 +1,4 @@
-import { Component, lazy, Suspense, useEffect, useState, type ReactNode } from "react";
+import { Component, lazy, Suspense, useCallback, useEffect, useState, type ReactNode } from "react";
 import { useReducedMotion } from "../../hooks/useReducedMotion";
 import type { BeamRef, PointerRef, ProgressRef } from "./heroTypes";
 
@@ -49,6 +49,10 @@ export default function RobotVisual({ progressRef, pointerRef, beamRef }: Props)
   const [webgl, setWebgl] = useState(false);
   const [failed, setFailed] = useState(false);
   const [live, setLive] = useState(false);
+  // stable — an inline fn in RobotModel's init deps would re-create the
+  // whole mixer/procedural state on every parent rerender
+  const handleReady = useCallback(() => setLive(true), []);
+  const handleFail = useCallback(() => setFailed(true), []);
 
   useEffect(() => setWebgl(detectWebGL()), []);
 
@@ -59,16 +63,18 @@ export default function RobotVisual({ progressRef, pointerRef, beamRef }: Props)
         src="/assets/robot/robot-fallback.webp"
         alt="Робот-ассистент ZETRONIX — белый парящий андроид с бирюзовой оптикой"
         draggable={false}
+        decoding="async"
+        fetchPriority="high"
       />
       {webgl && !failed && (
-        <CanvasBoundary onError={() => setFailed(true)}>
+        <CanvasBoundary onError={handleFail}>
           <Suspense fallback={null}>
             <RobotCanvas
               progressRef={progressRef}
               pointerRef={pointerRef}
               beamRef={beamRef}
               reducedMotion={reducedMotion}
-              onReady={() => setLive(true)}
+              onReady={handleReady}
             />
           </Suspense>
         </CanvasBoundary>

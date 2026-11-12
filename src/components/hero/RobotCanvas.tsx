@@ -39,7 +39,8 @@ export default function RobotCanvas({ progressRef, pointerRef, beamRef, reducedM
     <div ref={hostRef} className="robot-canvas" aria-hidden="true">
       <Canvas
         gl={{ alpha: true, antialias: true, powerPreference: "high-performance" }}
-        dpr={[1, 2]}
+        // cap DPR on phones — full-res 2x rendering is ~1.3M px/frame for a slow idle
+        dpr={[1, typeof window !== "undefined" && window.innerWidth < 768 ? 1.5 : 2]}
         camera={{ position: [0, 0.06, 2.7], fov: 30 }}
         frameloop={active ? "always" : "never"}
         onCreated={({ gl }) => gl.setClearColor(0x000000, 0)}

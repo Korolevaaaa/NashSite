@@ -25,6 +25,8 @@ export function useSeo({
 }: SeoOptions) {
   useEffect(() => {
     if (!description || !path) return;
+    // страницы знают свой точный title — ставим его, а не ждём роутер
+    if (title) document.title = title;
     const metas: { el: HTMLMetaElement; prev: string | null }[] = [];
     const setMeta = (attr: string, key: string, content: string) => {
       let el = document.head.querySelector<HTMLMetaElement>(

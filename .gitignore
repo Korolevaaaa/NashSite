@@ -7,3 +7,4 @@ shots/
 *.local
 blender/
 tsconfig.tsbuildinfo
+council/

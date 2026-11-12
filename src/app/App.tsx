@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { lazy, Suspense, useEffect, useLayoutEffect, useState } from "react";
 import Boot from "../components/Boot";
 import Header from "../components/layout/Header";
 import MobileChrome from "../components/mobile/MobileChrome";
@@ -15,7 +15,6 @@ import Process from "../components/sections/Process";
 import Faq from "../components/sections/Faq";
 import Contacts from "../components/sections/Contacts";
 import DirectionPage, { NichePage } from "../components/pages/DirectionPage";
-import StorefrontAdmin from "../components/pages/StorefrontAdmin";
 import HomeSeo from "../components/HomeSeo";
 import CasesPage from "../components/pages/CasesPage";
 import CasePage from "../components/pages/CasePage";
@@ -24,17 +23,16 @@ import BlogPostPage from "../components/pages/BlogPostPage";
 import TemplatePage from "../components/pages/TemplatePage";
 import TemplatesPage from "../components/pages/TemplatesPage";
 import NapravleniePage from "../components/pages/NapravleniePage";
-import PartnerPage from "../components/pages/PartnerPage";
 import NotFound from "../components/pages/NotFound";
 import { PrivacyPage, OfferPage } from "../components/pages/LegalPage";
 import LeadModal from "../components/LeadModal";
-import ChatWidget from "../components/ChatWidget";
+
+// редкие служебные страницы и чат — вне основного бандла
+const StorefrontAdmin = lazy(() => import("../components/pages/StorefrontAdmin"));
+const PartnerPage = lazy(() => import("../components/pages/PartnerPage"));
+const ChatWidget = lazy(() => import("../components/ChatWidget"));
 import PartnerBadge from "../components/PartnerBadge";
 import { activePartner, captureRef } from "../utils/refSource";
-import { CASES } from "../data/cases";
-import { POSTS } from "../data/blog";
-import { TEMPLATES } from "../data/templates";
-import { DIRECTIONS, NICHES } from "../data/content";
 
 // path router (SEO-indexable real URLs; legacy #/x hashes redirect):
 //   /admin                 → owner storefront tool
@@ -63,7 +61,9 @@ type Route =
   | { name: "notfound" };
 
 function routeOf(): Route {
-  const p = window.location.pathname;
+  // trailing-slash normalization: nginx отдаёт dist/blog/index.html и на
+  // /blog, и на /blog/ — React должен видеть одну и ту же страницу
+  const p = window.location.pathname.replace(/\/+$/, "") || "/";
   const h = window.location.hash;
   // legacy: /#/blog/x → /blog/x (stарые ссылки и закладки)
   if (p === "/" && h.startsWith("#/")) {
@@ -78,15 +78,15 @@ function routeOf(): Route {
   if (p === "/blog") return { name: "blog" };
   if (p === "/templates") return { name: "templates" };
   if (p === "/napravlenie") return { name: "directions" };
-  let m = p.match(/^\/case\/([\w-]+)/);
+  let m = p.match(/^\/case\/([\w-]+)$/);
   if (m) return { name: "case", slug: m[1] };
-  m = p.match(/^\/blog\/([\w-]+)/);
+  m = p.match(/^\/blog\/([\w-]+)$/);
   if (m) return { name: "post", slug: m[1] };
-  m = p.match(/^\/napravlenie\/([\w-]+)/);
+  m = p.match(/^\/napravlenie\/([\w-]+)$/);
   if (m) return { name: "direction", slug: m[1] };
-  m = p.match(/^\/dlya\/([\w-]+)/);
+  m = p.match(/^\/dlya\/([\w-]+)$/);
   if (m) return { name: "niche", slug: m[1] };
-  m = p.match(/^\/template\/([\w-]+)/);
+  m = p.match(/^\/template\/([\w-]+)$/);
   if (m) return { name: "template", slug: m[1] };
   if (p !== "/" && p !== "") return { name: "notfound" };
   return { name: "main", anchor: h.length > 1 ? h : null };
@@ -94,28 +94,22 @@ function routeOf(): Route {
 
 const BASE_TITLE = "ZETRONIX — сайты и цифровые продукты для бизнеса";
 
+// Точные title slug-страниц ставит их собственный useSeo — держать здесь
+// data-импорты (CASES/POSTS/…) означало бы тащить весь контент в main-бандл.
 function titleOf(r: Route): string {
   switch (r.name) {
-    case "direction": {
-      const d = DIRECTIONS.find((x) => x.slug === r.slug);
-      return d ? `${d.title} — разработка от ZETRONIX` : "Направление — ZETRONIX";
-    }
-    case "niche": {
-      const n = NICHES.find((x) => x.slug === r.slug);
-      return n ? `${n.title} — разработка от ZETRONIX` : "Ниша — ZETRONIX";
-    }
+    case "direction":
+      return "Направление — ZETRONIX";
+    case "niche":
+      return "Ниша — ZETRONIX";
     case "directions":
       return "Направления разработки — цены и примеры | ZETRONIX";
     case "templates":
       return "Готовые сайты и макеты — купить от 20 000 ₽ | ZETRONIX";
     case "cases":
       return "Кейсы — ZETRONIX";
-    case "case": {
-      const c = CASES.find((x) => x.slug === r.slug);
-      return c
-        ? (c.seoTitle ?? `${c.title || c.name} — кейс ZETRONIX`)
-        : "Кейс — ZETRONIX";
-    }
+    case "case":
+      return "Кейс — ZETRONIX";
     case "blog":
       return "Блог — ZETRONIX";
     case "partner":
@@ -124,14 +118,12 @@ function titleOf(r: Route): string {
       return "Политика конфиденциальности — ZETRONIX";
     case "oferta":
       return "Публичная оферта — ZETRONIX";
-    case "post": {
-      const p = POSTS.find((x) => x.slug === r.slug);
-      return p ? (p.seoTitle ?? `${p.title} — ZETRONIX`) : "Статья — ZETRONIX";
-    }
-    case "template": {
-      const t = TEMPLATES.find((x) => x.slug === r.slug);
-      return t ? t.seoTitle : "Готовый макет — ZETRONIX";
-    }
+    case "post":
+      return "Статья — ZETRONIX";
+    case "template":
+      return "Готовый макет — ZETRONIX";
+    case "admin":
+      return "Админ — ZETRONIX";
     case "notfound":
       return "Страница не найдена — ZETRONIX";
     default:
@@ -147,6 +139,15 @@ export default function App() {
   });
   const [leadOpen, setLeadOpen] = useState(false);
   const [leadContext, setLeadContext] = useState("Обсудить проект");
+  // чат-виджет не должен участвовать в критической отрисовке
+  const [chatOn, setChatOn] = useState(false);
+
+  useEffect(() => {
+    // пререндер: чат не должен запекаться в статический HTML
+    if (navigator.webdriver) return;
+    const id = window.setTimeout(() => setChatOn(true), 1800);
+    return () => window.clearTimeout(id);
+  }, []);
 
   useEffect(() => {
     const onNav = () => setRoute(routeOf());
@@ -197,8 +198,13 @@ export default function App() {
     };
   }, []);
 
-  useEffect(() => {
+  // layout effect: document.title должен стоять ДО дочерних useSeo
+  // (passive effects), иначе og:title берёт title предыдущей страницы
+  useLayoutEffect(() => {
     document.title = titleOf(route);
+  }, [route]);
+
+  useEffect(() => {
     if (route.name !== "main") {
       // in-page anchors on subpages (/napravlenie#otrasli) scroll to target
       const h = window.location.hash;
@@ -226,9 +232,13 @@ export default function App() {
       <Header />
       {route.name !== "admin" && route.name !== "partner" && <MobileChrome />}
       {route.name === "admin" ? (
-        <StorefrontAdmin />
+        <Suspense fallback={null}>
+          <StorefrontAdmin />
+        </Suspense>
       ) : route.name === "partner" ? (
-        <PartnerPage />
+        <Suspense fallback={null}>
+          <PartnerPage />
+        </Suspense>
       ) : route.name === "privacy" ? (
         <PrivacyPage />
       ) : route.name === "oferta" ? (
@@ -278,7 +288,11 @@ export default function App() {
         onClose={() => setLeadOpen(false)}
         context={leadContext}
       />
-      {route.name !== "admin" && route.name !== "partner" && <ChatWidget />}
+      {chatOn && route.name !== "admin" && route.name !== "partner" && (
+        <Suspense fallback={null}>
+          <ChatWidget />
+        </Suspense>
+      )}
     </>
   );
 }

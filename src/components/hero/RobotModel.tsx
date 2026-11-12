@@ -64,7 +64,11 @@ export default function RobotModel({ progressRef, pointerRef, beamRef, reducedMo
   const smoothP = useRef(0);
   const idlePhase = useRef(0);
   const smoothMouse = useRef({ x: 0, y: 0 });
-  const layout = useRef({ w: 1, h: 1, scale: 1, g0: 0, final: 0 });
+  const layout = useRef({ w: 1, h: 1, scale: 1, restScale: 1, g0: 0, final: 0 });
+  const framesRef = useRef(0);
+  // lastRef[k] = что МЫ записали в ноду в прошлом кадре. Если после
+  // mixer.update(0) нода отличается — это свежая база от клипа.
+  const lastRef = useRef<Record<string, { q: THREE.Quaternion; p: THREE.Vector3; s: THREE.Vector3 }>>({});
   const { size, camera, gl } = useThree();
 
   useEffect(() => {
@@ -135,8 +139,6 @@ export default function RobotModel({ progressRef, pointerRef, beamRef, reducedMo
       emblemRef.current = emblem;
       anchorOk.current = true;
     }
-    onReady?.();
-
     return () => {
       beamRef.current.intensity = 0;
       beamRef.current.valid = false;
@@ -145,7 +147,7 @@ export default function RobotModel({ progressRef, pointerRef, beamRef, reducedMo
       mixerRef.current = null;
       actionRef.current = null;
     };
-  }, [scene, animations, beamRef, onReady]);
+  }, [scene, animations, beamRef]);
 
   // recompute responsive layout whenever the viewport size changes
   useEffect(() => {
@@ -156,11 +158,15 @@ export default function RobotModel({ progressRef, pointerRef, beamRef, reducedMo
     const wide = size.width >= 1200;
     const mid = size.width >= 768 && size.width < 1200;
     const tiny = size.width < 480;
-    const scale = wide ? 1 : mid ? 0.82 : tiny ? 0.46 : 0.56;
+    // hero-увеличение на мобиле гаснет к концу свайпа — слот проекции
+    // и луч остаются пиксель-в-пиксель как раньше
+    const scale = wide ? 1 : mid ? 0.82 : tiny ? 0.58 : 0.64;
+    const restScale = wide ? 1 : mid ? 0.82 : tiny ? 0.46 : 0.56;
     layout.current = {
       w: frW,
       h: frH,
       scale,
+      restScale,
       g0: frW * (wide ? 0.13 : mid ? 0.1 : 0),
       final: frW * (wide ? 0.3 : mid ? 0.26 : 0.1),
     };
@@ -185,14 +191,31 @@ export default function RobotModel({ progressRef, pointerRef, beamRef, reducedMo
     action.time = p * action.getClip().duration;
     mixer.update(0);
 
+    // refresh base where the clip wrote a NEW value this frame —
+    // without this the procedural layer freezes those nodes at the
+    // frame-0 pose (CTRL_Eye scale, Idle_* rotations all move in the clip)
+    for (const [k, node] of Object.entries(nodesRef.current)) {
+      const b = baseRef.current[k];
+      const l = lastRef.current[k];
+      if (!node || !b) continue;
+      if (!l || !node.quaternion.equals(l.q)) b.q.copy(node.quaternion);
+      if (!l || !node.position.equals(l.p)) b.p.copy(node.position);
+      if (!l || !node.scale.equals(l.s)) b.s.copy(node.scale);
+    }
+
     // screen-space rig placement: slides from hero position to final slot,
     // compensating the baked +X travel of CTRL_Root
-    const { w, scale, g0, final, h } = layout.current;
+    const { w, scale, restScale, g0, final, h } = layout.current;
+    // мобильное увеличение живёт только в hero-состоянии
+    const effScale =
+      restScale + (scale - restScale) * (1 - THREE.MathUtils.smoothstep(p, 0, 0.35));
 
-    // free-flight phase advances ONLY on the hero state — frozen while
+    // free-flight phase advances near the hero state — frozen while
     // scrolling so the return flight starts from the current drift
-    // point instead of sliding along a moving trajectory
-    if (!reducedMotion && target <= 0.0001 && rawP <= 0.0001) {
+    // point instead of sliding along a moving trajectory. A small
+    // tolerance keeps the drift alive on phones, where scrollY is
+    // almost never exactly 0 (URL bar, scroll restoration, banding).
+    if (!reducedMotion && target < 0.015 && rawP < 0.02) {
       idlePhase.current += Math.min(delta, 0.05);
     }
     const returnWeight = reducedMotion
@@ -201,22 +224,25 @@ export default function RobotModel({ progressRef, pointerRef, beamRef, reducedMo
     // drift amplitude by breakpoint — smaller where the model is big
     // relative to the viewport so it can't reach the copy or edges
     const xFactor =
-      size.width >= 1200 ? 0.07 : size.width >= 768 ? 0.03 : 0.015;
-    const yFactor = size.width >= 768 ? 0.035 : 0.02;
+      size.width >= 1200 ? 0.07 : size.width >= 768 ? 0.03 : 0.035;
+    const yFactor = size.width >= 768 ? 0.035 : 0.03;
+    // на телефоне 18–22 s цикл читался как «завис» — ускоряем вдвое
+    const perX = size.width >= 768 ? 18 : 9;
+    const perY = size.width >= 768 ? 22 : 11;
     const phase = idlePhase.current;
     const idleX =
-      Math.sin((phase * Math.PI * 2) / 18) * w * xFactor * returnWeight;
+      Math.sin((phase * Math.PI * 2) / perX) * w * xFactor * returnWeight;
     const idleY =
-      Math.sin((phase * Math.PI * 2) / 22) * h * yFactor * returnWeight;
+      Math.sin((phase * Math.PI * 2) / perY) * h * yFactor * returnWeight;
 
-    rig.scale.setScalar(scale);
+    rig.scale.setScalar(effScale);
     rig.position.x =
       THREE.MathUtils.lerp(g0, final - BAKED_SHIFT_X * scale, p) + idleX;
     // model pivot is at its base (rest AABB y 0.011..0.973) — center it,
     // plus a downward nudge on phones so the copy block stays readable
-    const mobileNudge = size.width < 480 ? -h * 0.28 : size.width < 768 ? -h * 0.1 : 0;
+    const mobileNudge = size.width < 480 ? -h * 0.12 : size.width < 768 ? -h * 0.06 : 0;
     rig.position.y =
-      -0.49 * scale +
+      -0.49 * effScale +
       mobileNudge * (1 - THREE.MathUtils.smoothstep(p, 0, 0.35)) +
       idleY;
 
@@ -312,7 +338,8 @@ export default function RobotModel({ progressRef, pointerRef, beamRef, reducedMo
       : 0;
     const emblem = emblemRef.current;
     if (emblem && anchorOk.current) {
-      scene.updateMatrixWorld(true);
+      // only the ancestor chain — full scene traversal is wasted work
+      emblem.updateWorldMatrix(true, false);
       tmpV.copy(anchorLocal.current);
       emblem.localToWorld(tmpV);
       tmpV.project(camera);
@@ -323,6 +350,24 @@ export default function RobotModel({ progressRef, pointerRef, beamRef, reducedMo
     } else {
       beam.valid = false;
     }
+
+    // remember the composite we left in the nodes — next frame's
+    // mixer.update(0) diff tells which channels the clip rewrote
+    for (const [k, node] of Object.entries(nodesRef.current)) {
+      if (!node) continue;
+      const l = (lastRef.current[k] ??= {
+        q: new THREE.Quaternion(),
+        p: new THREE.Vector3(),
+        s: new THREE.Vector3(),
+      });
+      l.q.copy(node.quaternion);
+      l.p.copy(node.position);
+      l.s.copy(node.scale);
+    }
+
+    // is-live только после реально отрисованных кадров — иначе PNG гаснет,
+    // пока шейдеры ещё компилируются (пустой экран на слабых Android)
+    if (framesRef.current < 2 && ++framesRef.current === 2) onReady?.();
   });
 
   return (

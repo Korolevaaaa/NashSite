@@ -33,7 +33,8 @@ const slugsOf = (file, marker) => {
 
 /* "/" goes LAST: vite preview serves dist/index.html as the SPA fallback for
    every other route, so it must stay the clean vite build (no baked-in SEO
-   tags) while the subpages are being rendered. */
+   tags) while the subpages are being rendered. "/404" goes right before "/"
+   for the same reason — it renders on the clean index.html. */
 const routes = [
   "/privacy",
   "/oferta",
@@ -46,16 +47,22 @@ const routes = [
   ...slugsOf("src/data/content.ts", "DIRECTIONS").map((s) => `/napravlenie/${s}`),
   ...slugsOf("src/data/content.ts", "NICHES").map((s) => `/dlya/${s}`),
   ...slugsOf("src/data/templates.ts", "TEMPLATES").map((s) => `/template/${s}`),
+  "/404",
   "/",
 ];
 
 const outFile = (route) =>
-  route === "/" ? join(DIST, "index.html") : join(DIST, route, "index.html");
+  route === "/404"
+    ? join(DIST, "404.html")
+    : route === "/"
+      ? join(DIST, "index.html")
+      : join(DIST, route, "index.html");
 
 const today = new Date().toISOString().slice(0, 10);
 const sitemap = `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 ${routes
+  .filter((r) => r !== "/404")
   .map(
     (r) => `  <url><loc>${SITE}${r === "/" ? "/" : r}</loc><lastmod>${today}</lastmod>${r === "/" ? "<priority>1.0</priority>" : ""}</url>`,
   )
@@ -95,10 +102,11 @@ async function main() {
       await new Promise((r) => setTimeout(r, 1800));
       // canonical/og:url/JSON-LD got the preview origin at render time —
       // rewrite them to the production domain in the emitted file
-      const html = (await page.content()).replaceAll(
-        `http://localhost:${PORT}`,
-        SITE,
-      );
+      const html = (await page.content())
+        .replaceAll(`http://localhost:${PORT}`, SITE)
+        // prerender добегает до live-состояния робота — в статике PNG должен
+        // стартовать видимым, иначе на медленном телефоне робот «исчезает»
+        .replace('class="robot-visual is-live"', 'class="robot-visual"');
       const file = outFile(route);
       mkdirSync(dirname(file), { recursive: true });
       writeFileSync(file, html, "utf8");
@@ -109,23 +117,6 @@ async function main() {
     }
   }
 
-  // кастомная 404-страница: статик-хосты отдают dist/404.html
-  // на неизвестных путях (GitHub Pages, Netlify, nginx и т.п.)
-  try {
-    await page.goto(`http://localhost:${PORT}/404`, {
-      waitUntil: "networkidle2",
-    });
-    await new Promise((r) => setTimeout(r, 1800));
-    const html = (await page.content()).replaceAll(
-      `http://localhost:${PORT}`,
-      SITE,
-    );
-    writeFileSync(join(DIST, "404.html"), html, "utf8");
-    process.stdout.write("  prerendered /404 → 404.html\n");
-  } catch (e) {
-    process.stderr.write(`  !! /404: ${e.message}\n`);
-  }
-
   await browser.close();
   await server.close();
 
@@ -134,10 +125,23 @@ async function main() {
   console.log(
     `prerender: ${done}/${routes.length} routes → dist/, sitemap.xml + robots.txt written`,
   );
+  // неполный пререндер = SEO-регрессия в проде (nginx отдаст 404 на
+  // отсутствующие страницы). Падаем, если только PRERENDER_OPTIONAL не задан.
+  if (done !== routes.length) {
+    if (process.env.PRERENDER_OPTIONAL) {
+      console.warn("prerender incomplete, but PRERENDER_OPTIONAL is set");
+    } else {
+      console.error(`prerender FAILED: ${done}/${routes.length} routes`);
+      process.exit(1);
+    }
+  }
 }
 
 main().catch((e) => {
-  // never fail the production build because of prerender
-  console.warn("prerender skipped:", e.message ?? e);
-  process.exit(0);
+  if (process.env.PRERENDER_OPTIONAL) {
+    console.warn("prerender skipped:", e.message ?? e);
+    process.exit(0);
+  }
+  console.error("prerender failed:", e.message ?? e);
+  process.exit(1);
 });
